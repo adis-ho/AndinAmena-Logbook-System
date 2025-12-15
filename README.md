@@ -27,7 +27,22 @@ Management sistem logbook transportasi untuk PT. Amena Safeeya Sejahtera.
     npm run build
     ```
 
+## Dokumentasi
+
+- 📐 [Architecture](docs/architecture.md) - Struktur dan keputusan teknis
+- 🗺️ [Roadmap](docs/roadmap.md) - Rencana pengembangan
+- 📊 [Status](docs/status.md) - Status proyek saat ini
+
 ## Structure
 - `src/features`: Modular features (Auth, Logbook, etc.)
 - `src/components`: Shared components
-- `src/services`: Mock services (future Supabase integration)
+- `src/services`: Mock services (for development)
+- `docs/`: Project documentation
+
+## Login Credentials (Development)
+
+| Role | Username | Password |
+|------|----------|----------|
+| Admin | admin | (any) |
+| Driver | driver1 | (any) |
+
