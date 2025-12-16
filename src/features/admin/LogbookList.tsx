@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { LogbookEntry, User, Unit } from '../../types';
-import { BookOpen, CheckCircle, XCircle, Clock, Eye, X } from 'lucide-react';
+import { BookOpen, CheckCircle, XCircle, Clock, Eye, X, Trash2, Download, FileSpreadsheet, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
 
 export default function LogbookList() {
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
@@ -12,7 +14,15 @@ export default function LogbookList() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [selectedLogbook, setSelectedLogbook] = useState<LogbookEntry | null>(null);
+    const [deleteLogbook, setDeleteLogbook] = useState<LogbookEntry | null>(null);
     const [filter, setFilter] = useState<'all' | 'submitted' | 'approved' | 'rejected'>('all');
+
+    // Advanced Filters
+    const [filterDriver, setFilterDriver] = useState('');
+    const [filterClient, setFilterClient] = useState('');
+    const [filterDateStart, setFilterDateStart] = useState('');
+    const [filterDateEnd, setFilterDateEnd] = useState('');
+    const [showExportMenu, setShowExportMenu] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -39,6 +49,9 @@ export default function LogbookList() {
     const getUnitName = (unitId: string) => units.find(u => u.id === unitId)?.name || '-';
     const getUnitPlate = (unitId: string) => units.find(u => u.id === unitId)?.plate_number || '-';
 
+    // Get unique drivers (only drivers)
+    const drivers = users.filter(u => u.role === 'driver');
+
     const handleStatusChange = async (logbookId: string, status: LogbookEntry['status']) => {
         try {
             await ApiService.updateLogbookStatus(logbookId, status);
@@ -59,6 +72,18 @@ export default function LogbookList() {
             setSelectedLogbook(null);
         } catch (err) {
             alert('Gagal mengubah status');
+            console.error(err);
+        }
+    };
+
+    const handleDelete = async () => {
+        if (!deleteLogbook) return;
+        try {
+            await ApiService.deleteLogbook(deleteLogbook.id);
+            setLogbooks(logbooks.filter(l => l.id !== deleteLogbook.id));
+            setDeleteLogbook(null);
+        } catch (err) {
+            alert('Gagal menghapus logbook');
             console.error(err);
         }
     };
@@ -84,9 +109,121 @@ export default function LogbookList() {
         );
     };
 
-    const filteredLogbooks = filter === 'all'
-        ? logbooks
-        : logbooks.filter(l => l.status === filter);
+    // Apply all filters
+    const filteredLogbooks = logbooks.filter(l => {
+        // Status filter
+        if (filter !== 'all' && l.status !== filter) return false;
+
+        // Driver filter
+        if (filterDriver && l.driver_id !== filterDriver) return false;
+
+        // Client filter
+        if (filterClient && !l.client_name.toLowerCase().includes(filterClient.toLowerCase())) return false;
+
+        // Date range filter
+        if (filterDateStart && new Date(l.date) < new Date(filterDateStart)) return false;
+        if (filterDateEnd && new Date(l.date) > new Date(filterDateEnd)) return false;
+
+        return true;
+    });
+
+    // Export to Excel
+    const exportToExcel = () => {
+        const data = filteredLogbooks.map(log => ({
+            'Tanggal': format(new Date(log.date), 'dd/MM/yyyy'),
+            'Driver': getDriverName(log.driver_id),
+            'Unit': getUnitName(log.unit_id),
+            'Plat Nomor': getUnitPlate(log.unit_id),
+            'User (Tamu/Client)': log.client_name,
+            'Rute': log.rute,
+            'Keterangan': log.keterangan,
+            'Biaya Tol & Parkir': log.toll_parking_cost,
+            'Status': log.status === 'approved' ? 'Disetujui' : log.status === 'rejected' ? 'Ditolak' : 'Pending'
+        }));
+
+        const ws = XLSX.utils.json_to_sheet(data);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Logbook');
+
+        const filename = `Logbook_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+        XLSX.writeFile(wb, filename);
+        setShowExportMenu(false);
+    };
+
+    // Export to PDF
+    const exportToPDF = () => {
+        const doc = new jsPDF({ orientation: 'landscape' });
+
+        // Title
+        doc.setFontSize(18);
+        doc.text('Laporan Logbook Kendaraan', 14, 20);
+
+        // Filter info
+        doc.setFontSize(10);
+        let filterInfo = `Tanggal Export: ${format(new Date(), 'dd MMMM yyyy', { locale: id })}`;
+        if (filterDateStart || filterDateEnd) {
+            filterInfo += ` | Periode: ${filterDateStart || 'Awal'} s/d ${filterDateEnd || 'Akhir'}`;
+        }
+        doc.text(filterInfo, 14, 28);
+
+        // Table header
+        const headers = ['Tanggal', 'Driver', 'User', 'Rute', 'Biaya', 'Status'];
+        const colWidths = [25, 40, 50, 70, 35, 25];
+        let y = 38;
+
+        doc.setFontSize(9);
+        doc.setFont('helvetica', 'bold');
+        let x = 14;
+        headers.forEach((header, i) => {
+            doc.text(header, x, y);
+            x += colWidths[i];
+        });
+
+        // Table rows
+        doc.setFont('helvetica', 'normal');
+        y += 6;
+
+        filteredLogbooks.forEach((log) => {
+            if (y > 180) {
+                doc.addPage();
+                y = 20;
+            }
+
+            x = 14;
+            const row = [
+                format(new Date(log.date), 'dd/MM/yy'),
+                getDriverName(log.driver_id).substring(0, 20),
+                log.client_name.substring(0, 25),
+                log.rute.substring(0, 35),
+                formatCurrency(log.toll_parking_cost),
+                log.status === 'approved' ? 'OK' : log.status === 'rejected' ? 'Tolak' : 'Pending'
+            ];
+
+            row.forEach((cell, i) => {
+                doc.text(cell, x, y);
+                x += colWidths[i];
+            });
+            y += 6;
+        });
+
+        // Total
+        y += 4;
+        const totalCost = filteredLogbooks.reduce((sum, l) => sum + l.toll_parking_cost, 0);
+        doc.setFont('helvetica', 'bold');
+        doc.text(`Total: ${filteredLogbooks.length} logbook | Total Biaya: ${formatCurrency(totalCost)}`, 14, y);
+
+        const filename = `Logbook_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+        doc.save(filename);
+        setShowExportMenu(false);
+    };
+
+    const clearFilters = () => {
+        setFilterDriver('');
+        setFilterClient('');
+        setFilterDateStart('');
+        setFilterDateEnd('');
+        setFilter('all');
+    };
 
     if (loading) {
         return (
@@ -104,7 +241,89 @@ export default function LogbookList() {
                     <h1 className="text-2xl font-bold text-gray-900">Manajemen Logbook</h1>
                 </div>
 
-                <div className="flex gap-2">
+                {/* Export Button */}
+                <div className="relative">
+                    <button
+                        onClick={() => setShowExportMenu(!showExportMenu)}
+                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                    >
+                        <Download className="h-4 w-4" />
+                        Export
+                    </button>
+                    {showExportMenu && (
+                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10">
+                            <button
+                                onClick={exportToExcel}
+                                className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-50 text-gray-700"
+                            >
+                                <FileSpreadsheet className="h-4 w-4 text-green-600" />
+                                Export Excel
+                            </button>
+                            <button
+                                onClick={exportToPDF}
+                                className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-50 text-gray-700 border-t"
+                            >
+                                <FileText className="h-4 w-4 text-red-600" />
+                                Export PDF
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
+                <div className="flex justify-between items-center">
+                    <h3 className="font-medium text-gray-700">Filter</h3>
+                    <button onClick={clearFilters} className="text-sm text-blue-600 hover:underline">Reset Filter</button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">Driver</label>
+                        <select
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            value={filterDriver}
+                            onChange={(e) => setFilterDriver(e.target.value)}
+                        >
+                            <option value="">Semua Driver</option>
+                            {drivers.map(d => (
+                                <option key={d.id} value={d.id}>{d.full_name}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">User (Tamu/Client)</label>
+                        <input
+                            type="text"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            placeholder="Cari nama client..."
+                            value={filterClient}
+                            onChange={(e) => setFilterClient(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">Dari Tanggal</label>
+                        <input
+                            type="date"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            value={filterDateStart}
+                            onChange={(e) => setFilterDateStart(e.target.value)}
+                        />
+                    </div>
+                    <div>
+                        <label className="block text-sm text-gray-600 mb-1">Sampai Tanggal</label>
+                        <input
+                            type="date"
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm"
+                            value={filterDateEnd}
+                            onChange={(e) => setFilterDateEnd(e.target.value)}
+                        />
+                    </div>
+                </div>
+
+                {/* Status Filter */}
+                <div className="flex gap-2 pt-2 border-t">
                     {(['all', 'submitted', 'approved', 'rejected'] as const).map(f => (
                         <button
                             key={f}
@@ -117,10 +336,39 @@ export default function LogbookList() {
                             {f === 'all' ? 'Semua' : f === 'submitted' ? 'Pending' : f === 'approved' ? 'Disetujui' : 'Ditolak'}
                         </button>
                     ))}
+                    <span className="ml-auto text-sm text-gray-500 self-center">
+                        {filteredLogbooks.length} logbook ditemukan
+                    </span>
                 </div>
             </div>
 
             {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>}
+
+            {/* Delete Modal */}
+            {deleteLogbook && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded-xl w-full max-w-md">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Hapus Logbook?</h2>
+                        <p className="text-gray-600 mb-6">
+                            Apakah Anda yakin ingin menghapus logbook tanggal <strong>{format(new Date(deleteLogbook.date), 'dd MMMM yyyy', { locale: id })}</strong> dari <strong>{deleteLogbook.client_name}</strong>?
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteLogbook(null)}
+                                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Detail Modal */}
             {selectedLogbook && (
@@ -220,7 +468,7 @@ export default function LogbookList() {
                             {filteredLogbooks.length === 0 ? (
                                 <tr>
                                     <td colSpan={7} className="text-center py-8 text-gray-500">
-                                        Belum ada logbook
+                                        Tidak ada logbook yang sesuai filter
                                     </td>
                                 </tr>
                             ) : (
@@ -235,7 +483,7 @@ export default function LogbookList() {
                                         <td className="py-3 px-4 text-gray-900">{formatCurrency(log.toll_parking_cost)}</td>
                                         <td className="py-3 px-4">{getStatusBadge(log.status)}</td>
                                         <td className="py-3 px-4">
-                                            <div className="flex justify-center gap-2">
+                                            <div className="flex justify-center gap-1">
                                                 <button
                                                     onClick={() => setSelectedLogbook(log)}
                                                     className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
@@ -261,6 +509,13 @@ export default function LogbookList() {
                                                         </button>
                                                     </>
                                                 )}
+                                                <button
+                                                    onClick={() => setDeleteLogbook(log)}
+                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    title="Hapus"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
