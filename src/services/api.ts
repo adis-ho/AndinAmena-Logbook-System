@@ -257,14 +257,28 @@ export const ApiService = {
         }
     },
 
+    // Soft delete - set status to inactive instead of hard delete
     deleteUser: async (id: string): Promise<void> => {
         const { error } = await supabase
             .from('profiles')
-            .delete()
+            .update({ status: 'inactive' })
             .eq('id', id);
 
         if (error) {
             console.error('[ApiService] Delete user error:', error.message);
+            throw error;
+        }
+    },
+
+    // Reactivate user - set status back to active
+    reactivateUser: async (id: string): Promise<void> => {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ status: 'active' })
+            .eq('id', id);
+
+        if (error) {
+            console.error('[ApiService] Reactivate user error:', error.message);
             throw error;
         }
     },

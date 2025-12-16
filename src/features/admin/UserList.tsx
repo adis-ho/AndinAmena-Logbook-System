@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { User, UserRole } from '../../types';
-import { Plus, Pencil, Trash2, Users, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, X, RotateCcw } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -14,6 +15,7 @@ interface UserFormData {
 }
 
 export default function UserList() {
+    const { showToast } = useToast();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -103,13 +105,25 @@ export default function UserList() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Yakin ingin menghapus pengguna ini?')) return;
+        if (!confirm('Yakin ingin menonaktifkan pengguna ini?')) return;
 
         try {
             await ApiService.deleteUser(id);
-            setUsers(users.filter(u => u.id !== id));
+            setUsers(users.map(u => u.id === id ? { ...u, status: 'inactive' } : u));
+            showToast('success', 'Pengguna berhasil dinonaktifkan');
         } catch (err) {
-            alert('Gagal menghapus pengguna');
+            showToast('error', 'Gagal menonaktifkan pengguna');
+            console.error(err);
+        }
+    };
+
+    const handleReactivate = async (id: string) => {
+        try {
+            await ApiService.reactivateUser(id);
+            setUsers(users.map(u => u.id === id ? { ...u, status: 'active' } : u));
+            showToast('success', 'Pengguna berhasil diaktifkan kembali');
+        } catch (err) {
+            showToast('error', 'Gagal mengaktifkan pengguna');
             console.error(err);
         }
     };
@@ -240,27 +254,36 @@ export default function UserList() {
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Username</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Nama Lengkap</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Role</th>
+                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
                                 <th className="text-center py-3 px-4 text-sm font-medium text-gray-600">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
                             {users.length === 0 ? (
                                 <tr>
-                                    <td colSpan={4} className="text-center py-8 text-gray-500">
+                                    <td colSpan={5} className="text-center py-8 text-gray-500">
                                         Belum ada pengguna
                                     </td>
                                 </tr>
                             ) : (
                                 users.map(user => (
-                                    <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                    <tr key={user.id} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${user.status === 'inactive' ? 'opacity-50' : ''}`}>
                                         <td className="py-3 px-4 text-gray-900">{user.username}</td>
                                         <td className="py-3 px-4 text-gray-600">{user.full_name}</td>
                                         <td className="py-3 px-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin'
-                                                    ? 'bg-purple-100 text-purple-700'
-                                                    : 'bg-blue-100 text-blue-700'
+                                                ? 'bg-purple-100 text-purple-700'
+                                                : 'bg-blue-100 text-blue-700'
                                                 }`}>
                                                 {user.role === 'admin' ? 'Admin' : 'Driver'}
+                                            </span>
+                                        </td>
+                                        <td className="py-3 px-4">
+                                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active'
+                                                ? 'bg-green-100 text-green-700'
+                                                : 'bg-red-100 text-red-700'
+                                                }`}>
+                                                {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
                                             </span>
                                         </td>
                                         <td className="py-3 px-4">
@@ -272,13 +295,23 @@ export default function UserList() {
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                 </button>
-                                                <button
-                                                    onClick={() => handleDelete(user.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                                                    title="Hapus"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                {user.status === 'active' ? (
+                                                    <button
+                                                        onClick={() => handleDelete(user.id)}
+                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        title="Nonaktifkan"
+                                                    >
+                                                        <Trash2 className="h-4 w-4" />
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        onClick={() => handleReactivate(user.id)}
+                                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                        title="Aktifkan Kembali"
+                                                    >
+                                                        <RotateCcw className="h-4 w-4" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </td>
                                     </tr>
