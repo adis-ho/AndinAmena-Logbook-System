@@ -13,13 +13,10 @@ export default function LogbookForm() {
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         unit_id: '',
-        start_km: 0,
-        end_km: 0,
-        activities: '',
-        fuel_cost: 0,
-        toll_cost: 0,
-        parking_cost: 0,
-        other_cost: 0
+        client_name: '',
+        rute: '',
+        keterangan: '',
+        toll_parking_cost: 0
     });
 
     useEffect(() => {
@@ -38,7 +35,7 @@ export default function LogbookForm() {
                 status: 'submitted'
             });
 
-            // Notify all admins about new logbook submission
+            // Notify semua admin tentang logbook baru
             await ApiService.notifyAdmins({
                 type: 'logbook_submitted',
                 title: 'Logbook Baru',
@@ -54,9 +51,6 @@ export default function LogbookForm() {
             setLoading(false);
         }
     };
-
-    const totalKm = formData.end_km - formData.start_km;
-    const totalCost = formData.fuel_cost + formData.toll_cost + formData.parking_cost + formData.other_cost;
 
     return (
         <div className="max-w-2xl mx-auto space-y-6">
@@ -87,103 +81,66 @@ export default function LogbookForm() {
                         >
                             <option value="">Pilih Unit</option>
                             {units.filter(u => u.status === 'available').map(unit => (
-                                <option key={unit.id} value={unit.id}>{unit.name} - {unit.plate_number}</option>
+                                <option key={unit.id} value={unit.id}>
+                                    {unit.name} - {unit.plate_number}
+                                </option>
                             ))}
                         </select>
                     </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">KM Awal</label>
-                        <input
-                            type="number"
-                            required
-                            min="0"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            value={formData.start_km || ''}
-                            onChange={(e) => setFormData({ ...formData, start_km: parseInt(e.target.value) || 0 })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">KM Akhir</label>
-                        <input
-                            type="number"
-                            required
-                            min={formData.start_km}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            value={formData.end_km || ''}
-                            onChange={(e) => setFormData({ ...formData, end_km: parseInt(e.target.value) || 0 })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Total KM</label>
-                        <div className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-700">
-                            {totalKm} km
-                        </div>
-                    </div>
-                </div>
-
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Kegiatan</label>
-                    <textarea
+                    <label className="block text-sm font-medium text-gray-700 mb-1">User (Tamu/Client)</label>
+                    <input
+                        type="text"
                         required
-                        rows={3}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
-                        placeholder="Deskripsi kegiatan..."
-                        value={formData.activities}
-                        onChange={(e) => setFormData({ ...formData, activities: e.target.value })}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Nama tamu atau client..."
+                        value={formData.client_name}
+                        onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
                     />
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Biaya BBM</label>
-                        <input
-                            type="number"
-                            min="0"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            value={formData.fuel_cost || ''}
-                            onChange={(e) => setFormData({ ...formData, fuel_cost: parseInt(e.target.value) || 0 })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol</label>
-                        <input
-                            type="number"
-                            min="0"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            value={formData.toll_cost || ''}
-                            onChange={(e) => setFormData({ ...formData, toll_cost: parseInt(e.target.value) || 0 })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Parkir</label>
-                        <input
-                            type="number"
-                            min="0"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            value={formData.parking_cost || ''}
-                            onChange={(e) => setFormData({ ...formData, parking_cost: parseInt(e.target.value) || 0 })}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Lain</label>
-                        <input
-                            type="number"
-                            min="0"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                            value={formData.other_cost || ''}
-                            onChange={(e) => setFormData({ ...formData, other_cost: parseInt(e.target.value) || 0 })}
-                        />
-                    </div>
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Rute</label>
+                    <input
+                        type="text"
+                        required
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Contoh: Jakarta - Bandung"
+                        value={formData.rute}
+                        onChange={(e) => setFormData({ ...formData, rute: e.target.value })}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                    <textarea
+                        rows={3}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
+                        placeholder="Catatan tambahan (opsional)..."
+                        value={formData.keterangan}
+                        onChange={(e) => setFormData({ ...formData, keterangan: e.target.value })}
+                    />
+                </div>
+
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol & Parkir</label>
+                    <input
+                        type="number"
+                        min="0"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Rp 0"
+                        value={formData.toll_parking_cost || ''}
+                        onChange={(e) => setFormData({ ...formData, toll_parking_cost: parseInt(e.target.value) || 0 })}
+                    />
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
                         <span className="font-medium text-blue-900">Total Biaya:</span>
                         <span className="text-xl font-bold text-blue-600">
-                            Rp {totalCost.toLocaleString('id-ID')}
+                            Rp {formData.toll_parking_cost.toLocaleString('id-ID')}
                         </span>
                     </div>
                 </div>
@@ -191,7 +148,7 @@ export default function LogbookForm() {
                 <button
                     type="submit"
                     disabled={loading}
-                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 transition-colors font-medium"
+                    className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
                 >
                     {loading ? 'Menyimpan...' : 'Simpan Logbook'}
                 </button>

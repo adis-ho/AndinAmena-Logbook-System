@@ -43,12 +43,9 @@ export default function LogbookList() {
         try {
             await ApiService.updateLogbookStatus(logbookId, status);
 
-            // Find the logbook to get driver info
             const logbook = logbooks.find(l => l.id === logbookId);
             if (logbook) {
                 const statusText = status === 'approved' ? 'disetujui' : 'ditolak';
-
-                // Notify the driver about status change
                 await ApiService.createNotification({
                     user_id: logbook.driver_id,
                     type: status === 'approved' ? 'logbook_approved' : 'logbook_rejected',
@@ -107,7 +104,6 @@ export default function LogbookList() {
                     <h1 className="text-2xl font-bold text-gray-900">Manajemen Logbook</h1>
                 </div>
 
-                {/* Filter */}
                 <div className="flex gap-2">
                     {(['all', 'submitted', 'approved', 'rejected'] as const).map(f => (
                         <button
@@ -129,7 +125,7 @@ export default function LogbookList() {
             {/* Detail Modal */}
             {selectedLogbook && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl w-full max-w-2xl relative max-h-[90vh] overflow-y-auto">
+                    <div className="bg-white p-6 rounded-xl w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
                         <button
                             onClick={() => setSelectedLogbook(null)}
                             className="absolute top-4 right-4 text-gray-400 hover:text-gray-600"
@@ -159,49 +155,27 @@ export default function LogbookList() {
                                 </div>
                             </div>
 
-                            <div className="border-t pt-4">
-                                <p className="text-sm text-gray-500 mb-2">Kegiatan</p>
-                                <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedLogbook.activities}</p>
-                            </div>
-
-                            <div className="grid grid-cols-3 gap-4 border-t pt-4">
+                            <div className="border-t pt-4 space-y-3">
                                 <div>
-                                    <p className="text-sm text-gray-500">KM Awal</p>
-                                    <p className="font-medium">{selectedLogbook.start_km.toLocaleString()} km</p>
+                                    <p className="text-sm text-gray-500">User (Tamu/Client)</p>
+                                    <p className="font-medium text-gray-900">{selectedLogbook.client_name}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">KM Akhir</p>
-                                    <p className="font-medium">{selectedLogbook.end_km.toLocaleString()} km</p>
+                                    <p className="text-sm text-gray-500">Rute</p>
+                                    <p className="font-medium text-gray-900">{selectedLogbook.rute}</p>
                                 </div>
-                                <div>
-                                    <p className="text-sm text-gray-500">Total KM</p>
-                                    <p className="font-bold text-blue-600">{selectedLogbook.total_km.toLocaleString()} km</p>
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 border-t pt-4">
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <p className="text-xs text-gray-500">BBM</p>
-                                    <p className="font-medium">{formatCurrency(selectedLogbook.fuel_cost)}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <p className="text-xs text-gray-500">Tol</p>
-                                    <p className="font-medium">{formatCurrency(selectedLogbook.toll_cost)}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <p className="text-xs text-gray-500">Parkir</p>
-                                    <p className="font-medium">{formatCurrency(selectedLogbook.parking_cost)}</p>
-                                </div>
-                                <div className="bg-gray-50 p-3 rounded-lg">
-                                    <p className="text-xs text-gray-500">Lainnya</p>
-                                    <p className="font-medium">{formatCurrency(selectedLogbook.other_cost)}</p>
-                                </div>
+                                {selectedLogbook.keterangan && (
+                                    <div>
+                                        <p className="text-sm text-gray-500">Keterangan</p>
+                                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedLogbook.keterangan}</p>
+                                    </div>
+                                )}
                             </div>
 
                             <div className="bg-blue-50 p-4 rounded-lg border-t">
                                 <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-900">Total Biaya:</span>
-                                    <span className="text-2xl font-bold text-blue-600">{formatCurrency(selectedLogbook.total_cost)}</span>
+                                    <span className="font-medium text-blue-900">Biaya Tol & Parkir:</span>
+                                    <span className="text-2xl font-bold text-blue-600">{formatCurrency(selectedLogbook.toll_parking_cost)}</span>
                                 </div>
                             </div>
 
@@ -235,8 +209,8 @@ export default function LogbookList() {
                             <tr>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Tanggal</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Driver</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Unit</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">KM</th>
+                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">User</th>
+                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Rute</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Biaya</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
                                 <th className="text-center py-3 px-4 text-sm font-medium text-gray-600">Aksi</th>
@@ -256,9 +230,9 @@ export default function LogbookList() {
                                             {format(new Date(log.date), 'dd MMM yyyy', { locale: id })}
                                         </td>
                                         <td className="py-3 px-4 text-gray-600">{getDriverName(log.driver_id)}</td>
-                                        <td className="py-3 px-4 text-gray-600">{getUnitName(log.unit_id)}</td>
-                                        <td className="py-3 px-4 text-gray-900">{log.total_km} km</td>
-                                        <td className="py-3 px-4 text-gray-900">{formatCurrency(log.total_cost)}</td>
+                                        <td className="py-3 px-4 text-gray-900">{log.client_name}</td>
+                                        <td className="py-3 px-4 text-gray-600">{log.rute}</td>
+                                        <td className="py-3 px-4 text-gray-900">{formatCurrency(log.toll_parking_cost)}</td>
                                         <td className="py-3 px-4">{getStatusBadge(log.status)}</td>
                                         <td className="py-3 px-4">
                                             <div className="flex justify-center gap-2">

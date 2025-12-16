@@ -10,7 +10,6 @@ interface DashboardStats {
     pendingLogbooks: number;
     approvedLogbooks: number;
     rejectedLogbooks: number;
-    totalKm: number;
     totalCost: number;
 }
 
@@ -21,7 +20,6 @@ export default function DriverDashboard() {
         pendingLogbooks: 0,
         approvedLogbooks: 0,
         rejectedLogbooks: 0,
-        totalKm: 0,
         totalCost: 0
     });
     const [recentLogbooks, setRecentLogbooks] = useState<LogbookEntry[]>([]);
@@ -39,8 +37,7 @@ export default function DriverDashboard() {
                     pendingLogbooks: logbooks.filter(l => l.status === 'submitted').length,
                     approvedLogbooks: logbooks.filter(l => l.status === 'approved').length,
                     rejectedLogbooks: logbooks.filter(l => l.status === 'rejected').length,
-                    totalKm: logbooks.reduce((sum, l) => sum + l.total_km, 0),
-                    totalCost: logbooks.reduce((sum, l) => sum + l.total_cost, 0)
+                    totalCost: logbooks.reduce((sum, l) => sum + l.toll_parking_cost, 0)
                 });
 
                 setRecentLogbooks(logbooks.slice(0, 5));
@@ -163,15 +160,9 @@ export default function DriverDashboard() {
             </div>
 
             {/* Summary */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gradient-to-r from-blue-500 to-blue-600 p-6 rounded-xl text-white">
-                    <p className="text-blue-100 text-sm">Total Jarak Tempuh</p>
-                    <p className="text-3xl font-bold mt-2">{stats.totalKm.toLocaleString()} km</p>
-                </div>
-                <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-xl text-white">
-                    <p className="text-green-100 text-sm">Total Biaya</p>
-                    <p className="text-3xl font-bold mt-2">{formatCurrency(stats.totalCost)}</p>
-                </div>
+            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-xl text-white">
+                <p className="text-green-100 text-sm">Total Biaya Tol & Parkir</p>
+                <p className="text-3xl font-bold mt-2">{formatCurrency(stats.totalCost)}</p>
             </div>
 
             {/* Recent Logbooks */}
@@ -182,12 +173,12 @@ export default function DriverDashboard() {
                         {recentLogbooks.map(log => (
                             <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                 <div>
-                                    <p className="font-medium text-gray-900">{log.activities.substring(0, 50)}...</p>
+                                    <p className="font-medium text-gray-900">{log.client_name} - {log.rute}</p>
                                     <p className="text-sm text-gray-500">{new Date(log.date).toLocaleDateString('id-ID')}</p>
                                 </div>
                                 <div className="text-right">
                                     {getStatusBadge(log.status)}
-                                    <p className="text-sm text-gray-500 mt-1">{formatCurrency(log.total_cost)}</p>
+                                    <p className="text-sm text-gray-500 mt-1">{formatCurrency(log.toll_parking_cost)}</p>
                                 </div>
                             </div>
                         ))}

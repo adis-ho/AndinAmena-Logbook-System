@@ -9,13 +9,10 @@ import { id } from 'date-fns/locale';
 interface EditFormData {
     date: string;
     unit_id: string;
-    start_km: number;
-    end_km: number;
-    activities: string;
-    fuel_cost: number;
-    toll_cost: number;
-    parking_cost: number;
-    other_cost: number;
+    client_name: string;
+    rute: string;
+    keterangan: string;
+    toll_parking_cost: number;
 }
 
 export default function LogbookHistory() {
@@ -37,7 +34,7 @@ export default function LogbookHistory() {
             setLogbooks(logsData);
             setUnits(unitsData);
         } catch (err) {
-            console.error('Failed to fetch logbooks:', err);
+            console.error('Gagal mengambil logbook:', err);
         } finally {
             setLoading(false);
         }
@@ -75,7 +72,6 @@ export default function LogbookHistory() {
     };
 
     const canEdit = (_status: LogbookEntry['status']) => {
-        // Allow edit for all statuses - will require re-approval after edit
         return true;
     };
 
@@ -84,13 +80,10 @@ export default function LogbookHistory() {
         setFormData({
             date: logbook.date.split('T')[0],
             unit_id: logbook.unit_id,
-            start_km: logbook.start_km,
-            end_km: logbook.end_km,
-            activities: logbook.activities,
-            fuel_cost: logbook.fuel_cost,
-            toll_cost: logbook.toll_cost,
-            parking_cost: logbook.parking_cost,
-            other_cost: logbook.other_cost
+            client_name: logbook.client_name,
+            rute: logbook.rute,
+            keterangan: logbook.keterangan,
+            toll_parking_cost: logbook.toll_parking_cost
         });
     };
 
@@ -105,14 +98,9 @@ export default function LogbookHistory() {
 
         setFormLoading(true);
         try {
-            const totalKm = formData.end_km - formData.start_km;
-            const totalCost = formData.fuel_cost + formData.toll_cost + formData.parking_cost + formData.other_cost;
-
             await ApiService.updateLogbook(editingLogbook.id, {
                 ...formData,
-                total_km: totalKm,
-                total_cost: totalCost,
-                status: 'submitted' // Re-submit after edit
+                status: 'submitted'
             });
 
             handleCloseEdit();
@@ -133,9 +121,6 @@ export default function LogbookHistory() {
         );
     }
 
-    const totalKm = formData ? formData.end_km - formData.start_km : 0;
-    const totalCost = formData ? formData.fuel_cost + formData.toll_cost + formData.parking_cost + formData.other_cost : 0;
-
     return (
         <div className="space-y-6">
             <div className="flex items-center gap-3">
@@ -143,10 +128,10 @@ export default function LogbookHistory() {
                 <h1 className="text-2xl font-bold text-gray-900">Riwayat Logbook</h1>
             </div>
 
-            {/* Edit Modal */}
+            {/* Modal Edit */}
             {editingLogbook && formData && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto relative">
+                    <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
                         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
                             <h2 className="text-xl font-bold text-gray-900">Edit Logbook</h2>
                             <button onClick={handleCloseEdit} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
@@ -154,7 +139,7 @@ export default function LogbookHistory() {
                             </button>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="p-6 space-y-6">
+                        <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
@@ -163,7 +148,7 @@ export default function LogbookHistory() {
                                         required
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                         value={formData.date}
-                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
                                     />
                                 </div>
                                 <div>
@@ -172,7 +157,7 @@ export default function LogbookHistory() {
                                         required
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                         value={formData.unit_id}
-                                        onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
+                                        onChange={(e) => setFormData({...formData, unit_id: e.target.value})}
                                     >
                                         <option value="">Pilih Unit</option>
                                         {units.map(unit => (
@@ -182,101 +167,50 @@ export default function LogbookHistory() {
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">KM Awal</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min="0"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.start_km || ''}
-                                        onChange={(e) => setFormData({ ...formData, start_km: parseInt(e.target.value) || 0 })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">KM Akhir</label>
-                                    <input
-                                        type="number"
-                                        required
-                                        min={formData.start_km}
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.end_km || ''}
-                                        onChange={(e) => setFormData({ ...formData, end_km: parseInt(e.target.value) || 0 })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Total KM</label>
-                                    <div className="w-full px-3 py-2 bg-gray-100 border border-gray-200 rounded-lg text-gray-700">
-                                        {totalKm} km
-                                    </div>
-                                </div>
-                            </div>
-
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Kegiatan</label>
-                                <textarea
+                                <label className="block text-sm font-medium text-gray-700 mb-1">User (Tamu/Client)</label>
+                                <input
+                                    type="text"
                                     required
-                                    rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                    value={formData.activities}
-                                    onChange={(e) => setFormData({ ...formData, activities: e.target.value })}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.client_name}
+                                    onChange={(e) => setFormData({...formData, client_name: e.target.value})}
                                 />
                             </div>
 
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya BBM</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.fuel_cost || ''}
-                                        onChange={(e) => setFormData({ ...formData, fuel_cost: parseInt(e.target.value) || 0 })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.toll_cost || ''}
-                                        onChange={(e) => setFormData({ ...formData, toll_cost: parseInt(e.target.value) || 0 })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Parkir</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.parking_cost || ''}
-                                        onChange={(e) => setFormData({ ...formData, parking_cost: parseInt(e.target.value) || 0 })}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Lain</label>
-                                    <input
-                                        type="number"
-                                        min="0"
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                        value={formData.other_cost || ''}
-                                        onChange={(e) => setFormData({ ...formData, other_cost: parseInt(e.target.value) || 0 })}
-                                    />
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Rute</label>
+                                <input
+                                    type="text"
+                                    required
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.rute}
+                                    onChange={(e) => setFormData({...formData, rute: e.target.value})}
+                                />
                             </div>
 
-                            <div className="bg-blue-50 p-4 rounded-lg">
-                                <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-900">Total Biaya:</span>
-                                    <span className="text-xl font-bold text-blue-600">
-                                        Rp {totalCost.toLocaleString('id-ID')}
-                                    </span>
-                                </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                                <textarea
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                    value={formData.keterangan}
+                                    onChange={(e) => setFormData({...formData, keterangan: e.target.value})}
+                                />
                             </div>
 
-                            <div className="flex gap-3">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol & Parkir</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.toll_parking_cost || ''}
+                                    onChange={(e) => setFormData({...formData, toll_parking_cost: parseInt(e.target.value) || 0})}
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
                                 <button
                                     type="button"
                                     onClick={handleCloseEdit}
@@ -326,25 +260,28 @@ export default function LogbookHistory() {
                                     )}
                                 </div>
                             </div>
-
-                            <p className="text-gray-700 mb-3">{log.activities}</p>
-
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                                <div className="bg-gray-50 p-2 rounded">
-                                    <span className="text-gray-500">Jarak: </span>
-                                    <span className="font-medium">{log.total_km} km</span>
+                            
+                            <div className="space-y-2 mb-3">
+                                <div className="flex">
+                                    <span className="text-gray-500 w-24">User:</span>
+                                    <span className="text-gray-900 font-medium">{log.client_name}</span>
                                 </div>
-                                <div className="bg-gray-50 p-2 rounded">
-                                    <span className="text-gray-500">BBM: </span>
-                                    <span className="font-medium">{formatCurrency(log.fuel_cost)}</span>
+                                <div className="flex">
+                                    <span className="text-gray-500 w-24">Rute:</span>
+                                    <span className="text-gray-900">{log.rute}</span>
                                 </div>
-                                <div className="bg-gray-50 p-2 rounded">
-                                    <span className="text-gray-500">Tol: </span>
-                                    <span className="font-medium">{formatCurrency(log.toll_cost)}</span>
-                                </div>
-                                <div className="bg-blue-50 p-2 rounded">
-                                    <span className="text-blue-700">Total: </span>
-                                    <span className="font-bold text-blue-700">{formatCurrency(log.total_cost)}</span>
+                                {log.keterangan && (
+                                    <div className="flex">
+                                        <span className="text-gray-500 w-24">Keterangan:</span>
+                                        <span className="text-gray-700">{log.keterangan}</span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-blue-700 font-medium">Biaya Tol & Parkir:</span>
+                                    <span className="font-bold text-blue-700">{formatCurrency(log.toll_parking_cost)}</span>
                                 </div>
                             </div>
 

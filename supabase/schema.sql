@@ -1,7 +1,6 @@
 -- =============================================
 -- Amena Logbook System - Database Schema
--- Project: andinamena-logbook
--- Run this in Supabase SQL Editor
+-- VERSI: Field disederhanakan + User, Rute, Keterangan
 -- =============================================
 
 -- 1. PROFILES TABLE (extends Supabase Auth users)
@@ -22,21 +21,16 @@ CREATE TABLE IF NOT EXISTS public.units (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 3. LOGBOOKS TABLE
+-- 3. LOGBOOKS TABLE (STRUKTUR BARU)
 CREATE TABLE IF NOT EXISTS public.logbooks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   date DATE NOT NULL,
   driver_id UUID REFERENCES public.profiles(id) NOT NULL,
   unit_id UUID REFERENCES public.units(id) NOT NULL,
-  start_km INTEGER NOT NULL,
-  end_km INTEGER NOT NULL,
-  total_km INTEGER GENERATED ALWAYS AS (end_km - start_km) STORED,
-  activities TEXT,
-  fuel_cost INTEGER DEFAULT 0,
-  toll_cost INTEGER DEFAULT 0,
-  parking_cost INTEGER DEFAULT 0,
-  other_cost INTEGER DEFAULT 0,
-  total_cost INTEGER GENERATED ALWAYS AS (fuel_cost + toll_cost + parking_cost + other_cost) STORED,
+  client_name TEXT, -- User/Tamu/Client name
+  rute TEXT, -- Rute perjalanan
+  keterangan TEXT, -- Keterangan/catatan
+  toll_parking_cost INTEGER DEFAULT 0, -- Biaya Tol & Parkir gabungan
   status TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN ('submitted', 'approved', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -72,7 +66,7 @@ CREATE POLICY "Users can update own profile" ON public.profiles
 CREATE POLICY "Allow insert for authenticated users" ON public.profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 
--- UNITS POLICIES (Everyone can view, admin can manage)
+-- UNITS POLICIES
 CREATE POLICY "Anyone can view units" ON public.units 
   FOR SELECT USING (true);
 
@@ -129,34 +123,19 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
--- TRIGGER: Run function on new user signup
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
 
 -- =============================================
--- SEED: Create initial admin user (optional)
--- After running this, create admin via Supabase Auth dashboard
--- Then run: UPDATE profiles SET role = 'admin' WHERE username = 'admin';
+-- MIGRATION SQL (jalankan di Supabase SQL Editor)
 -- =============================================
+/*
+-- Tambah kolom baru
+ALTER TABLE public.logbooks ADD COLUMN IF NOT EXISTS client_name TEXT;
+ALTER TABLE public.logbooks ADD COLUMN IF NOT EXISTS rute TEXT;
 
--- =============================================
--- RUN THIS SQL IN SUPABASE TO ADD NOTIFICATIONS TABLE:
--- =============================================
--- CREATE TABLE IF NOT EXISTS public.notifications (
---   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
---   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
---   type TEXT NOT NULL CHECK (type IN ('logbook_submitted', 'logbook_approved', 'logbook_rejected', 'user_registered', 'system')),
---   title TEXT NOT NULL,
---   message TEXT NOT NULL,
---   link TEXT,
---   read BOOLEAN DEFAULT false,
---   created_at TIMESTAMPTZ DEFAULT now()
--- );
--- ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
--- CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (user_id = auth.uid());
--- CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (user_id = auth.uid());
--- CREATE POLICY "Anyone can insert notifications" ON public.notifications FOR INSERT WITH CHECK (true);
--- CREATE POLICY "Users can delete own notifications" ON public.notifications FOR DELETE USING (user_id = auth.uid());
-
+-- Rename activities ke keterangan
+ALTER TABLE public.logbooks RENAME COLUMN activities TO keterangan;
+*/

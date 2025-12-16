@@ -371,15 +371,10 @@ export const ApiService = {
             date: log.date,
             driver_id: log.driver_id,
             unit_id: log.unit_id,
-            start_km: log.start_km,
-            end_km: log.end_km,
-            total_km: log.total_km,
-            activities: log.activities || '',
-            fuel_cost: log.fuel_cost,
-            toll_cost: log.toll_cost,
-            parking_cost: log.parking_cost,
-            other_cost: log.other_cost,
-            total_cost: log.total_cost,
+            client_name: log.client_name || '',
+            rute: log.rute || '',
+            keterangan: log.keterangan || '',
+            toll_parking_cost: log.toll_parking_cost || 0,
             status: log.status as LogbookEntry['status'],
             created_at: log.created_at
         }));
@@ -402,15 +397,10 @@ export const ApiService = {
             date: log.date,
             driver_id: log.driver_id,
             unit_id: log.unit_id,
-            start_km: log.start_km,
-            end_km: log.end_km,
-            total_km: log.total_km,
-            activities: log.activities || '',
-            fuel_cost: log.fuel_cost,
-            toll_cost: log.toll_cost,
-            parking_cost: log.parking_cost,
-            other_cost: log.other_cost,
-            total_cost: log.total_cost,
+            client_name: log.client_name || '',
+            rute: log.rute || '',
+            keterangan: log.keterangan || '',
+            toll_parking_cost: log.toll_parking_cost || 0,
             status: log.status as LogbookEntry['status'],
             created_at: log.created_at
         }));
@@ -430,34 +420,26 @@ export const ApiService = {
             date: data.date,
             driver_id: data.driver_id,
             unit_id: data.unit_id,
-            start_km: data.start_km,
-            end_km: data.end_km,
-            total_km: data.total_km,
-            activities: data.activities || '',
-            fuel_cost: data.fuel_cost,
-            toll_cost: data.toll_cost,
-            parking_cost: data.parking_cost,
-            other_cost: data.other_cost,
-            total_cost: data.total_cost,
+            client_name: data.client_name || '',
+            rute: data.rute || '',
+            keterangan: data.keterangan || '',
+            toll_parking_cost: data.toll_parking_cost || 0,
             status: data.status as LogbookEntry['status'],
             created_at: data.created_at
         };
     },
 
-    createLogbook: async (entry: Omit<LogbookEntry, 'id' | 'created_at' | 'total_km' | 'total_cost'>): Promise<LogbookEntry> => {
+    createLogbook: async (entry: Omit<LogbookEntry, 'id' | 'created_at'>): Promise<LogbookEntry> => {
         const { data, error } = await supabase
             .from('logbooks')
             .insert({
                 date: entry.date,
                 driver_id: entry.driver_id,
                 unit_id: entry.unit_id,
-                start_km: entry.start_km,
-                end_km: entry.end_km,
-                activities: entry.activities,
-                fuel_cost: entry.fuel_cost || 0,
-                toll_cost: entry.toll_cost || 0,
-                parking_cost: entry.parking_cost || 0,
-                other_cost: entry.other_cost || 0,
+                client_name: entry.client_name,
+                rute: entry.rute,
+                keterangan: entry.keterangan,
+                toll_parking_cost: entry.toll_parking_cost || 0,
                 status: entry.status
             })
             .select()
@@ -473,15 +455,10 @@ export const ApiService = {
             date: data.date,
             driver_id: data.driver_id,
             unit_id: data.unit_id,
-            start_km: data.start_km,
-            end_km: data.end_km,
-            total_km: data.total_km,
-            activities: data.activities || '',
-            fuel_cost: data.fuel_cost,
-            toll_cost: data.toll_cost,
-            parking_cost: data.parking_cost,
-            other_cost: data.other_cost,
-            total_cost: data.total_cost,
+            client_name: data.client_name || '',
+            rute: data.rute || '',
+            keterangan: data.keterangan || '',
+            toll_parking_cost: data.toll_parking_cost || 0,
             status: data.status as LogbookEntry['status'],
             created_at: data.created_at
         };
@@ -493,13 +470,10 @@ export const ApiService = {
             .update({
                 date: updates.date,
                 unit_id: updates.unit_id,
-                start_km: updates.start_km,
-                end_km: updates.end_km,
-                activities: updates.activities,
-                fuel_cost: updates.fuel_cost,
-                toll_cost: updates.toll_cost,
-                parking_cost: updates.parking_cost,
-                other_cost: updates.other_cost,
+                client_name: updates.client_name,
+                rute: updates.rute,
+                keterangan: updates.keterangan,
+                toll_parking_cost: updates.toll_parking_cost,
                 status: updates.status
             })
             .eq('id', id);

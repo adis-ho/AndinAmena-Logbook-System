@@ -22,15 +22,10 @@ export interface LogbookEntry {
     date: string; // ISO Date
     driver_id: string;
     unit_id: string;
-    start_km: number;
-    end_km: number;
-    total_km: number;
-    activities: string; // Description of activities
-    fuel_cost: number;
-    toll_cost: number;
-    parking_cost: number;
-    other_cost: number;
-    total_cost: number;
+    client_name: string; // User/Tamu/Client name
+    rute: string; // Rute perjalanan
+    keterangan: string; // Keterangan/catatan
+    toll_parking_cost: number; // Biaya Tol & Parkir (gabungan)
     status: LogbookStatus;
     created_at: string;
 }
