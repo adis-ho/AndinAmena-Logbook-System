@@ -1,6 +1,6 @@
 # Roadmap Pengembangan Amena Logbook
 
-## Status Proyek: Phase 1 Complete ✅
+## Status Proyek: Phase 2.3 Complete ✅
 
 ---
 
@@ -48,22 +48,39 @@
 
 ---
 
-## Phase 2: Backend Integration ⏳ (Planned)
+## Phase 2: Backend Integration ✅
 
-### 2.1 Database Setup
-- [ ] Pilih backend (Supabase / Firebase / Custom)
-- [ ] Buat database schema
-- [ ] Setup Row Level Security (RLS)
+### 2.1 Supabase Setup ✅
+- [x] Buat project Supabase
+- [x] Setup `.env.local` dengan credentials
+- [x] Buat Supabase client (`lib/supabase.ts`)
 
-### 2.2 API Integration
-- [ ] Buat API service (mengganti MockService)
-- [ ] Implementasi real authentication
-- [ ] Session management
+### 2.2 Database Schema ✅
+- [x] Tabel `profiles` (users)
+- [x] Tabel `units` (kendaraan)
+- [x] Tabel `logbooks` (entries)
+- [x] Tabel `notifications` (real-time notifications)
+- [x] Row Level Security (RLS) policies
+- [x] Auto-create profile trigger
 
-### 2.3 Deployment
-- [ ] Setup environment variables
-- [ ] Deploy ke Vercel / Netlify
-- [ ] Custom domain
+### 2.3 API Integration ✅
+- [x] `ApiService` menggantikan `MockService`
+- [x] Real authentication (email + password)
+- [x] Session management dengan Supabase Auth
+- [x] CRUD operations untuk semua entity
+
+### 2.4 UI/UX Improvements ✅
+- [x] Drawer navigation (Flowbite-style)
+- [x] Real-time notification system
+- [x] Notification bell dengan dropdown panel
+- [x] Notification triggers pada CRUD events
+- [x] Modern glassmorphism header
+
+### 2.5 Deployment ⏳ (Next)
+- [ ] Setup `vercel.json` untuk SPA routing
+- [ ] Configure environment variables di Vercel
+- [ ] Deploy ke Vercel
+- [ ] Custom domain (optional)
 
 ---
 
@@ -83,17 +100,17 @@
 - [ ] Progressive Web App (PWA)
 - [ ] Offline support
 
-### 3.4 Notifications
+### 3.4 Email Notifications
 - [ ] Email notification untuk approval
-- [ ] In-app notifications
+- [ ] Welcome email untuk user baru
 
 ---
 
 ## Catatan Penting
 
-> **Status Saat Ini**: Aplikasi menggunakan MockService sehingga data tidak persisten (hilang saat refresh). Untuk production, perlu integrasi dengan backend database.
+> **Status Saat Ini**: Aplikasi sudah terintegrasi dengan Supabase. Data persisten di database. Notifikasi real-time berfungsi. Siap untuk deployment.
 
-### Teknologi yang Direkomendasikan untuk Phase 2:
-- **Supabase**: PostgreSQL + Auth + Realtime (gratis tier tersedia)
-- **Firebase**: NoSQL + Auth + Hosting
-- **Custom API**: Express.js / Next.js API routes
+### Teknologi yang Digunakan:
+- **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4
+- **Backend**: Supabase (PostgreSQL + Auth + Realtime)
+- **Deployment**: Vercel (planned)

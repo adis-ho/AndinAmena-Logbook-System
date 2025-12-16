@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
-import { Eye, EyeOff, Lock, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
+import { ApiService } from '../../services/api';
 
 export default function LoginPage() {
     const { login } = useAuth();
     const navigate = useNavigate();
-    const [username, setUsername] = useState('');
-    const [password, setPassword] = useState(''); // Mocked, no check
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
@@ -18,23 +19,33 @@ export default function LoginPage() {
         setError('');
 
         try {
-            // Mock login check
-            const success = await login(username);
+            console.log('[LoginPage] Attempting login for:', email);
+            const success = await login(email, password);
+
             if (success) {
-                // Redirect handled by specific checks or default dashboard
-                // Ideally checking role here to redirect correctly
-                // But login() updates state asynchronously? 
-                // MockService login returns user, AuthContext updates state.
-                // We can check local storage or guess mock logic.
-                // For mock: admin -> admin, other -> driver
-                if (username === 'admin') navigate('/admin');
-                else navigate('/driver');
+                console.log('[LoginPage] Login successful, redirecting...');
+
+                // Try to get current user for role-based redirect
+                try {
+                    const currentUser = await ApiService.getCurrentUser();
+                    console.log('[LoginPage] User role:', currentUser?.role);
+
+                    if (currentUser?.role === 'admin') {
+                        navigate('/admin');
+                    } else {
+                        navigate('/driver');
+                    }
+                } catch (profileErr) {
+                    console.warn('[LoginPage] Could not fetch profile, defaulting to driver');
+                    navigate('/driver');
+                }
             } else {
-                setError('Username tidak ditemukan. Coba "admin" atau "driver1"');
+                setError('Email atau password salah. Silakan coba lagi.');
+                setLoading(false);
             }
         } catch (err) {
-            setError('Terjadi kesalahan saat login.');
-        } finally {
+            console.error('[LoginPage] Login error:', err);
+            setError('Terjadi kesalahan saat login. Periksa koneksi internet.');
             setLoading(false);
         }
     };
@@ -55,20 +66,21 @@ export default function LoginPage() {
                 <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                     <div className="space-y-4">
                         <div>
-                            <label htmlFor="username" className="sr-only">Username</label>
+                            <label htmlFor="email" className="sr-only">Email</label>
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <User className="h-5 w-5 text-gray-400" />
+                                    <Mail className="h-5 w-5 text-gray-400" />
                                 </div>
                                 <input
-                                    id="username"
-                                    name="username"
-                                    type="text"
+                                    id="email"
+                                    name="email"
+                                    type="email"
+                                    autoComplete="email"
                                     required
                                     className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                    placeholder="Username"
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
+                                    placeholder="Email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -83,6 +95,7 @@ export default function LoginPage() {
                                     id="password"
                                     name="password"
                                     type={showPassword ? "text" : "password"}
+                                    autoComplete="current-password"
                                     required
                                     className="appearance-none rounded-lg relative block w-full pl-10 pr-10 px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     placeholder="Password"
@@ -121,7 +134,7 @@ export default function LoginPage() {
                     </div>
 
                     <div className="text-center text-sm">
-                        <Link to="/register-driver" className="font-medium text-blue-600 hover:text-blue-500">
+                        <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
                             Daftar sebagai Driver
                         </Link>
                     </div>

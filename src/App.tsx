@@ -3,22 +3,33 @@ import LoginPage from './features/auth/LoginPage';
 import RegisterPage from './features/auth/RegisterPage';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+
+// Admin components
 import AdminDashboard from './features/admin/Dashboard';
+import UserList from './features/admin/UserList';
+import UnitList from './features/admin/UnitList';
+import LogbookList from './features/admin/LogbookList';
+
+// Driver components
 import DriverDashboard from './features/driver/Dashboard';
+import LogbookForm from './features/driver/LogbookForm';
+import LogbookHistory from './features/driver/LogbookHistory';
 
 function App() {
   return (
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register-driver" element={<RegisterPage />} />
-      <Route path="/unauthorized" element={<div>Unauthorized Access</div>} />
+      <Route path="/register" element={<RegisterPage />} />
+      <Route path="/unauthorized" element={<div className="min-h-screen flex items-center justify-center">Unauthorized Access</div>} />
 
       {/* Admin Routes */}
       <Route element={<ProtectedRoute allowedRoles={['admin']} />}>
         <Route path="/admin" element={<DashboardLayout />}>
           <Route index element={<AdminDashboard />} />
-          {/* Add other admin routes here */}
+          <Route path="users" element={<UserList />} />
+          <Route path="units" element={<UnitList />} />
+          <Route path="logbooks" element={<LogbookList />} />
         </Route>
       </Route>
 
@@ -26,7 +37,8 @@ function App() {
       <Route element={<ProtectedRoute allowedRoles={['driver']} />}>
         <Route path="/driver" element={<DashboardLayout />}>
           <Route index element={<DriverDashboard />} />
-          {/* Add other driver routes here */}
+          <Route path="logbook" element={<LogbookForm />} />
+          <Route path="history" element={<LogbookHistory />} />
         </Route>
       </Route>
 

@@ -1,107 +1,89 @@
 # Status Proyek Amena Logbook
 
-**Terakhir Diperbarui**: 15 Desember 2025
+**Terakhir Diperbarui**: 16 Desember 2025
 
 ---
 
 ## Ringkasan
 
-Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 1 (Complete)** dengan fitur core yang berfungsi menggunakan MockService.
+Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3 (Complete)** dengan integrasi Supabase penuh dan sistem notifikasi real-time.
 
 ## Apa yang Berhasil ✅
 
 ### Authentication & Authorization
-- Login dengan validasi username
-- Register untuk driver baru
-- Role-based access control (Admin vs Driver)
-- Protected routes
+- [x] Login dengan email + password (Supabase Auth)
+- [x] Register untuk driver baru
+- [x] Role-based access control (Admin vs Driver)
+- [x] Protected routes
+- [x] Session persistence
 
 ### Admin Module
 | Fitur | Status |
 |-------|--------|
-| Dashboard | ✅ |
+| Dashboard dengan statistik real | ✅ |
 | Lihat semua logbook | ✅ |
 | Approve/Reject logbook | ✅ |
-| Edit logbook | ✅ |
-| Hapus logbook | ✅ |
-| Manajemen User (CRUD) | ✅ |
-| Manajemen Unit (CRUD) | ✅ |
-| Export ke XLSX | ✅ |
-| Export ke PDF | ✅ |
+| Detail logbook modal | ✅ |
+| Filter logbook by status | ✅ |
+| Manajemen User (CRUD + Modal) | ✅ |
+| Manajemen Unit (CRUD + Modal) | ✅ |
+| Notifikasi logbook baru | ✅ |
 
 ### Driver Module
 | Fitur | Status |
 |-------|--------|
-| Dashboard | ✅ |
+| Dashboard dengan statistik | ✅ |
 | Input logbook baru | ✅ |
 | Lihat riwayat logbook | ✅ |
-| Edit logbook sendiri | ✅ |
+| Edit logbook (semua status) | ✅ |
+| Notifikasi approve/reject | ✅ |
 
 ### UI/UX
 | Fitur | Status |
 |-------|--------|
 | Responsive layout | ✅ |
-| Mobile sidebar drawer | ✅ |
-| Form validation (Zod) | ✅ |
+| Drawer navigation (slide) | ✅ |
+| Glassmorphism header | ✅ |
+| Form validation | ✅ |
 | Confirmation modals | ✅ |
+| Notification bell dropdown | ✅ |
+| Real-time notifications | ✅ |
+
+### Backend (Supabase)
+| Fitur | Status |
+|-------|--------|
+| PostgreSQL database | ✅ |
+| Row Level Security (RLS) | ✅ |
+| Email authentication | ✅ |
+| Real-time subscriptions | ✅ |
+| Auto-create profile trigger | ✅ |
 
 ---
 
-## Apa yang Belum Berhasil / Dibatalkan ❌
+## Database Tables
 
-### Integrasi Supabase
-Percobaan integrasi dengan Supabase sebagai backend **dibatalkan** karena:
-- Login/register stuck di "Memproses..."
-- Kemungkinan masalah konfigurasi Supabase Auth
-- Keputusan: Revert ke MockService
-
-### Deployment Vercel
-Deploy ke Vercel **dibatalkan** bersamaan dengan revert Supabase.
-
----
-
-## Keputusan Teknis yang Dibuat
-
-### 1. Feature-Based Architecture
-**Keputusan**: Mengorganisasi kode berdasarkan fitur (`features/admin`, `features/driver`) bukan berdasarkan tipe (`pages`, `components`).
-
-**Alasan**: Lebih mudah dinavigasi dan dimaintain saat aplikasi berkembang.
-
-### 2. MockService untuk Development
-**Keputusan**: Menggunakan service layer dengan data in-memory untuk development.
-
-**Alasan**: Memungkinkan pengembangan frontend tanpa backend, dan mudah diganti dengan API nyata.
-
-### 3. React Hook Form + Zod
-**Keputusan**: Menggunakan React Hook Form dengan Zod untuk form logbook.
-
-**Alasan**: Type-safe validation, performance lebih baik daripada controlled forms biasa.
-
-### 4. Tailwind CSS v4
-**Keputusan**: Menggunakan Tailwind CSS untuk styling.
-
-**Alasan**: Rapid development, consistent design, responsive utilities built-in.
-
-### 5. React Query untuk Data Fetching
-**Keputusan**: Menggunakan TanStack Query untuk data fetching dan caching.
-
-**Alasan**: Automatic caching, optimistic updates, mutation handling.
+| Table | Deskripsi | RLS |
+|-------|-----------|-----|
+| `profiles` | User data (extends auth.users) | ✅ |
+| `units` | Kendaraan | ✅ |
+| `logbooks` | Entry logbook | ✅ |
+| `notifications` | In-app notifications | ✅ |
 
 ---
 
 ## Langkah Selanjutnya
 
-1. **Finalisasi Phase 1**
-   - Testing manual semua fitur
-   - Bug fixes jika ditemukan
+### Phase 2.4: Deployment
+- [ ] Setup Vercel project
+- [ ] Configure environment variables
+- [ ] Deploy ke Vercel
+- [ ] Test production build
 
-2. **Phase 2 Preparation**
-   - Riset ulang opsi backend (Supabase, Firebase, atau custom)
-   - Buat environment yang lebih terkontrol untuk testing
-
-3. **Dokumentasi**
-   - Tambahkan API documentation
-   - Buat user guide
+### Phase 3: Enhancements
+- [ ] Dashboard charts
+- [ ] Export PDF/XLSX
+- [ ] Email notifications
+- [ ] PWA support
 
 ---
 
@@ -110,6 +92,11 @@ Deploy ke Vercel **dibatalkan** bersamaan dengan revert Supabase.
 ```bash
 # Install dependencies
 npm install
+
+# Setup environment variables
+# Buat file .env.local dengan:
+# VITE_SUPABASE_URL=your_supabase_url
+# VITE_SUPABASE_ANON_KEY=your_anon_key
 
 # Development
 npm run dev
@@ -121,9 +108,19 @@ npm run build
 npm run preview
 ```
 
-## Login Credentials (MockService)
+## Login Credentials
 
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | (any) |
-| Driver | driver1 | (any) |
+Buat user melalui Register atau Supabase Dashboard.
+
+| Role | Akses |
+|------|-------|
+| Admin | Dashboard, Users, Units, Logbooks, Approve/Reject |
+| Driver | Dashboard, Input Logbook, History, Edit |
+
+---
+
+## Teknologi
+
+- **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4
+- **Backend**: Supabase (PostgreSQL + Auth + Realtime)
+- **Hosting**: Vercel (planned)

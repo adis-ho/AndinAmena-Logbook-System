@@ -21,7 +21,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const driverLinks = [
         { to: '/driver', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/driver/create', label: 'Input Logbook', icon: PlusCircle },
+        { to: '/driver/logbook', label: 'Input Logbook', icon: PlusCircle },
         { to: '/driver/history', label: 'Riwayat Logbook', icon: History },
     ];
 

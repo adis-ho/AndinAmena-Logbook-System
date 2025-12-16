@@ -16,7 +16,10 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | **State Management** | React Query | 5.x |
 | **Form Validation** | Zod + React Hook Form | - |
 | **Icons** | Lucide React | - |
-| **Data Service** | MockService (lokal) | - |
+| **Backend** | Supabase | - |
+| **Database** | PostgreSQL (Supabase) | - |
+| **Auth** | Supabase Auth | - |
+| **Realtime** | Supabase Realtime | - |
 
 ## Struktur Direktori
 
@@ -24,21 +27,23 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 src/
 ├── App.tsx                 # Root component dengan routing
 ├── main.tsx               # Entry point
-├── index.css              # Global styles
-├── assets/                # Static assets
+├── index.css              # Global styles (Tailwind)
+├── lib/                   # External service clients
+│   └── supabase.ts        # Supabase client configuration
 ├── components/            # Reusable components
-│   ├── layouts/           # DashboardLayout, Sidebar, Header
-│   └── ui/                # UI components (modals, buttons)
+│   ├── layouts/           # DashboardLayout, Drawer, Header
+│   └── NotificationPanel.tsx  # Notification dropdown
 ├── context/               # React Context providers
-│   └── AuthContext.tsx    # Authentication state management
+│   ├── AuthContext.tsx    # Authentication state management
+│   └── NotificationContext.tsx  # Notification state + realtime
 ├── features/              # Feature-based modules
 │   ├── admin/             # Admin pages (Dashboard, Users, Units, Logbooks)
 │   ├── auth/              # Login & Register pages
-│   └── driver/            # Driver pages (Dashboard, Logbook entry)
+│   └── driver/            # Driver pages (Dashboard, Logbook entry, History)
 ├── services/              # Data layer
-│   └── mockData.ts        # Mock data service (simulates API)
+│   └── api.ts             # ApiService (Supabase implementation)
 ├── types/                 # TypeScript type definitions
-│   └── index.ts           # User, Unit, LogbookEntry types
+│   └── index.ts           # User, Unit, LogbookEntry, Notification types
 └── utils/                 # Utility functions
     └── cn.ts              # Tailwind class merger
 ```
@@ -48,84 +53,126 @@ src/
 ### 1. Feature-Based Structure
 Kode diorganisasi berdasarkan fitur (admin, driver, auth) bukan berdasarkan tipe file. Ini memudahkan navigasi dan scaling.
 
-### 2. MockService Pattern
-Data disimpan di memory dengan `MockService` yang mensimulasikan API calls. Pattern ini memudahkan migrasi ke backend nyata di masa depan.
+### 2. ApiService Pattern
+Semua interaksi dengan database melalui `ApiService` yang berkomunikasi dengan Supabase.
 
 ```typescript
-// Contoh penggunaan MockService
-const users = await MockService.getUsers();
-await MockService.createLogbook(entry);
+// Contoh penggunaan ApiService
+const users = await ApiService.getUsers();
+await ApiService.createLogbook(entry);
+await ApiService.notifyAdmins({ type: 'logbook_submitted', ... });
 ```
 
 ### 3. Context-Based Authentication
-`AuthContext` menyimpan state autentikasi global dan menyediakan fungsi `login()` dan `logout()`.
+`AuthContext` menggunakan Supabase Auth untuk session management dengan email + password authentication.
 
-### 4. Protected Routes
+### 4. Real-time Notifications
+`NotificationContext` menggunakan Supabase Realtime untuk subscribe ke perubahan tabel `notifications`.
+
+### 5. Protected Routes
 Routes dibungkus dengan komponen `ProtectedRoute` yang memeriksa autentikasi dan role pengguna.
 
-### 5. Responsive Layout
-Layout menggunakan sidebar untuk desktop dan drawer untuk mobile dengan hamburger menu toggle.
+### 6. Drawer Navigation
+Layout menggunakan drawer yang muncul dari kiri dengan backdrop blur dan animasi smooth.
 
 ## Alur Data
 
 ```
 ┌──────────────┐     ┌──────────────┐     ┌──────────────┐
-│   Component  │────▶│  MockService │────▶│  Local State │
-│   (React)    │◀────│   (API sim)  │◀────│   (Memory)   │
+│   Component  │────▶│  ApiService  │────▶│   Supabase   │
+│   (React)    │◀────│   (API)      │◀────│  (Database)  │
 └──────────────┘     └──────────────┘     └──────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │   Realtime   │
+                     │ Subscription │
+                     └──────────────┘
+```
+
+## Database Schema
+
+### Profiles (Users)
+```sql
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY REFERENCES auth.users(id),
+  username TEXT UNIQUE NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT CHECK (role IN ('admin', 'driver')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### Units (Kendaraan)
+```sql
+CREATE TABLE units (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  plate_number TEXT UNIQUE NOT NULL,
+  status TEXT CHECK (status IN ('available', 'in_use', 'maintenance')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### Logbooks
+```sql
+CREATE TABLE logbooks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date DATE NOT NULL,
+  driver_id UUID REFERENCES profiles(id),
+  unit_id UUID REFERENCES units(id),
+  start_km INTEGER,
+  end_km INTEGER,
+  total_km INTEGER GENERATED ALWAYS AS (end_km - start_km) STORED,
+  activities TEXT,
+  fuel_cost INTEGER,
+  toll_cost INTEGER,
+  parking_cost INTEGER,
+  other_cost INTEGER,
+  total_cost INTEGER GENERATED ALWAYS AS (...) STORED,
+  status TEXT CHECK (status IN ('submitted', 'approved', 'rejected')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
+### Notifications
+```sql
+CREATE TABLE notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  type TEXT CHECK (type IN ('logbook_submitted', 'logbook_approved', 'logbook_rejected', 'user_registered', 'system')),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  link TEXT,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
 ```
 
 ## Role Pengguna
 
 | Role | Akses |
 |------|-------|
-| **Admin** | Dashboard, Manajemen Logbook, Unit, User |
-| **Driver** | Dashboard, Input Logbook, Riwayat Logbook |
+| **Admin** | Dashboard, Manajemen Logbook, Unit, User, Approve/Reject |
+| **Driver** | Dashboard, Input Logbook, Riwayat Logbook, Edit Logbook |
 
-## Model Data
+## Notification Flow
 
-### User
-```typescript
-interface User {
-  id: string;
-  username: string;
-  full_name: string;
-  role: 'admin' | 'driver';
-  status: 'active' | 'inactive';
-}
+```
+Driver submit logbook → Notifikasi ke semua Admin
+Admin approve logbook → Notifikasi ke Driver
+Admin reject logbook  → Notifikasi ke Driver (dengan warning)
 ```
 
-### Unit (Kendaraan)
-```typescript
-interface Unit {
-  id: string;
-  name: string;
-  plate_number: string;
-  status: 'available' | 'in_use' | 'maintenance';
-}
-```
+## Environment Variables
 
-### LogbookEntry
-```typescript
-interface LogbookEntry {
-  id: string;
-  date: string;
-  driver_id: string;
-  unit_id: string;
-  start_km: number;
-  end_km: number;
-  total_km: number;
-  activities: string;
-  fuel_cost: number;
-  toll_cost: number;
-  parking_cost: number;
-  other_cost: number;
-  total_cost: number;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
-}
+```env
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=xxxxx
 ```
 
 ## Catatan Pengembangan
 
-- **State saat ini**: Menggunakan MockService (data tidak persisten)
-- **Untuk production**: Perlu integrasi dengan backend database (Supabase, Firebase, atau custom API)
+- **State saat ini**: Terintegrasi dengan Supabase, data persisten
+- **Realtime**: Notifikasi berfungsi real-time menggunakan Supabase Realtime
+- **Security**: Row Level Security (RLS) aktif di semua tabel

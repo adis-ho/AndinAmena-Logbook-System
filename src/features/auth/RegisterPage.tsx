@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Lock, Phone, UserCircle } from 'lucide-react';
+import { User, Lock, UserCircle, Mail } from 'lucide-react';
+import { ApiService } from '../../services/api';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
+        email: '',
         username: '',
         fullName: '',
-        phone: '',
         password: '',
         confirmPassword: '',
     });
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -25,16 +27,59 @@ export default function RegisterPage() {
             return;
         }
 
-        // Mock registration
-        setTimeout(() => {
+        if (formData.password.length < 6) {
+            setError('Password minimal 6 karakter');
             setLoading(false);
-            navigate('/login');
-        }, 1000);
+            return;
+        }
+
+        try {
+            console.log('[RegisterPage] Attempting registration for:', formData.email);
+
+            const user = await ApiService.register({
+                email: formData.email,
+                password: formData.password,
+                username: formData.username,
+                full_name: formData.fullName,
+            });
+
+            if (user) {
+                console.log('[RegisterPage] Registration successful');
+                setSuccess(true);
+                setTimeout(() => {
+                    navigate('/login');
+                }, 2000);
+            } else {
+                setError('Gagal mendaftar. Email mungkin sudah terdaftar.');
+                setLoading(false);
+            }
+        } catch (err) {
+            console.error('[RegisterPage] Registration error:', err);
+            setError('Gagal mendaftar. Silakan coba lagi.');
+            setLoading(false);
+        }
     };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
+
+    if (success) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
+                <div className="max-w-md w-full bg-white p-8 rounded-xl shadow-lg border border-gray-100 text-center">
+                    <div className="h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg className="h-8 w-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-900 mb-2">Registrasi Berhasil!</h2>
+                    <p className="text-gray-600 mb-4">Silakan login dengan email dan password Anda.</p>
+                    <p className="text-sm text-gray-500">Mengalihkan ke halaman login...</p>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-8">
@@ -64,6 +109,24 @@ export default function RegisterPage() {
                     </div>
 
                     <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <Mail className="h-5 w-5 text-gray-400" />
+                            </div>
+                            <input
+                                name="email"
+                                type="email"
+                                required
+                                className="pl-10 appearance-none rounded-lg block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                placeholder="email@contoh.com"
+                                value={formData.email}
+                                onChange={handleChange}
+                            />
+                        </div>
+                    </div>
+
+                    <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -82,24 +145,6 @@ export default function RegisterPage() {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">No. Handphone</label>
-                        <div className="relative">
-                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <Phone className="h-5 w-5 text-gray-400" />
-                            </div>
-                            <input
-                                name="phone"
-                                type="tel"
-                                required
-                                className="pl-10 appearance-none rounded-lg block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="0812..."
-                                value={formData.phone}
-                                onChange={handleChange}
-                            />
-                        </div>
-                    </div>
-
-                    <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                         <div className="relative">
                             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -109,8 +154,9 @@ export default function RegisterPage() {
                                 name="password"
                                 type="password"
                                 required
+                                minLength={6}
                                 className="pl-10 appearance-none rounded-lg block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="******"
+                                placeholder="Minimal 6 karakter"
                                 value={formData.password}
                                 onChange={handleChange}
                             />
@@ -128,7 +174,7 @@ export default function RegisterPage() {
                                 type="password"
                                 required
                                 className="pl-10 appearance-none rounded-lg block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="******"
+                                placeholder="Ulangi password"
                                 value={formData.confirmPassword}
                                 onChange={handleChange}
                             />

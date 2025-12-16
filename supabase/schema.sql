@@ -1,0 +1,162 @@
+-- =============================================
+-- Amena Logbook System - Database Schema
+-- Project: andinamena-logbook
+-- Run this in Supabase SQL Editor
+-- =============================================
+
+-- 1. PROFILES TABLE (extends Supabase Auth users)
+CREATE TABLE IF NOT EXISTS public.profiles (
+  id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
+  username TEXT UNIQUE NOT NULL,
+  full_name TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'driver' CHECK (role IN ('admin', 'driver')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 2. UNITS TABLE (Kendaraan)
+CREATE TABLE IF NOT EXISTS public.units (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL,
+  plate_number TEXT UNIQUE NOT NULL,
+  status TEXT NOT NULL DEFAULT 'available' CHECK (status IN ('available', 'in_use', 'maintenance')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 3. LOGBOOKS TABLE
+CREATE TABLE IF NOT EXISTS public.logbooks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  date DATE NOT NULL,
+  driver_id UUID REFERENCES public.profiles(id) NOT NULL,
+  unit_id UUID REFERENCES public.units(id) NOT NULL,
+  start_km INTEGER NOT NULL,
+  end_km INTEGER NOT NULL,
+  total_km INTEGER GENERATED ALWAYS AS (end_km - start_km) STORED,
+  activities TEXT,
+  fuel_cost INTEGER DEFAULT 0,
+  toll_cost INTEGER DEFAULT 0,
+  parking_cost INTEGER DEFAULT 0,
+  other_cost INTEGER DEFAULT 0,
+  total_cost INTEGER GENERATED ALWAYS AS (fuel_cost + toll_cost + parking_cost + other_cost) STORED,
+  status TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN ('submitted', 'approved', 'rejected')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- 4. NOTIFICATIONS TABLE
+CREATE TABLE IF NOT EXISTS public.notifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+  type TEXT NOT NULL CHECK (type IN ('logbook_submitted', 'logbook_approved', 'logbook_rejected', 'user_registered', 'system')),
+  title TEXT NOT NULL,
+  message TEXT NOT NULL,
+  link TEXT,
+  read BOOLEAN DEFAULT false,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- =============================================
+-- ROW LEVEL SECURITY (RLS)
+-- =============================================
+
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.units ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.logbooks ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+
+-- PROFILES POLICIES
+CREATE POLICY "Anyone can view profiles" ON public.profiles 
+  FOR SELECT USING (true);
+
+CREATE POLICY "Users can update own profile" ON public.profiles 
+  FOR UPDATE USING (auth.uid() = id);
+
+CREATE POLICY "Allow insert for authenticated users" ON public.profiles
+  FOR INSERT WITH CHECK (auth.uid() = id);
+
+-- UNITS POLICIES (Everyone can view, admin can manage)
+CREATE POLICY "Anyone can view units" ON public.units 
+  FOR SELECT USING (true);
+
+CREATE POLICY "Anyone can manage units" ON public.units 
+  FOR ALL USING (true);
+
+-- LOGBOOKS POLICIES
+CREATE POLICY "Drivers can view own logbooks" ON public.logbooks 
+  FOR SELECT USING (driver_id = auth.uid());
+
+CREATE POLICY "Admins can view all logbooks" ON public.logbooks 
+  FOR SELECT USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+CREATE POLICY "Drivers can insert own logbooks" ON public.logbooks 
+  FOR INSERT WITH CHECK (driver_id = auth.uid());
+
+CREATE POLICY "Drivers can update own logbooks" ON public.logbooks 
+  FOR UPDATE USING (driver_id = auth.uid());
+
+CREATE POLICY "Admins can manage all logbooks" ON public.logbooks 
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- NOTIFICATIONS POLICIES
+CREATE POLICY "Users can view own notifications" ON public.notifications 
+  FOR SELECT USING (user_id = auth.uid());
+
+CREATE POLICY "Users can update own notifications" ON public.notifications 
+  FOR UPDATE USING (user_id = auth.uid());
+
+CREATE POLICY "Anyone can insert notifications" ON public.notifications 
+  FOR INSERT WITH CHECK (true);
+
+CREATE POLICY "Users can delete own notifications" ON public.notifications 
+  FOR DELETE USING (user_id = auth.uid());
+
+-- =============================================
+-- FUNCTION: Auto-create profile on signup
+-- =============================================
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.profiles (id, username, full_name, role)
+  VALUES (
+    NEW.id,
+    COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'),
+    COALESCE(NEW.raw_user_meta_data->>'role', 'driver')
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- TRIGGER: Run function on new user signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- =============================================
+-- SEED: Create initial admin user (optional)
+-- After running this, create admin via Supabase Auth dashboard
+-- Then run: UPDATE profiles SET role = 'admin' WHERE username = 'admin';
+-- =============================================
+
+-- =============================================
+-- RUN THIS SQL IN SUPABASE TO ADD NOTIFICATIONS TABLE:
+-- =============================================
+-- CREATE TABLE IF NOT EXISTS public.notifications (
+--   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+--   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
+--   type TEXT NOT NULL CHECK (type IN ('logbook_submitted', 'logbook_approved', 'logbook_rejected', 'user_registered', 'system')),
+--   title TEXT NOT NULL,
+--   message TEXT NOT NULL,
+--   link TEXT,
+--   read BOOLEAN DEFAULT false,
+--   created_at TIMESTAMPTZ DEFAULT now()
+-- );
+-- ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
+-- CREATE POLICY "Users can view own notifications" ON public.notifications FOR SELECT USING (user_id = auth.uid());
+-- CREATE POLICY "Users can update own notifications" ON public.notifications FOR UPDATE USING (user_id = auth.uid());
+-- CREATE POLICY "Anyone can insert notifications" ON public.notifications FOR INSERT WITH CHECK (true);
+-- CREATE POLICY "Users can delete own notifications" ON public.notifications FOR DELETE USING (user_id = auth.uid());
+

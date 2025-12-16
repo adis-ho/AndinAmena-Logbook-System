@@ -1,24 +1,33 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import Sidebar from './Sidebar';
+import Drawer from './Drawer';
 import Header from './Header';
 
 export default function DashboardLayout() {
-    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden">
-            <Sidebar
-                isOpen={isSidebarOpen}
-                onClose={() => setIsSidebarOpen(false)}
+        <div className="min-h-screen bg-gray-50">
+            {/* Drawer Navigation */}
+            <Drawer
+                isOpen={isDrawerOpen}
+                onClose={() => setIsDrawerOpen(false)}
             />
 
-            <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-                <Header onMenuClick={() => setIsSidebarOpen(true)} />
+            {/* Main Content Area */}
+            <div className="flex flex-col min-h-screen">
+                <Header onMenuClick={() => setIsDrawerOpen(true)} />
 
-                <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-                    <Outlet />
+                <main className="flex-1 p-4 sm:p-6 lg:p-8">
+                    <div className="max-w-7xl mx-auto">
+                        <Outlet />
+                    </div>
                 </main>
+
+                {/* Footer */}
+                <footer className="py-4 px-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
+                    © 2024 Amena Logbook System. All rights reserved.
+                </footer>
             </div>
         </div>
     );
