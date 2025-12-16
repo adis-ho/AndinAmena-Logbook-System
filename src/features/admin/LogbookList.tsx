@@ -6,8 +6,11 @@ import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+import { useToast } from '../../context/ToastContext';
+import { SkeletonLogbookList } from '../../components/ui/Skeleton';
 
 export default function LogbookList() {
+    const { showToast } = useToast();
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [units, setUnits] = useState<Unit[]>([]);
@@ -69,8 +72,9 @@ export default function LogbookList() {
 
             setLogbooks(logbooks.map(l => l.id === logbookId ? { ...l, status } : l));
             setSelectedLogbook(null);
+            showToast('success', status === 'approved' ? 'Logbook berhasil disetujui' : 'Logbook berhasil ditolak');
         } catch (err) {
-            alert('Gagal mengubah status');
+            showToast('error', 'Gagal mengubah status logbook');
             console.error(err);
         }
     };
@@ -81,8 +85,9 @@ export default function LogbookList() {
             await ApiService.deleteLogbook(deleteLogbook.id);
             setLogbooks(logbooks.filter(l => l.id !== deleteLogbook.id));
             setDeleteLogbook(null);
+            showToast('success', 'Logbook berhasil dihapus');
         } catch (err) {
-            alert('Gagal menghapus logbook');
+            showToast('error', 'Gagal menghapus logbook');
             console.error(err);
         }
     };
@@ -223,11 +228,7 @@ export default function LogbookList() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
+        return <SkeletonLogbookList />;
     }
 
     return (
