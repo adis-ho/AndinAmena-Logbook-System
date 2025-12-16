@@ -1,1 +1,9 @@
+@import "./assets/fonts/fonts.css";
 @import "tailwindcss";
+
+/* Set Plus Jakarta Sans sebagai font default */
+body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}

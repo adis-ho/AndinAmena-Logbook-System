@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { LogbookEntry, User, Unit } from '../../types';
-import { BookOpen, CheckCircle, XCircle, Clock, Eye, X, Trash2, Download, FileSpreadsheet, FileText } from 'lucide-react';
+import { BookOpen, CheckCircle, XCircle, Clock, Eye, X, Trash2, FileSpreadsheet, FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
@@ -22,7 +22,6 @@ export default function LogbookList() {
     const [filterClient, setFilterClient] = useState('');
     const [filterDateStart, setFilterDateStart] = useState('');
     const [filterDateEnd, setFilterDateEnd] = useState('');
-    const [showExportMenu, setShowExportMenu] = useState(false);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -147,7 +146,6 @@ export default function LogbookList() {
 
         const filename = `Logbook_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
         XLSX.writeFile(wb, filename);
-        setShowExportMenu(false);
     };
 
     // Export to PDF
@@ -214,7 +212,6 @@ export default function LogbookList() {
 
         const filename = `Logbook_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
         doc.save(filename);
-        setShowExportMenu(false);
     };
 
     const clearFilters = () => {
@@ -241,33 +238,22 @@ export default function LogbookList() {
                     <h1 className="text-2xl font-bold text-gray-900">Manajemen Logbook</h1>
                 </div>
 
-                {/* Export Button */}
-                <div className="relative">
+                {/* Export Buttons */}
+                <div className="flex gap-2">
                     <button
-                        onClick={() => setShowExportMenu(!showExportMenu)}
+                        onClick={exportToExcel}
                         className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
                     >
-                        <Download className="h-4 w-4" />
-                        Export
+                        <FileSpreadsheet className="h-4 w-4" />
+                        Export Excel
                     </button>
-                    {showExportMenu && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-100 z-10">
-                            <button
-                                onClick={exportToExcel}
-                                className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-50 text-gray-700"
-                            >
-                                <FileSpreadsheet className="h-4 w-4 text-green-600" />
-                                Export Excel
-                            </button>
-                            <button
-                                onClick={exportToPDF}
-                                className="w-full flex items-center gap-2 px-4 py-3 text-left hover:bg-gray-50 text-gray-700 border-t"
-                            >
-                                <FileText className="h-4 w-4 text-red-600" />
-                                Export PDF
-                            </button>
-                        </div>
-                    )}
+                    <button
+                        onClick={exportToPDF}
+                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        <FileText className="h-4 w-4" />
+                        Export PDF
+                    </button>
                 </div>
             </div>
 
