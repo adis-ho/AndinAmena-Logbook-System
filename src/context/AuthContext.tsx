@@ -10,18 +10,6 @@ interface AuthContextType extends AuthState {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper to extract user from session without additional API calls
-function getUserFromSession(sessionUser: { id: string; email?: string; user_metadata?: Record<string, unknown> }): User {
-    const metadata = sessionUser.user_metadata || {};
-    return {
-        id: sessionUser.id,
-        username: (metadata.username as string) || sessionUser.email?.split('@')[0] || 'user',
-        full_name: (metadata.full_name as string) || 'User',
-        role: (metadata.role as User['role']) || 'driver',
-        status: 'active'
-    };
-}
-
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [state, setState] = useState<AuthState>({
         user: null,
@@ -30,6 +18,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     useEffect(() => {
+        // Helper to fetch user profile from database
+        const fetchUserProfile = async (userId: string, fallbackMetadata: Record<string, unknown> = {}): Promise<User> => {
+            try {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('*')
+                    .eq('id', userId)
+                    .single();
+
+                if (profile) {
+                    return {
+                        id: profile.id,
+                        username: profile.username,
+                        full_name: profile.full_name,
+                        role: profile.role as User['role'],
+                        status: profile.status || 'active'
+                    };
+                }
+            } catch (err) {
+                console.warn('[AuthContext] Profile fetch failed:', err);
+            }
+
+            // Fallback to metadata
+            return {
+                id: userId,
+                username: (fallbackMetadata.username as string) || 'user',
+                full_name: (fallbackMetadata.full_name as string) || 'User',
+                role: (fallbackMetadata.role as User['role']) || 'driver',
+                status: 'active'
+            };
+        };
+
         // Check for existing session on mount
         const initSession = async () => {
             console.log('[AuthContext] Checking existing session...');
@@ -37,7 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
             if (session?.user) {
                 console.log('[AuthContext] Session found for:', session.user.id);
-                const user = getUserFromSession(session.user);
+                const user = await fetchUserProfile(session.user.id, session.user.user_metadata || {});
                 setState({
                     user,
                     isAuthenticated: true,
@@ -52,12 +72,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         initSession();
 
         // Listen for auth state changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             console.log('[AuthContext] Auth state changed:', event);
 
-            if (event === 'SIGNED_IN' && session?.user) {
-                console.log('[AuthContext] User signed in:', session.user.id);
-                const user = getUserFromSession(session.user);
+            // Handle events that should update user state
+            if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') && session?.user) {
+                console.log('[AuthContext] User session active:', session.user.id);
+                const user = await fetchUserProfile(session.user.id, session.user.user_metadata || {});
                 setState({
                     user,
                     isAuthenticated: true,
