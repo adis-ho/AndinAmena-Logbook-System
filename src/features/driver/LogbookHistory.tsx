@@ -148,7 +148,7 @@ export default function LogbookHistory() {
                                         required
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                         value={formData.date}
-                                        onChange={(e) => setFormData({...formData, date: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, date: e.target.value })}
                                     />
                                 </div>
                                 <div>
@@ -157,7 +157,7 @@ export default function LogbookHistory() {
                                         required
                                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                         value={formData.unit_id}
-                                        onChange={(e) => setFormData({...formData, unit_id: e.target.value})}
+                                        onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
                                     >
                                         <option value="">Pilih Unit</option>
                                         {units.map(unit => (
@@ -174,7 +174,7 @@ export default function LogbookHistory() {
                                     required
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                     value={formData.client_name}
-                                    onChange={(e) => setFormData({...formData, client_name: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, client_name: e.target.value })}
                                 />
                             </div>
 
@@ -185,7 +185,7 @@ export default function LogbookHistory() {
                                     required
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                     value={formData.rute}
-                                    onChange={(e) => setFormData({...formData, rute: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, rute: e.target.value })}
                                 />
                             </div>
 
@@ -195,7 +195,7 @@ export default function LogbookHistory() {
                                     rows={3}
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
                                     value={formData.keterangan}
-                                    onChange={(e) => setFormData({...formData, keterangan: e.target.value})}
+                                    onChange={(e) => setFormData({ ...formData, keterangan: e.target.value })}
                                 />
                             </div>
 
@@ -204,9 +204,11 @@ export default function LogbookHistory() {
                                 <input
                                     type="number"
                                     min="0"
+                                    step="1"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                     value={formData.toll_parking_cost || ''}
-                                    onChange={(e) => setFormData({...formData, toll_parking_cost: parseInt(e.target.value) || 0})}
+                                    onChange={(e) => setFormData({ ...formData, toll_parking_cost: Math.round(Number(e.target.value)) || 0 })}
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                 />
                             </div>
 
@@ -260,7 +262,7 @@ export default function LogbookHistory() {
                                     )}
                                 </div>
                             </div>
-                            
+
                             <div className="space-y-2 mb-3">
                                 <div className="flex">
                                     <span className="text-gray-500 w-24">User:</span>
@@ -277,7 +279,7 @@ export default function LogbookHistory() {
                                     </div>
                                 )}
                             </div>
-                            
+
                             <div className="bg-blue-50 p-3 rounded-lg">
                                 <div className="flex justify-between items-center">
                                     <span className="text-blue-700 font-medium">Biaya Tol & Parkir:</span>

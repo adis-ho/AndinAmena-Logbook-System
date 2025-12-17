@@ -129,10 +129,12 @@ export default function LogbookForm() {
                     <input
                         type="number"
                         min="0"
+                        step="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Rp 0"
                         value={formData.toll_parking_cost || ''}
-                        onChange={(e) => setFormData({ ...formData, toll_parking_cost: parseInt(e.target.value) || 0 })}
+                        onChange={(e) => setFormData({ ...formData, toll_parking_cost: Math.round(Number(e.target.value)) || 0 })}
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     />
                 </div>
 
