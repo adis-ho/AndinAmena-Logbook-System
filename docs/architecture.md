@@ -16,10 +16,13 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | **State Management** | React Query | 5.x |
 | **Form Validation** | Zod + React Hook Form | - |
 | **Icons** | Lucide React | - |
+| **Charts** | Recharts | 2.x |
+| **Export** | xlsx, jspdf, html2canvas | - |
 | **Backend** | Supabase | - |
 | **Database** | PostgreSQL (Supabase) | - |
 | **Auth** | Supabase Auth | - |
 | **Realtime** | Supabase Realtime | - |
+| **Fonts** | Plus Jakarta Sans | - |
 
 ## Struktur Direktori
 
@@ -27,15 +30,19 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 src/
 ├── App.tsx                 # Root component dengan routing
 ├── main.tsx               # Entry point
-├── index.css              # Global styles (Tailwind)
+├── index.css              # Global styles (Tailwind + animations)
+├── assets/
+│   └── fonts/             # Custom fonts (Plus Jakarta Sans)
 ├── lib/                   # External service clients
 │   └── supabase.ts        # Supabase client configuration
 ├── components/            # Reusable components
 │   ├── layouts/           # DashboardLayout, Drawer, Header
+│   ├── ui/                # Skeleton loaders
 │   └── NotificationPanel.tsx  # Notification dropdown
 ├── context/               # React Context providers
 │   ├── AuthContext.tsx    # Authentication state management
-│   └── NotificationContext.tsx  # Notification state + realtime
+│   ├── NotificationContext.tsx  # Notification state + realtime
+│   └── ToastContext.tsx   # Toast notifications
 ├── features/              # Feature-based modules
 │   ├── admin/             # Admin pages (Dashboard, Users, Units, Logbooks)
 │   ├── auth/              # Login & Register pages
@@ -60,20 +67,30 @@ Semua interaksi dengan database melalui `ApiService` yang berkomunikasi dengan S
 // Contoh penggunaan ApiService
 const users = await ApiService.getUsers();
 await ApiService.createLogbook(entry);
-await ApiService.notifyAdmins({ type: 'logbook_submitted', ... });
+await ApiService.deleteUser(id); // Soft delete - set status inactive
+await ApiService.reactivateUser(id); // Set status active
 ```
 
 ### 3. Context-Based Authentication
-`AuthContext` menggunakan Supabase Auth untuk session management dengan email + password authentication.
+`AuthContext` menggunakan Supabase Auth untuk session management dengan:
+- Email + password authentication
+- Inactive user blocking (cek status di login)
+- Token refresh handling
 
 ### 4. Real-time Notifications
 `NotificationContext` menggunakan Supabase Realtime untuk subscribe ke perubahan tabel `notifications`.
 
-### 5. Protected Routes
+### 5. Toast Notifications
+`ToastContext` menyediakan feedback visual untuk CRUD operations dengan auto-dismiss.
+
+### 6. Protected Routes
 Routes dibungkus dengan komponen `ProtectedRoute` yang memeriksa autentikasi dan role pengguna.
 
-### 6. Drawer Navigation
+### 7. Drawer Navigation
 Layout menggunakan drawer yang muncul dari kiri dengan backdrop blur dan animasi smooth.
+
+### 8. Soft Delete Pattern
+Users di-nonaktifkan dengan mengubah status ke 'inactive', bukan hard delete. User inactive tidak bisa login.
 
 ## Alur Data
 
@@ -82,12 +99,12 @@ Layout menggunakan drawer yang muncul dari kiri dengan backdrop blur dan animasi
 │   Component  │────▶│  ApiService  │────▶│   Supabase   │
 │   (React)    │◀────│   (API)      │◀────│  (Database)  │
 └──────────────┘     └──────────────┘     └──────────────┘
-                            │
-                            ▼
-                     ┌──────────────┐
-                     │   Realtime   │
-                     │ Subscription │
-                     └──────────────┘
+        │                   │
+        ▼                   ▼
+┌──────────────┐     ┌──────────────┐
+│    Toast     │     │   Realtime   │
+│   Context    │     │ Subscription │
+└──────────────┘     └──────────────┘
 ```
 
 ## Database Schema
@@ -99,6 +116,7 @@ CREATE TABLE profiles (
   username TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
   role TEXT CHECK (role IN ('admin', 'driver')),
+  status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
 ```
@@ -121,15 +139,10 @@ CREATE TABLE logbooks (
   date DATE NOT NULL,
   driver_id UUID REFERENCES profiles(id),
   unit_id UUID REFERENCES units(id),
-  start_km INTEGER,
-  end_km INTEGER,
-  total_km INTEGER GENERATED ALWAYS AS (end_km - start_km) STORED,
-  activities TEXT,
-  fuel_cost INTEGER,
-  toll_cost INTEGER,
-  parking_cost INTEGER,
-  other_cost INTEGER,
-  total_cost INTEGER GENERATED ALWAYS AS (...) STORED,
+  client_name TEXT,          -- User/Tamu/Client
+  rute TEXT,                 -- Rute perjalanan
+  keterangan TEXT,           -- Keterangan/catatan
+  toll_parking_cost INTEGER, -- Biaya Tol & Parkir gabungan
   status TEXT CHECK (status IN ('submitted', 'approved', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -149,11 +162,27 @@ CREATE TABLE notifications (
 );
 ```
 
+## RLS Policies
+
+### Profiles
+- Anyone can view profiles
+- Users can update own profile
+- **Admins can update any profile** (untuk soft delete)
+- Insert only for authenticated users
+
+### Units
+- Anyone can view/manage units
+
+### Logbooks
+- Drivers can view/insert/update own logbooks
+- Admins can view all logbooks
+- Admins can update all logbooks (approve/reject)
+
 ## Role Pengguna
 
 | Role | Akses |
 |------|-------|
-| **Admin** | Dashboard, Manajemen Logbook, Unit, User, Approve/Reject |
+| **Admin** | Dashboard Analytics, Manajemen Logbook, Unit, User, Approve/Reject, Soft Delete |
 | **Driver** | Dashboard, Input Logbook, Riwayat Logbook, Edit Logbook |
 
 ## Notification Flow
@@ -176,3 +205,5 @@ VITE_SUPABASE_ANON_KEY=xxxxx
 - **State saat ini**: Terintegrasi dengan Supabase, data persisten
 - **Realtime**: Notifikasi berfungsi real-time menggunakan Supabase Realtime
 - **Security**: Row Level Security (RLS) aktif di semua tabel
+- **Analytics**: Dashboard dengan Recharts (bar, pie, line charts)
+- **UX**: Toast notifications, skeleton loading, soft delete

@@ -45,7 +45,12 @@ export default function LoginPage() {
             }
         } catch (err) {
             console.error('[LoginPage] Login error:', err);
-            setError('Terjadi kesalahan saat login. Periksa koneksi internet.');
+            // Handle inactive user error
+            if (err instanceof Error && err.message === 'INACTIVE_USER') {
+                setError('Akun Anda telah dinonaktifkan. Hubungi admin untuk bantuan.');
+            } else {
+                setError('Terjadi kesalahan saat login. Periksa koneksi internet.');
+            }
             setLoading(false);
         }
     };

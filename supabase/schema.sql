@@ -63,6 +63,12 @@ CREATE POLICY "Anyone can view profiles" ON public.profiles
 CREATE POLICY "Users can update own profile" ON public.profiles 
   FOR UPDATE USING (auth.uid() = id);
 
+-- Allow admin to update any profile (including status for soft delete)
+CREATE POLICY "Admins can update any profile" ON public.profiles 
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
 CREATE POLICY "Allow insert for authenticated users" ON public.profiles
   FOR INSERT WITH CHECK (auth.uid() = id);
 

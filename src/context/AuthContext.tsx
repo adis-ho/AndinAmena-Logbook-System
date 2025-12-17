@@ -11,7 +11,8 @@ interface AuthContextType extends AuthState {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Helper to extract user from session with profile fetch
-async function fetchUserWithProfile(sessionUser: { id: string; user_metadata?: Record<string, unknown> }): Promise<User> {
+// Returns null if user is inactive
+async function fetchUserWithProfile(sessionUser: { id: string; user_metadata?: Record<string, unknown> }): Promise<User | null> {
     const metadata = sessionUser.user_metadata || {};
 
     try {
@@ -22,6 +23,12 @@ async function fetchUserWithProfile(sessionUser: { id: string; user_metadata?: R
             .single();
 
         if (profile) {
+            // CHECK: Block inactive users
+            if (profile.status === 'inactive') {
+                console.log('[AuthContext] User is inactive, blocking access');
+                return null;
+            }
+
             return {
                 id: profile.id,
                 username: profile.username,
@@ -64,6 +71,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 if (session?.user && isMounted) {
                     console.log('[AuthContext] Session found for:', session.user.id);
                     const user = await fetchUserWithProfile(session.user);
+
+                    // If user is null (inactive), sign them out
+                    if (!user) {
+                        console.log('[AuthContext] User inactive, signing out...');
+                        await supabase.auth.signOut();
+                        if (isMounted) {
+                            setState({ user: null, isAuthenticated: false, isLoading: false });
+                        }
+                        return;
+                    }
+
                     if (isMounted) {
                         setState({
                             user,
@@ -99,6 +117,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // Use non-async approach to avoid race issues
                 fetchUserWithProfile(session.user).then(user => {
                     if (isMounted) {
+                        // If user is null (inactive), sign them out
+                        if (!user) {
+                            console.log('[AuthContext] User inactive on refresh, signing out...');
+                            supabase.auth.signOut();
+                            setState({ user: null, isAuthenticated: false, isLoading: false });
+                            return;
+                        }
+
                         setState({
                             user,
                             isAuthenticated: true,
@@ -126,18 +152,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (email: string, password: string): Promise<boolean> => {
         console.log('[AuthContext] Login attempt for:', email);
-        const user = await ApiService.login(email, password);
-        if (user) {
-            console.log('[AuthContext] Login successful for:', user.id);
-            setState({
-                user,
-                isAuthenticated: true,
-                isLoading: false,
-            });
-            return true;
+        try {
+            const user = await ApiService.login(email, password);
+            if (user) {
+                console.log('[AuthContext] Login successful for:', user.id);
+                setState({
+                    user,
+                    isAuthenticated: true,
+                    isLoading: false,
+                });
+                return true;
+            }
+            console.log('[AuthContext] Login failed');
+            return false;
+        } catch (err) {
+            // Propagate INACTIVE_USER error to LoginPage
+            if (err instanceof Error && err.message === 'INACTIVE_USER') {
+                console.log('[AuthContext] User is inactive');
+                throw err;
+            }
+            console.error('[AuthContext] Login error:', err);
+            return false;
         }
-        console.log('[AuthContext] Login failed');
-        return false;
     };
 
     const logout = async () => {

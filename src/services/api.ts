@@ -28,7 +28,7 @@ export const ApiService = {
 
             console.log('[ApiService] Auth successful for:', data.user.id);
 
-            // Try to fetch profile, but don't block on it
+            // Fetch profile to check status - REQUIRED for login
             try {
                 const { data: profile, error: profileError } = await supabase
                     .from('profiles')
@@ -36,31 +36,50 @@ export const ApiService = {
                     .eq('id', data.user.id)
                     .single();
 
-                if (profile && !profileError) {
+                if (profileError) {
+                    console.error('[ApiService] Profile fetch error:', profileError.message);
+                    // Cannot verify user status, fail safe - logout
+                    await supabase.auth.signOut();
+                    return null;
+                }
+
+                if (profile) {
                     console.log('[ApiService] Profile found:', profile);
+
+                    // CHECK: Block inactive users
+                    if (profile.status === 'inactive') {
+                        console.log('[ApiService] User is inactive, logging out...');
+                        await supabase.auth.signOut();
+                        throw new Error('INACTIVE_USER');
+                    }
+
                     return {
                         id: profile.id,
                         username: profile.username,
                         full_name: profile.full_name,
                         role: profile.role as User['role'],
-                        status: 'active'
+                        status: (profile.status as User['status']) || 'active'
                     };
                 }
-            } catch (profileErr) {
-                console.warn('[ApiService] Profile fetch failed:', profileErr);
-            }
 
-            // Fallback: return user from auth metadata
-            console.log('[ApiService] Using metadata fallback');
-            const metadata = data.user.user_metadata || {};
-            return {
-                id: data.user.id,
-                username: metadata.username || email.split('@')[0],
-                full_name: metadata.full_name || 'User',
-                role: (metadata.role as User['role']) || 'driver',
-                status: 'active'
-            };
+                // Profile not found - fail safe
+                console.error('[ApiService] Profile not found for user');
+                await supabase.auth.signOut();
+                return null;
+            } catch (profileErr) {
+                // Handle inactive user error
+                if (profileErr instanceof Error && profileErr.message === 'INACTIVE_USER') {
+                    throw profileErr;
+                }
+                console.warn('[ApiService] Profile fetch failed:', profileErr);
+                await supabase.auth.signOut();
+                return null;
+            }
         } catch (err) {
+            // Propagate INACTIVE_USER error
+            if (err instanceof Error && err.message === 'INACTIVE_USER') {
+                throw err;
+            }
             console.error('[ApiService] Login exception:', err);
             return null;
         }
@@ -185,7 +204,7 @@ export const ApiService = {
             username: profile.username,
             full_name: profile.full_name,
             role: profile.role as User['role'],
-            status: 'active'
+            status: (profile.status as User['status']) || 'active'
         }));
     },
 

@@ -1,12 +1,12 @@
 # Status Proyek Amena Logbook
 
-**Terakhir Diperbarui**: 16 Desember 2025
+**Terakhir Diperbarui**: 17 Desember 2025
 
 ---
 
 ## Ringkasan
 
-Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3 (Complete)** dengan integrasi Supabase penuh dan sistem notifikasi real-time.
+Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3.5 (Complete)** dengan integrasi Supabase penuh, Dashboard Analytics, Toast Notifications, Skeleton Loading, dan Soft Delete untuk Users.
 
 ## Apa yang Berhasil ✅
 
@@ -16,18 +16,34 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 - [x] Role-based access control (Admin vs Driver)
 - [x] Protected routes
 - [x] Session persistence
+- [x] Token refresh handling
+- [x] Block login untuk inactive users
 
 ### Admin Module
 | Fitur | Status |
 |-------|--------|
-| Dashboard dengan statistik real | ✅ |
+| Dashboard dengan statistik & charts | ✅ |
 | Lihat semua logbook | ✅ |
 | Approve/Reject logbook | ✅ |
 | Detail logbook modal | ✅ |
 | Filter logbook by status | ✅ |
+| Export ke Excel | ✅ |
+| Export ke PDF | ✅ |
 | Manajemen User (CRUD + Modal) | ✅ |
+| Soft Delete users (Nonaktifkan) | ✅ |
+| Reactivate users (Aktifkan Kembali) | ✅ |
 | Manajemen Unit (CRUD + Modal) | ✅ |
 | Notifikasi logbook baru | ✅ |
+
+### Dashboard Analytics (NEW)
+| Fitur | Status |
+|-------|--------|
+| Statistik cards (Total, Pending, Approved, Rejected) | ✅ |
+| Bar chart: Logbook 7 hari terakhir | ✅ |
+| Pie chart: Status distribusi dengan legend | ✅ |
+| Line chart: Trend biaya 7 hari | ✅ |
+| Bar chart: Top drivers by cost | ✅ |
+| Recent logbook entries | ✅ |
 
 ### Driver Module
 | Fitur | Status |
@@ -38,9 +54,12 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Edit logbook (semua status) | ✅ |
 | Notifikasi approve/reject | ✅ |
 
-### UI/UX
+### UI/UX Enhancements (NEW)
 | Fitur | Status |
 |-------|--------|
+| Toast notifications (success/error/warning/info) | ✅ |
+| Skeleton loading components | ✅ |
+| Plus Jakarta Sans font | ✅ |
 | Responsive layout | ✅ |
 | Drawer navigation (slide) | ✅ |
 | Glassmorphism header | ✅ |
@@ -54,34 +73,35 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 |-------|--------|
 | PostgreSQL database | ✅ |
 | Row Level Security (RLS) | ✅ |
+| Admin RLS untuk update semua profiles | ✅ |
 | Email authentication | ✅ |
 | Real-time subscriptions | ✅ |
 | Auto-create profile trigger | ✅ |
+| Soft delete support (status column) | ✅ |
 
 ---
 
 ## Database Tables
 
-| Table | Deskripsi | RLS |
-|-------|-----------|-----|
-| `profiles` | User data (extends auth.users) | ✅ |
-| `units` | Kendaraan | ✅ |
-| `logbooks` | Entry logbook | ✅ |
-| `notifications` | In-app notifications | ✅ |
+| Table | Deskripsi | RLS | Status Column |
+|-------|-----------|-----|---------------|
+| `profiles` | User data (extends auth.users) | ✅ | ✅ active/inactive |
+| `units` | Kendaraan | ✅ | ✅ available/in_use/maintenance |
+| `logbooks` | Entry logbook | ✅ | ✅ submitted/approved/rejected |
+| `notifications` | In-app notifications | ✅ | - |
 
 ---
 
 ## Langkah Selanjutnya
 
-### Phase 2.4: Deployment
+### Phase 2.4: Deployment (Next)
 - [ ] Setup Vercel project
 - [ ] Configure environment variables
 - [ ] Deploy ke Vercel
 - [ ] Test production build
 
-### Phase 3: Enhancements
-- [ ] Dashboard charts
-- [ ] Export PDF/XLSX
+### Phase 3: Enhancements (Future)
+- [ ] Generate laporan bulanan
 - [ ] Email notifications
 - [ ] PWA support
 
@@ -110,17 +130,20 @@ npm run preview
 
 ## Login Credentials
 
-Buat user melalui Register atau Supabase Dashboard.
+| Email | Password | Role |
+|-------|----------|------|
+| admin@amena.com | admin | Admin |
+| driversatu@amena.com | driver1234 | Driver |
 
-| Role | Akses |
-|------|-------|
-| Admin | Dashboard, Users, Units, Logbooks, Approve/Reject |
-| Driver | Dashboard, Input Logbook, History, Edit |
+> ⚠️ User yang di-nonaktifkan admin tidak bisa login dan akan melihat pesan "Akun Anda telah dinonaktifkan"
 
 ---
 
 ## Teknologi
 
 - **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4
+- **Charts**: Recharts
+- **Export**: xlsx, jspdf, html2canvas
 - **Backend**: Supabase (PostgreSQL + Auth + Realtime)
+- **Fonts**: Plus Jakarta Sans
 - **Hosting**: Vercel (planned)

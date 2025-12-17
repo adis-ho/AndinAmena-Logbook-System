@@ -1,6 +1,6 @@
 # Roadmap Pengembangan Amena Logbook
 
-## Status Proyek: Phase 2.3 Complete ✅
+## Status Proyek: Phase 2.3.5 Complete ✅
 
 ---
 
@@ -56,11 +56,12 @@
 - [x] Buat Supabase client (`lib/supabase.ts`)
 
 ### 2.2 Database Schema ✅
-- [x] Tabel `profiles` (users)
+- [x] Tabel `profiles` (users) dengan kolom `status`
 - [x] Tabel `units` (kendaraan)
-- [x] Tabel `logbooks` (entries)
+- [x] Tabel `logbooks` (entries) dengan kolom `client_name`, `rute`, `keterangan`
 - [x] Tabel `notifications` (real-time notifications)
 - [x] Row Level Security (RLS) policies
+- [x] Admin RLS policy untuk update semua profiles
 - [x] Auto-create profile trigger
 
 ### 2.3 API Integration ✅
@@ -68,6 +69,22 @@
 - [x] Real authentication (email + password)
 - [x] Session management dengan Supabase Auth
 - [x] CRUD operations untuk semua entity
+- [x] Soft delete untuk users (set status inactive)
+- [x] Block login untuk inactive users
+
+### 2.3.5 UX Enhancements ✅ (NEW)
+- [x] Dashboard Analytics dengan Recharts
+  - [x] Statistik cards (Total, Pending, Approved, Rejected)
+  - [x] Bar chart: Logbook 7 hari terakhir
+  - [x] Pie chart: Status distribusi
+  - [x] Line chart: Trend biaya
+  - [x] Bar chart: Top drivers by cost
+- [x] Toast Notifications (`ToastContext`)
+- [x] Skeleton Loading components
+- [x] Export terpisah (Excel & PDF buttons)
+- [x] Plus Jakarta Sans font integration
+- [x] Soft delete & reactivate users
+- [x] Tampilan status user (Aktif/Nonaktif)
 
 ### 2.4 UI/UX Improvements ✅
 - [x] Drawer navigation (Flowbite-style)
@@ -87,11 +104,12 @@
 ## Phase 3: Enhancements ⏳ (Future)
 
 ### 3.1 Data Visualization
-- [ ] Dashboard charts (Recharts)
-- [ ] Statistik logbook per periode
-- [ ] Cost analysis
+- [x] Dashboard charts (Recharts) ✅
+- [x] Statistik logbook per periode ✅
+- [x] Cost analysis ✅
 
 ### 3.2 Reporting
+- [x] Export ke Excel & PDF ✅
 - [ ] Generate laporan bulanan
 - [ ] Summary per driver
 - [ ] Summary per unit
@@ -108,9 +126,11 @@
 
 ## Catatan Penting
 
-> **Status Saat Ini**: Aplikasi sudah terintegrasi dengan Supabase. Data persisten di database. Notifikasi real-time berfungsi. Siap untuk deployment.
+> **Status Saat Ini**: Aplikasi sudah terintegrasi dengan Supabase dengan Dashboard Analytics, Toast Notifications, Skeleton Loading, dan Soft Delete. Siap untuk deployment ke Vercel.
 
 ### Teknologi yang Digunakan:
 - **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4
+- **Charts**: Recharts
 - **Backend**: Supabase (PostgreSQL + Auth + Realtime)
+- **Fonts**: Plus Jakarta Sans
 - **Deployment**: Vercel (planned)

@@ -215,7 +215,7 @@ export default function AdminDashboard() {
                     <ResponsiveContainer width="100%" height={250}>
                         <PieChart>
                             <Pie
-                                data={statusData}
+                                data={statusData.filter(d => d.value > 0)}
                                 cx="50%"
                                 cy="50%"
                                 innerRadius={60}
@@ -223,14 +223,24 @@ export default function AdminDashboard() {
                                 paddingAngle={2}
                                 dataKey="value"
                                 label={({ name, value }) => `${name}: ${value}`}
+                                labelLine={{ stroke: '#666', strokeWidth: 1 }}
                             >
-                                {statusData.map((_, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                {statusData.filter(d => d.value > 0).map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={COLORS[statusData.findIndex(s => s.name === entry.name) % COLORS.length]} />
                                 ))}
                             </Pie>
                             <Tooltip />
                         </PieChart>
                     </ResponsiveContainer>
+                    {/* Legend */}
+                    <div className="flex justify-center gap-4 mt-2">
+                        {statusData.map((item, index) => (
+                            <div key={item.name} className="flex items-center gap-1">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                <span className="text-sm text-gray-600">{item.name}: {item.value}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
 
                 {/* Cost Trend Line Chart */}
