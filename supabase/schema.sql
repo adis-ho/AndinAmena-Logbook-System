@@ -1,5 +1,5 @@
 -- =============================================
--- Amena Logbook System - Database Schema
+-- Amena Laporan Harian System - Database Schema
 -- VERSI: Field disederhanakan + User, Rute, Keterangan
 -- =============================================
 

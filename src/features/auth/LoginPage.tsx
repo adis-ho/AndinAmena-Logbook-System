@@ -64,7 +64,7 @@ export default function LoginPage() {
                         <div className="h-1 w-1 bg-gray-300 rounded-full"></div>
                         <div className="h-12 w-12 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Amena Logbook</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">Amena Laporan</h2>
                     <p className="mt-2 text-sm text-gray-600">Masuk untuk melanjutkan</p>
                 </div>
 

@@ -38,7 +38,7 @@ export default function LogbookList() {
                 setUsers(usersData);
                 setUnits(unitsData);
             } catch (err) {
-                setError('Gagal memuat data logbook');
+                setError('Gagal memuat data laporan');
                 console.error(err);
             } finally {
                 setLoading(false);
@@ -64,17 +64,17 @@ export default function LogbookList() {
                 await ApiService.createNotification({
                     user_id: logbook.driver_id,
                     type: status === 'approved' ? 'logbook_approved' : 'logbook_rejected',
-                    title: `Logbook ${status === 'approved' ? 'Disetujui' : 'Ditolak'}`,
-                    message: `Logbook tanggal ${new Date(logbook.date).toLocaleDateString('id-ID')} telah ${statusText} oleh admin`,
+                    title: `Laporan ${status === 'approved' ? 'Disetujui' : 'Ditolak'}`,
+                    message: `Laporan tanggal ${new Date(logbook.date).toLocaleDateString('id-ID')} telah ${statusText} oleh admin`,
                     link: '/driver/history'
                 });
             }
 
             setLogbooks(logbooks.map(l => l.id === logbookId ? { ...l, status } : l));
             setSelectedLogbook(null);
-            showToast('success', status === 'approved' ? 'Logbook berhasil disetujui' : 'Logbook berhasil ditolak');
+            showToast('success', status === 'approved' ? 'Laporan berhasil disetujui' : 'Laporan berhasil ditolak');
         } catch (err) {
-            showToast('error', 'Gagal mengubah status logbook');
+            showToast('error', 'Gagal mengubah status laporan');
             console.error(err);
         }
     };
@@ -85,9 +85,9 @@ export default function LogbookList() {
             await ApiService.deleteLogbook(deleteLogbook.id);
             setLogbooks(logbooks.filter(l => l.id !== deleteLogbook.id));
             setDeleteLogbook(null);
-            showToast('success', 'Logbook berhasil dihapus');
+            showToast('success', 'Laporan berhasil dihapus');
         } catch (err) {
-            showToast('error', 'Gagal menghapus logbook');
+            showToast('error', 'Gagal menghapus laporan');
             console.error(err);
         }
     };
@@ -147,9 +147,9 @@ export default function LogbookList() {
 
         const ws = XLSX.utils.json_to_sheet(data);
         const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'Logbook');
+        XLSX.utils.book_append_sheet(wb, ws, 'Laporan');
 
-        const filename = `Logbook_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
+        const filename = `Laporan_Harian_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
         XLSX.writeFile(wb, filename);
     };
 
@@ -159,7 +159,7 @@ export default function LogbookList() {
 
         // Title
         doc.setFontSize(18);
-        doc.text('Laporan Logbook Kendaraan', 14, 20);
+        doc.text('Laporan Harian Kendaraan', 14, 20);
 
         // Filter info
         doc.setFontSize(10);
@@ -213,9 +213,9 @@ export default function LogbookList() {
         y += 4;
         const totalCost = filteredLogbooks.reduce((sum, l) => sum + l.toll_parking_cost, 0);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Total: ${filteredLogbooks.length} logbook | Total Biaya: ${formatCurrency(totalCost)}`, 14, y);
+        doc.text(`Total: ${filteredLogbooks.length} laporan | Total Biaya: ${formatCurrency(totalCost)}`, 14, y);
 
-        const filename = `Logbook_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+        const filename = `Laporan_Harian_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
         doc.save(filename);
     };
 
@@ -236,7 +236,7 @@ export default function LogbookList() {
             <div className="flex justify-between items-center">
                 <div className="flex items-center gap-3">
                     <BookOpen className="h-6 w-6 text-blue-600" />
-                    <h1 className="text-2xl font-bold text-gray-900">Manajemen Logbook</h1>
+                    <h1 className="text-2xl font-bold text-gray-900">Manajemen Laporan Harian</h1>
                 </div>
 
                 {/* Export Buttons */}
@@ -324,7 +324,7 @@ export default function LogbookList() {
                         </button>
                     ))}
                     <span className="ml-auto text-sm text-gray-500 self-center">
-                        {filteredLogbooks.length} logbook ditemukan
+                        {filteredLogbooks.length} laporan ditemukan
                     </span>
                 </div>
             </div>
@@ -335,9 +335,9 @@ export default function LogbookList() {
             {deleteLogbook && (
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
                     <div className="bg-white p-6 rounded-xl w-full max-w-md">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Hapus Logbook?</h2>
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Hapus Laporan?</h2>
                         <p className="text-gray-600 mb-6">
-                            Apakah Anda yakin ingin menghapus logbook tanggal <strong>{format(new Date(deleteLogbook.date), 'dd MMMM yyyy', { locale: id })}</strong> dari <strong>{deleteLogbook.client_name}</strong>?
+                            Apakah Anda yakin ingin menghapus laporan tanggal <strong>{format(new Date(deleteLogbook.date), 'dd MMMM yyyy', { locale: id })}</strong> dari <strong>{deleteLogbook.client_name}</strong>?
                         </p>
                         <div className="flex gap-3">
                             <button
@@ -368,7 +368,7 @@ export default function LogbookList() {
                             <X className="h-5 w-5" />
                         </button>
 
-                        <h2 className="text-xl font-bold mb-4">Detail Logbook</h2>
+                        <h2 className="text-xl font-bold mb-4">Detail Laporan</h2>
 
                         <div className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">

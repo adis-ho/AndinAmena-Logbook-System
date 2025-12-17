@@ -14,15 +14,15 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     const adminLinks = [
         { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/admin/logbooks', label: 'Logboook Management', icon: BookOpen },
+        { to: '/admin/logbooks', label: 'Laporan Harian', icon: BookOpen },
         { to: '/admin/units', label: 'Unit Management', icon: Car },
         { to: '/admin/users', label: 'User Management', icon: Users },
     ];
 
     const driverLinks = [
         { to: '/driver', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/driver/logbook', label: 'Input Logbook', icon: PlusCircle },
-        { to: '/driver/history', label: 'Riwayat Logbook', icon: History },
+        { to: '/driver/logbook', label: 'Input Laporan', icon: PlusCircle },
+        { to: '/driver/history', label: 'Riwayat Laporan', icon: History },
     ];
 
     const links = user?.role === 'admin' ? adminLinks : driverLinks;

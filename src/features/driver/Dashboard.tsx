@@ -84,7 +84,7 @@ export default function DriverDashboard() {
         <div className="space-y-6">
             <div>
                 <h1 className="text-2xl font-bold text-gray-900">Selamat Datang, {user?.full_name}!</h1>
-                <p className="text-gray-500 mt-1">Berikut ringkasan logbook Anda.</p>
+                <p className="text-gray-500 mt-1">Berikut ringkasan laporan Anda.</p>
             </div>
 
             {/* Quick Actions */}
@@ -95,7 +95,7 @@ export default function DriverDashboard() {
                 >
                     <PlusCircle className="h-8 w-8" />
                     <div>
-                        <p className="font-bold text-lg">Input Logbook Baru</p>
+                        <p className="font-bold text-lg">Input Laporan Harian</p>
                         <p className="text-blue-100 text-sm">Catat perjalanan hari ini</p>
                     </div>
                 </Link>
@@ -106,7 +106,7 @@ export default function DriverDashboard() {
                     <History className="h-8 w-8 text-gray-600" />
                     <div>
                         <p className="font-bold text-lg">Lihat Riwayat</p>
-                        <p className="text-gray-500 text-sm">Semua logbook Anda</p>
+                        <p className="text-gray-500 text-sm">Semua laporan Anda</p>
                     </div>
                 </Link>
             </div>
@@ -168,7 +168,7 @@ export default function DriverDashboard() {
             {/* Recent Logbooks */}
             {recentLogbooks.length > 0 && (
                 <div className="bg-white rounded-xl border border-gray-100 p-6">
-                    <h2 className="font-bold text-gray-900 mb-4">Logbook Terbaru</h2>
+                    <h2 className="font-bold text-gray-900 mb-4">Laporan Terbaru</h2>
                     <div className="space-y-3">
                         {recentLogbooks.map(log => (
                             <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">

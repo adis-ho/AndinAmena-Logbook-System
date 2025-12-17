@@ -34,7 +34,7 @@ export default function LogbookHistory() {
             setLogbooks(logsData);
             setUnits(unitsData);
         } catch (err) {
-            console.error('Gagal mengambil logbook:', err);
+            console.error('Gagal mengambil laporan:', err);
         } finally {
             setLoading(false);
         }
@@ -125,7 +125,7 @@ export default function LogbookHistory() {
         <div className="space-y-6">
             <div className="flex items-center gap-3">
                 <History className="h-6 w-6 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Riwayat Logbook</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Riwayat Laporan Harian</h1>
             </div>
 
             {/* Modal Edit */}
@@ -133,7 +133,7 @@ export default function LogbookHistory() {
                 <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
                     <div className="bg-white rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto relative">
                         <div className="sticky top-0 bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-                            <h2 className="text-xl font-bold text-gray-900">Edit Logbook</h2>
+                            <h2 className="text-xl font-bold text-gray-900">Edit Laporan Harian</h2>
                             <button onClick={handleCloseEdit} className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg">
                                 <X className="h-5 w-5" />
                             </button>
@@ -236,7 +236,7 @@ export default function LogbookHistory() {
             {logbooks.length === 0 ? (
                 <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
                     <History className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                    <p className="text-gray-500">Belum ada riwayat logbook</p>
+                    <p className="text-gray-500">Belum ada riwayat laporan</p>
                 </div>
             ) : (
                 <div className="space-y-4">
@@ -255,7 +255,7 @@ export default function LogbookHistory() {
                                         <button
                                             onClick={() => handleEdit(log)}
                                             className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                                            title="Edit Logbook"
+                                            title="Edit Laporan"
                                         >
                                             <Pencil className="h-4 w-4" />
                                         </button>
@@ -289,7 +289,7 @@ export default function LogbookHistory() {
 
                             {log.status === 'rejected' && (
                                 <p className="mt-3 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    ⚠️ Logbook ini ditolak. Silakan edit dan submit ulang.
+                                    ⚠️ Laporan ini ditolak. Silakan edit dan submit ulang.
                                 </p>
                             )}
                         </div>

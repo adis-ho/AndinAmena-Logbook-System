@@ -135,7 +135,7 @@ export default function AdminDashboard() {
                             <BookOpen className="h-5 w-5 text-blue-600" />
                         </div>
                         <div>
-                            <p className="text-sm text-gray-500">Total Logbook</p>
+                            <p className="text-sm text-gray-500">Total Laporan</p>
                             <p className="text-xl font-bold text-gray-900">{stats.totalLogbooks}</p>
                         </div>
                     </div>
@@ -197,7 +197,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Daily Logbook Bar Chart */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100">
-                    <h3 className="font-bold text-gray-900 mb-4">Logbook 7 Hari Terakhir</h3>
+                    <h3 className="font-bold text-gray-900 mb-4">Laporan 7 Hari Terakhir</h3>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={dailyData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -211,7 +211,7 @@ export default function AdminDashboard() {
 
                 {/* Status Pie Chart */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100">
-                    <h3 className="font-bold text-gray-900 mb-4">Status Logbook</h3>
+                    <h3 className="font-bold text-gray-900 mb-4">Status Laporan</h3>
                     <ResponsiveContainer width="100%" height={250}>
                         <PieChart>
                             <Pie
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
 
             {/* Recent Logbooks */}
             <div className="bg-white rounded-xl border border-gray-100 p-6">
-                <h3 className="font-bold text-gray-900 mb-4">Logbook Terbaru</h3>
+                <h3 className="font-bold text-gray-900 mb-4">Laporan Terbaru</h3>
                 <div className="space-y-3">
                     {logbooks.slice(0, 5).map(log => {
                         const driver = users.find(u => u.id === log.driver_id);

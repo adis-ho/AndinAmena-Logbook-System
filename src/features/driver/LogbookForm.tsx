@@ -38,14 +38,14 @@ export default function LogbookForm() {
             // Notify semua admin tentang logbook baru
             await ApiService.notifyAdmins({
                 type: 'logbook_submitted',
-                title: 'Logbook Baru',
-                message: `${user.full_name} telah submit logbook untuk tanggal ${formData.date}`,
+                title: 'Laporan Harian Baru',
+                message: `${user.full_name} telah submit laporan untuk tanggal ${formData.date}`,
                 link: '/admin/logbooks'
             });
 
             navigate('/driver/history');
         } catch (err) {
-            alert('Gagal menyimpan logbook');
+            alert('Gagal menyimpan laporan');
             console.error(err);
         } finally {
             setLoading(false);
@@ -56,7 +56,7 @@ export default function LogbookForm() {
         <div className="max-w-2xl mx-auto space-y-6">
             <div className="flex items-center gap-3">
                 <BookPlus className="h-6 w-6 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Input Logbook</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Input Laporan Harian</h1>
             </div>
 
             <form onSubmit={handleSubmit} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
@@ -152,7 +152,7 @@ export default function LogbookForm() {
                     disabled={loading}
                     className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
                 >
-                    {loading ? 'Menyimpan...' : 'Simpan Logbook'}
+                    {loading ? 'Menyimpan...' : 'Simpan Laporan'}
                 </button>
             </form>
         </div>

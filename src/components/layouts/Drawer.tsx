@@ -41,14 +41,14 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
 
     const adminLinks = [
         { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/admin/logbooks', label: 'Logbooks', icon: BookOpen },
+        { to: '/admin/logbooks', label: 'Laporan Harian', icon: BookOpen },
         { to: '/admin/units', label: 'Units', icon: Car },
         { to: '/admin/users', label: 'Users', icon: Users },
     ];
 
     const driverLinks = [
         { to: '/driver', label: 'Dashboard', icon: LayoutDashboard },
-        { to: '/driver/logbook', label: 'Input Logbook', icon: PlusCircle },
+        { to: '/driver/logbook', label: 'Input Laporan', icon: PlusCircle },
         { to: '/driver/history', label: 'Riwayat', icon: History },
     ];
 
