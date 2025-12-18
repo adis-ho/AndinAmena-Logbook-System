@@ -9,6 +9,8 @@ import AdminDashboard from './features/admin/Dashboard';
 import UserList from './features/admin/UserList';
 import UnitList from './features/admin/UnitList';
 import LogbookList from './features/admin/LogbookList';
+import EtollList from './features/admin/EtollList';
+import OperationalBudgetPage from './features/admin/OperationalBudgetPage';
 
 // Driver components
 import DriverDashboard from './features/driver/Dashboard';
@@ -30,6 +32,8 @@ function App() {
           <Route path="users" element={<UserList />} />
           <Route path="units" element={<UnitList />} />
           <Route path="logbooks" element={<LogbookList />} />
+          <Route path="etolls" element={<EtollList />} />
+          <Route path="operational" element={<OperationalBudgetPage />} />
         </Route>
       </Route>
 

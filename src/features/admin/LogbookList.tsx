@@ -141,7 +141,9 @@ export default function LogbookList() {
             'User (Tamu/Client)': log.client_name,
             'Rute': log.rute,
             'Keterangan': log.keterangan,
-            'Biaya Tol & Parkir': log.toll_parking_cost,
+            'Biaya Tol': log.toll_cost,
+            'Biaya Parkir dll.': log.operational_cost,
+            'Total Biaya': log.toll_cost + log.operational_cost,
             'Status': log.status === 'approved' ? 'Disetujui' : log.status === 'rejected' ? 'Ditolak' : 'Pending'
         }));
 
@@ -198,7 +200,7 @@ export default function LogbookList() {
                 getDriverName(log.driver_id).substring(0, 20),
                 log.client_name.substring(0, 25),
                 log.rute.substring(0, 35),
-                formatCurrency(log.toll_parking_cost),
+                formatCurrency(log.toll_cost + log.operational_cost),
                 log.status === 'approved' ? 'OK' : log.status === 'rejected' ? 'Tolak' : 'Pending'
             ];
 
@@ -211,7 +213,7 @@ export default function LogbookList() {
 
         // Total
         y += 4;
-        const totalCost = filteredLogbooks.reduce((sum, l) => sum + l.toll_parking_cost, 0);
+        const totalCost = filteredLogbooks.reduce((sum, l) => sum + l.toll_cost + l.operational_cost, 0);
         doc.setFont('helvetica', 'bold');
         doc.text(`Total: ${filteredLogbooks.length} laporan | Total Biaya: ${formatCurrency(totalCost)}`, 14, y);
 
@@ -407,10 +409,19 @@ export default function LogbookList() {
                                 )}
                             </div>
 
-                            <div className="bg-blue-50 p-4 rounded-lg border-t">
+                            <div className="bg-blue-50 p-4 rounded-lg border-t space-y-2">
+                                <div className="flex justify-between items-center text-sm text-blue-800">
+                                    <span>Biaya Tol:</span>
+                                    <span>{formatCurrency(selectedLogbook.toll_cost)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm text-blue-800">
+                                    <span>Biaya Parkir dll.:</span>
+                                    <span>{formatCurrency(selectedLogbook.operational_cost)}</span>
+                                </div>
+                                <div className="border-t border-blue-200 my-2"></div>
                                 <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-900">Biaya Tol & Parkir:</span>
-                                    <span className="text-2xl font-bold text-blue-600">{formatCurrency(selectedLogbook.toll_parking_cost)}</span>
+                                    <span className="font-medium text-blue-900">Total Biaya:</span>
+                                    <span className="text-2xl font-bold text-blue-600">{formatCurrency(selectedLogbook.toll_cost + selectedLogbook.operational_cost)}</span>
                                 </div>
                             </div>
 
@@ -467,7 +478,7 @@ export default function LogbookList() {
                                         <td className="py-3 px-4 text-gray-600">{getDriverName(log.driver_id)}</td>
                                         <td className="py-3 px-4 text-gray-900">{log.client_name}</td>
                                         <td className="py-3 px-4 text-gray-600">{log.rute}</td>
-                                        <td className="py-3 px-4 text-gray-900">{formatCurrency(log.toll_parking_cost)}</td>
+                                        <td className="py-3 px-4 text-gray-900">{formatCurrency(log.toll_cost + log.operational_cost)}</td>
                                         <td className="py-3 px-4">{getStatusBadge(log.status)}</td>
                                         <td className="py-3 px-4">
                                             <div className="flex justify-center gap-1">

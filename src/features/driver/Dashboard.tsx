@@ -2,8 +2,9 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import type { LogbookEntry } from '../../types';
-import { BookOpen, PlusCircle, History, CheckCircle, Clock, XCircle } from 'lucide-react';
+import { BookOpen, PlusCircle, History, CheckCircle, Clock, XCircle, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { SkeletonDriverDashboard } from '../../components/ui/Skeleton';
 
 interface DashboardStats {
     totalLogbooks: number;
@@ -37,7 +38,7 @@ export default function DriverDashboard() {
                     pendingLogbooks: logbooks.filter(l => l.status === 'submitted').length,
                     approvedLogbooks: logbooks.filter(l => l.status === 'approved').length,
                     rejectedLogbooks: logbooks.filter(l => l.status === 'rejected').length,
-                    totalCost: logbooks.reduce((sum, l) => sum + l.toll_parking_cost, 0)
+                    totalCost: logbooks.reduce((sum, l) => sum + l.toll_cost + l.operational_cost, 0)
                 });
 
                 setRecentLogbooks(logbooks.slice(0, 5));
@@ -73,11 +74,7 @@ export default function DriverDashboard() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
+        return <SkeletonDriverDashboard />;
     }
 
     return (
@@ -111,58 +108,72 @@ export default function DriverDashboard() {
                 </Link>
             </div>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-2 rounded-lg">
-                            <BookOpen className="h-5 w-5 text-blue-600" />
-                        </div>
+            {/* Hero Card - Unified Dashboard */}
+            <div className="bg-gradient-to-br from-green-500 to-green-600 rounded-xl overflow-hidden shadow-lg">
+                {/* Saldo Section */}
+                <div className="p-6 text-white">
+                    <div className="flex items-center justify-between">
                         <div>
-                            <p className="text-sm text-gray-500">Total</p>
-                            <p className="text-xl font-bold text-gray-900">{stats.totalLogbooks}</p>
+                            <div className="flex items-center gap-2 mb-1">
+                                <Wallet className="h-5 w-5" />
+                                <p className="text-green-100 text-sm font-medium">Saldo Uang Operasional</p>
+                            </div>
+                            <p className="text-3xl font-bold">{formatCurrency(user?.operational_balance || 0)}</p>
+                        </div>
+                        <div className="bg-white/20 p-3 rounded-xl">
+                            <Wallet className="h-8 w-8" />
                         </div>
                     </div>
                 </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-yellow-100 p-2 rounded-lg">
-                            <Clock className="h-5 w-5 text-yellow-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Pending</p>
-                            <p className="text-xl font-bold text-yellow-600">{stats.pendingLogbooks}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-green-100 p-2 rounded-lg">
-                            <CheckCircle className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Disetujui</p>
-                            <p className="text-xl font-bold text-green-600">{stats.approvedLogbooks}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-red-100 p-2 rounded-lg">
-                            <XCircle className="h-5 w-5 text-red-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Ditolak</p>
-                            <p className="text-xl font-bold text-red-600">{stats.rejectedLogbooks}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            {/* Summary */}
-            <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-xl text-white">
-                <p className="text-green-100 text-sm">Total Biaya Tol & Parkir</p>
-                <p className="text-3xl font-bold mt-2">{formatCurrency(stats.totalCost)}</p>
+                {/* Stats Section */}
+                <div className="bg-white/95 backdrop-blur p-4">
+                    <p className="text-xs text-gray-500 font-medium mb-3">RINGKASAN LAPORAN</p>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-blue-100 p-1.5 rounded-lg">
+                                <BookOpen className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500">Total</p>
+                                <p className="text-lg font-bold text-gray-900">{stats.totalLogbooks}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-yellow-100 p-1.5 rounded-lg">
+                                <Clock className="h-4 w-4 text-yellow-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500">Pending</p>
+                                <p className="text-lg font-bold text-yellow-600">{stats.pendingLogbooks}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-green-100 p-1.5 rounded-lg">
+                                <CheckCircle className="h-4 w-4 text-green-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500">Disetujui</p>
+                                <p className="text-lg font-bold text-green-600">{stats.approvedLogbooks}</p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="bg-red-100 p-1.5 rounded-lg">
+                                <XCircle className="h-4 w-4 text-red-600" />
+                            </div>
+                            <div>
+                                <p className="text-xs text-gray-500">Ditolak</p>
+                                <p className="text-lg font-bold text-red-600">{stats.rejectedLogbooks}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Total Biaya */}
+                    <div className="mt-4 pt-3 border-t border-gray-200 flex items-center justify-between">
+                        <span className="text-sm text-gray-600">Total Biaya Dikeluarkan</span>
+                        <span className="text-lg font-bold text-green-600">{formatCurrency(stats.totalCost)}</span>
+                    </div>
+                </div>
             </div>
 
             {/* Recent Logbooks */}
@@ -178,7 +189,7 @@ export default function DriverDashboard() {
                                 </div>
                                 <div className="text-right">
                                     {getStatusBadge(log.status)}
-                                    <p className="text-sm text-gray-500 mt-1">{formatCurrency(log.toll_parking_cost)}</p>
+                                    <p className="text-sm text-gray-500 mt-1">{formatCurrency(log.toll_cost + log.operational_cost)}</p>
                                 </div>
                             </div>
                         ))}

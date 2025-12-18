@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS public.profiles (
   username TEXT UNIQUE NOT NULL,
   full_name TEXT NOT NULL,
   role TEXT NOT NULL DEFAULT 'driver' CHECK (role IN ('admin', 'driver')),
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  operational_balance INTEGER DEFAULT 0, -- Saldo Uang Operasional per Driver
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
@@ -21,21 +23,36 @@ CREATE TABLE IF NOT EXISTS public.units (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 3. LOGBOOKS TABLE (STRUKTUR BARU)
+-- 3. ETOLLS TABLE (Kartu E-Toll Perusahaan)
+CREATE TABLE IF NOT EXISTS public.etolls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  card_name TEXT NOT NULL,
+  card_number TEXT,
+  balance INTEGER DEFAULT 0, -- Saldo dalam Rupiah
+  status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Note: operational_balance is now stored in profiles table per driver
+
+-- 4. LOGBOOKS TABLE (STRUKTUR BARU)
 CREATE TABLE IF NOT EXISTS public.logbooks (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   date DATE NOT NULL,
   driver_id UUID REFERENCES public.profiles(id) NOT NULL,
   unit_id UUID REFERENCES public.units(id) NOT NULL,
+  etoll_id UUID REFERENCES public.etolls(id), -- Kartu E-Toll yang digunakan (opsional)
   client_name TEXT, -- User/Tamu/Client name
   rute TEXT, -- Rute perjalanan
   keterangan TEXT, -- Keterangan/catatan
-  toll_parking_cost INTEGER DEFAULT 0, -- Biaya Tol & Parkir gabungan
+  toll_cost INTEGER DEFAULT 0, -- Biaya Tol
+  parking_cost INTEGER DEFAULT 0, -- Biaya Parkir
+  operational_cost INTEGER DEFAULT 0, -- Biaya Operasional
   status TEXT NOT NULL DEFAULT 'submitted' CHECK (status IN ('submitted', 'approved', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- 4. NOTIFICATIONS TABLE
+-- 5. NOTIFICATIONS TABLE
 CREATE TABLE IF NOT EXISTS public.notifications (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE NOT NULL,
@@ -53,6 +70,7 @@ CREATE TABLE IF NOT EXISTS public.notifications (
 
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.units ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.etolls ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.logbooks ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.notifications ENABLE ROW LEVEL SECURITY;
 
@@ -78,6 +96,26 @@ CREATE POLICY "Anyone can view units" ON public.units
 
 CREATE POLICY "Anyone can manage units" ON public.units 
   FOR ALL USING (true);
+
+-- ETOLLS POLICIES
+CREATE POLICY "Anyone can view etolls" ON public.etolls 
+  FOR SELECT USING (true);
+
+CREATE POLICY "Admins can manage etolls" ON public.etolls 
+  FOR ALL USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'admin')
+  );
+
+-- Allow drivers to update balance (for deduction when submitting logbook)
+CREATE POLICY "Drivers can deduct etoll balance" ON public.etolls 
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'driver')
+  )
+  WITH CHECK (
+    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND role = 'driver')
+  );
+
+-- Note: operational_balance is managed through profiles table
 
 -- LOGBOOKS POLICIES
 CREATE POLICY "Drivers can view own logbooks" ON public.logbooks 

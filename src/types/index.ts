@@ -6,6 +6,7 @@ export interface User {
     full_name: string;
     role: UserRole;
     status: 'active' | 'inactive';
+    operational_balance: number; // Saldo Uang Operasional per Driver
 }
 
 export interface Unit {
@@ -15,6 +16,15 @@ export interface Unit {
     status: 'available' | 'maintenance' | 'in-use';
 }
 
+export interface Etoll {
+    id: string;
+    card_name: string;
+    card_number?: string;
+    balance: number;
+    status: 'active' | 'inactive';
+    created_at: string;
+}
+
 export type LogbookStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface LogbookEntry {
@@ -22,10 +32,13 @@ export interface LogbookEntry {
     date: string; // ISO Date
     driver_id: string;
     unit_id: string;
+    etoll_id?: string; // Kartu E-Toll yang digunakan (opsional)
     client_name: string; // User/Tamu/Client name
     rute: string; // Rute perjalanan
     keterangan: string; // Keterangan/catatan
-    toll_parking_cost: number; // Biaya Tol & Parkir (gabungan)
+    toll_cost: number; // Biaya Tol
+    parking_cost: number; // Biaya Parkir
+    operational_cost: number; // Biaya Operasional
     status: LogbookStatus;
     created_at: string;
 }
@@ -35,3 +48,5 @@ export interface AuthState {
     isAuthenticated: boolean;
     isLoading: boolean;
 }
+
+

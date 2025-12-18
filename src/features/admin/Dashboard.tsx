@@ -5,6 +5,7 @@ import { LayoutDashboard, BookOpen, Users, Truck, TrendingUp, Calendar } from 'l
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 import { format, subDays, startOfDay, isToday, isThisWeek, isThisMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { SkeletonDashboard } from '../../components/ui/Skeleton';
 
 interface DashboardStats {
     totalLogbooks: number;
@@ -57,8 +58,8 @@ export default function AdminDashboard() {
                     monthLogbooks: monthLogs.length,
                     totalDrivers: drivers.length,
                     totalUnits: unitsData.length,
-                    totalCost: logsData.reduce((sum: number, l: LogbookEntry) => sum + l.toll_parking_cost, 0),
-                    todayCost: todayLogs.reduce((sum: number, l: LogbookEntry) => sum + l.toll_parking_cost, 0)
+                    totalCost: logsData.reduce((sum: number, l: LogbookEntry) => sum + l.toll_cost + l.operational_cost, 0),
+                    todayCost: todayLogs.reduce((sum: number, l: LogbookEntry) => sum + l.toll_cost + l.operational_cost, 0)
                 });
 
                 // Daily data (7 days)
@@ -70,7 +71,7 @@ export default function AdminDashboard() {
                     daily.push({
                         date: format(date, 'dd MMM', { locale: id }),
                         count: dayLogs.length,
-                        cost: dayLogs.reduce((sum: number, l: LogbookEntry) => sum + l.toll_parking_cost, 0)
+                        cost: dayLogs.reduce((sum: number, l: LogbookEntry) => sum + l.toll_cost + l.operational_cost, 0)
                     });
                 }
                 setDailyData(daily);
@@ -90,7 +91,7 @@ export default function AdminDashboard() {
                 logsData.forEach((l: LogbookEntry) => {
                     const driver = drivers.find((d: User) => d.id === l.driver_id);
                     if (driver) {
-                        driverCosts[driver.full_name] = (driverCosts[driver.full_name] || 0) + l.toll_parking_cost;
+                        driverCosts[driver.full_name] = (driverCosts[driver.full_name] || 0) + l.toll_cost + l.operational_cost;
                     }
                 });
                 const driverArr = Object.entries(driverCosts)
@@ -113,11 +114,7 @@ export default function AdminDashboard() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
+        return <SkeletonDashboard />;
     }
 
     return (
@@ -293,7 +290,7 @@ export default function AdminDashboard() {
                                         }`}>
                                         {log.status === 'approved' ? 'OK' : log.status === 'rejected' ? 'Tolak' : 'Pending'}
                                     </span>
-                                    <p className="text-sm text-gray-500 mt-1">{formatCurrency(log.toll_parking_cost)}</p>
+                                    <p className="text-sm text-gray-500 mt-1">{formatCurrency(log.toll_cost + log.operational_cost)}</p>
                                 </div>
                             </div>
                         );

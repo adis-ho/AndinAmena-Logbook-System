@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { User, Unit, LogbookEntry } from '../types';
+import type { User, Unit, LogbookEntry, Etoll } from '../types';
 
 // =============================================
 // API SERVICE - Supabase Implementation
@@ -58,7 +58,8 @@ export const ApiService = {
                         username: profile.username,
                         full_name: profile.full_name,
                         role: profile.role as User['role'],
-                        status: (profile.status as User['status']) || 'active'
+                        status: (profile.status as User['status']) || 'active',
+                        operational_balance: profile.operational_balance || 0
                     };
                 }
 
@@ -129,7 +130,8 @@ export const ApiService = {
                 username: userData.username,
                 full_name: userData.full_name,
                 role: 'driver',
-                status: 'active'
+                status: 'active',
+                operational_balance: 0
             };
         } catch (err) {
             console.error('[ApiService] Registration exception:', err);
@@ -164,7 +166,8 @@ export const ApiService = {
                         username: profile.username,
                         full_name: profile.full_name,
                         role: profile.role as User['role'],
-                        status: 'active'
+                        status: (profile.status as User['status']) || 'active',
+                        operational_balance: profile.operational_balance || 0
                     };
                 }
             } catch (profileErr) {
@@ -179,7 +182,8 @@ export const ApiService = {
                 username: metadata.username || user.email?.split('@')[0] || 'user',
                 full_name: metadata.full_name || 'User',
                 role: (metadata.role as User['role']) || 'driver',
-                status: 'active'
+                status: 'active',
+                operational_balance: 0
             };
         } catch (err) {
             console.error('[ApiService] getCurrentUser exception:', err);
@@ -204,7 +208,8 @@ export const ApiService = {
             username: profile.username,
             full_name: profile.full_name,
             role: profile.role as User['role'],
-            status: (profile.status as User['status']) || 'active'
+            status: (profile.status as User['status']) || 'active',
+            operational_balance: profile.operational_balance || 0
         }));
     },
 
@@ -222,7 +227,8 @@ export const ApiService = {
             username: data.username,
             full_name: data.full_name,
             role: data.role as User['role'],
-            status: 'active'
+            status: (data.status as User['status']) || 'active',
+            operational_balance: data.operational_balance || 0
         };
     },
 
@@ -256,7 +262,8 @@ export const ApiService = {
             username: userData.username,
             full_name: userData.full_name,
             role: userData.role,
-            status: 'active'
+            status: 'active',
+            operational_balance: 0
         };
     },
 
@@ -404,10 +411,13 @@ export const ApiService = {
             date: log.date,
             driver_id: log.driver_id,
             unit_id: log.unit_id,
+            etoll_id: log.etoll_id || undefined,
             client_name: log.client_name || '',
             rute: log.rute || '',
             keterangan: log.keterangan || '',
-            toll_parking_cost: log.toll_parking_cost || 0,
+            toll_cost: log.toll_cost || 0,
+            parking_cost: log.parking_cost || 0,
+            operational_cost: log.operational_cost || 0,
             status: log.status as LogbookEntry['status'],
             created_at: log.created_at
         }));
@@ -430,10 +440,13 @@ export const ApiService = {
             date: log.date,
             driver_id: log.driver_id,
             unit_id: log.unit_id,
+            etoll_id: log.etoll_id || undefined,
             client_name: log.client_name || '',
             rute: log.rute || '',
             keterangan: log.keterangan || '',
-            toll_parking_cost: log.toll_parking_cost || 0,
+            toll_cost: log.toll_cost || 0,
+            parking_cost: log.parking_cost || 0,
+            operational_cost: log.operational_cost || 0,
             status: log.status as LogbookEntry['status'],
             created_at: log.created_at
         }));
@@ -453,10 +466,13 @@ export const ApiService = {
             date: data.date,
             driver_id: data.driver_id,
             unit_id: data.unit_id,
+            etoll_id: data.etoll_id || undefined,
             client_name: data.client_name || '',
             rute: data.rute || '',
             keterangan: data.keterangan || '',
-            toll_parking_cost: data.toll_parking_cost || 0,
+            toll_cost: data.toll_cost || 0,
+            parking_cost: data.parking_cost || 0,
+            operational_cost: data.operational_cost || 0,
             status: data.status as LogbookEntry['status'],
             created_at: data.created_at
         };
@@ -469,10 +485,13 @@ export const ApiService = {
                 date: entry.date,
                 driver_id: entry.driver_id,
                 unit_id: entry.unit_id,
+                etoll_id: entry.etoll_id || null,
                 client_name: entry.client_name,
                 rute: entry.rute,
                 keterangan: entry.keterangan,
-                toll_parking_cost: entry.toll_parking_cost || 0,
+                toll_cost: entry.toll_cost || 0,
+                parking_cost: entry.parking_cost || 0,
+                operational_cost: entry.operational_cost || 0,
                 status: entry.status
             })
             .select()
@@ -483,15 +502,20 @@ export const ApiService = {
             throw error;
         }
 
+        // Note: Balance deduction moved to updateLogbookStatus (only when approved)
+
         return {
             id: data.id,
             date: data.date,
             driver_id: data.driver_id,
             unit_id: data.unit_id,
+            etoll_id: data.etoll_id || undefined,
             client_name: data.client_name || '',
             rute: data.rute || '',
             keterangan: data.keterangan || '',
-            toll_parking_cost: data.toll_parking_cost || 0,
+            toll_cost: data.toll_cost || 0,
+            parking_cost: data.parking_cost || 0,
+            operational_cost: data.operational_cost || 0,
             status: data.status as LogbookEntry['status'],
             created_at: data.created_at
         };
@@ -503,10 +527,13 @@ export const ApiService = {
             .update({
                 date: updates.date,
                 unit_id: updates.unit_id,
+                etoll_id: updates.etoll_id || null,
                 client_name: updates.client_name,
                 rute: updates.rute,
                 keterangan: updates.keterangan,
-                toll_parking_cost: updates.toll_parking_cost,
+                toll_cost: updates.toll_cost,
+                parking_cost: updates.parking_cost,
+                operational_cost: updates.operational_cost,
                 status: updates.status
             })
             .eq('id', id);
@@ -518,6 +545,14 @@ export const ApiService = {
     },
 
     updateLogbookStatus: async (id: string, status: LogbookEntry['status']): Promise<void> => {
+        // First, get the logbook to check costs and driver_id
+        const { data: logbook } = await supabase
+            .from('logbooks')
+            .select('driver_id, etoll_id, toll_cost, operational_cost, status')
+            .eq('id', id)
+            .single();
+
+        // Update the status
         const { error } = await supabase
             .from('logbooks')
             .update({ status })
@@ -526,6 +561,46 @@ export const ApiService = {
         if (error) {
             console.error('[ApiService] Update status error:', error.message);
             throw error;
+        }
+
+        // Deduct balances ONLY when status changes to 'approved'
+        // and only if it wasn't already approved before
+        if (status === 'approved' && logbook && logbook.status !== 'approved') {
+            // Deduct E-Toll balance
+            if (logbook.etoll_id && logbook.toll_cost > 0) {
+                const { data: etollData } = await supabase
+                    .from('etolls')
+                    .select('balance')
+                    .eq('id', logbook.etoll_id)
+                    .single();
+
+                if (etollData) {
+                    const newBalance = Math.max(0, etollData.balance - logbook.toll_cost);
+                    await supabase
+                        .from('etolls')
+                        .update({ balance: newBalance })
+                        .eq('id', logbook.etoll_id);
+                    console.log(`[ApiService] E-Toll balance deducted: ${logbook.toll_cost} from card ${logbook.etoll_id}`);
+                }
+            }
+
+            // Deduct Driver's Operational Balance
+            if (logbook.operational_cost > 0 && logbook.driver_id) {
+                const { data: driverData } = await supabase
+                    .from('profiles')
+                    .select('operational_balance')
+                    .eq('id', logbook.driver_id)
+                    .single();
+
+                if (driverData) {
+                    const newBalance = Math.max(0, (driverData.operational_balance || 0) - logbook.operational_cost);
+                    await supabase
+                        .from('profiles')
+                        .update({ operational_balance: newBalance })
+                        .eq('id', logbook.driver_id);
+                    console.log(`[ApiService] Driver operational balance deducted: ${logbook.operational_cost} from driver ${logbook.driver_id}`);
+                }
+            }
         }
     },
 
@@ -539,6 +614,166 @@ export const ApiService = {
             console.error('[ApiService] Delete logbook error:', error.message);
             throw error;
         }
+    },
+
+    // ==================== E-TOLLS ====================
+    getEtolls: async (): Promise<Etoll[]> => {
+        const { data, error } = await supabase
+            .from('etolls')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[ApiService] Get etolls error:', error.message);
+            return [];
+        }
+
+        return data.map(e => ({
+            id: e.id,
+            card_name: e.card_name,
+            card_number: e.card_number || undefined,
+            balance: e.balance || 0,
+            status: e.status as Etoll['status'],
+            created_at: e.created_at
+        }));
+    },
+
+    getActiveEtolls: async (): Promise<Etoll[]> => {
+        const { data, error } = await supabase
+            .from('etolls')
+            .select('*')
+            .eq('status', 'active')
+            .order('card_name', { ascending: true });
+
+        if (error) {
+            console.error('[ApiService] Get active etolls error:', error.message);
+            return [];
+        }
+
+        return data.map(e => ({
+            id: e.id,
+            card_name: e.card_name,
+            card_number: e.card_number || undefined,
+            balance: e.balance || 0,
+            status: e.status as Etoll['status'],
+            created_at: e.created_at
+        }));
+    },
+
+    createEtoll: async (etoll: Omit<Etoll, 'id' | 'created_at'>): Promise<Etoll> => {
+        const { data, error } = await supabase
+            .from('etolls')
+            .insert({
+                card_name: etoll.card_name,
+                card_number: etoll.card_number || null,
+                balance: etoll.balance || 0,
+                status: etoll.status || 'active'
+            })
+            .select()
+            .single();
+
+        if (error || !data) {
+            console.error('[ApiService] Create etoll error:', error?.message);
+            throw error;
+        }
+
+        return {
+            id: data.id,
+            card_name: data.card_name,
+            card_number: data.card_number || undefined,
+            balance: data.balance || 0,
+            status: data.status as Etoll['status'],
+            created_at: data.created_at
+        };
+    },
+
+    updateEtoll: async (id: string, updates: Partial<Etoll>): Promise<void> => {
+        const { error } = await supabase
+            .from('etolls')
+            .update({
+                card_name: updates.card_name,
+                card_number: updates.card_number || null,
+                balance: updates.balance,
+                status: updates.status
+            })
+            .eq('id', id);
+
+        if (error) {
+            console.error('[ApiService] Update etoll error:', error.message);
+            throw error;
+        }
+    },
+
+    deleteEtoll: async (id: string): Promise<void> => {
+        const { error } = await supabase
+            .from('etolls')
+            .delete()
+            .eq('id', id);
+
+        if (error) {
+            console.error('[ApiService] Delete etoll error:', error.message);
+            throw error;
+        }
+    },
+
+    // ==================== DRIVER OPERATIONAL BALANCE ====================
+    getDriversWithBalance: async (): Promise<User[]> => {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('role', 'driver')
+            .order('full_name', { ascending: true });
+
+        if (error) {
+            console.error('[ApiService] Get drivers with balance error:', error.message);
+            return [];
+        }
+
+        return data.map(profile => ({
+            id: profile.id,
+            username: profile.username,
+            full_name: profile.full_name,
+            role: profile.role as User['role'],
+            status: (profile.status as User['status']) || 'active',
+            operational_balance: profile.operational_balance || 0
+        }));
+    },
+
+    topUpDriverBalance: async (driverId: string, amount: number): Promise<void> => {
+        // Get current balance
+        const { data: driver } = await supabase
+            .from('profiles')
+            .select('operational_balance')
+            .eq('id', driverId)
+            .single();
+
+        if (driver) {
+            const newBalance = (driver.operational_balance || 0) + amount;
+            const { error } = await supabase
+                .from('profiles')
+                .update({ operational_balance: newBalance })
+                .eq('id', driverId);
+
+            if (error) {
+                console.error('[ApiService] Top up driver balance error:', error.message);
+                throw error;
+            }
+        }
+    },
+
+    getDriverBalance: async (driverId: string): Promise<number> => {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('operational_balance')
+            .eq('id', driverId)
+            .single();
+
+        if (error || !data) {
+            console.error('[ApiService] Get driver balance error:', error?.message);
+            return 0;
+        }
+
+        return data.operational_balance || 0;
     },
 
     // ==================== NOTIFICATIONS ====================

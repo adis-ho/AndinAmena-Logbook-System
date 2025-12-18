@@ -117,6 +117,7 @@ CREATE TABLE profiles (
   full_name TEXT NOT NULL,
   role TEXT CHECK (role IN ('admin', 'driver')),
   status TEXT DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  operational_balance INTEGER DEFAULT 0, -- Saldo operasional per driver
   created_at TIMESTAMPTZ DEFAULT now()
 );
 ```
@@ -142,7 +143,8 @@ CREATE TABLE logbooks (
   client_name TEXT,          -- User/Tamu/Client
   rute TEXT,                 -- Rute perjalanan
   keterangan TEXT,           -- Keterangan/catatan
-  toll_parking_cost INTEGER, -- Biaya Tol & Parkir gabungan
+  toll_cost INTEGER,         -- Biaya Tol
+  operational_cost INTEGER,  -- Biaya Parkir dll. (Ex-parking_cost)
   status TEXT CHECK (status IN ('submitted', 'approved', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT now()
 );

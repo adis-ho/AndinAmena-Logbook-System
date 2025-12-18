@@ -136,3 +136,124 @@ export function SkeletonLogbookList() {
         </div>
     );
 }
+
+// Driver Dashboard Skeleton (Hero Card + Quick Actions + Recent)
+export function SkeletonDriverDashboard() {
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div>
+                <SkeletonText className="w-48 h-7" />
+                <SkeletonText className="w-32 mt-2" />
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Skeleton className="h-24 rounded-xl" />
+                <Skeleton className="h-24 rounded-xl" />
+            </div>
+
+            {/* Hero Card */}
+            <div className="bg-gray-100 rounded-xl overflow-hidden">
+                <Skeleton className="h-28" />
+                <div className="bg-white p-4 space-y-4">
+                    <SkeletonText className="w-32" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                                <div className="space-y-1">
+                                    <SkeletonText className="w-12" />
+                                    <SkeletonText className="w-8 h-5" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <div className="border-t pt-3 flex justify-between">
+                        <SkeletonText className="w-32" />
+                        <SkeletonText className="w-24" />
+                    </div>
+                </div>
+            </div>
+
+            {/* Recent Logbooks */}
+            <div className="bg-white rounded-xl border border-gray-100 p-6 space-y-3">
+                <SkeletonText className="w-32 h-5" />
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <div key={i} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="space-y-1">
+                            <SkeletonText className="w-40" />
+                            <SkeletonText className="w-24" />
+                        </div>
+                        <div className="text-right space-y-1">
+                            <Skeleton className="h-6 w-16 rounded-full" />
+                            <SkeletonText className="w-20" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Driver History Skeleton
+export function SkeletonLogbookHistory() {
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex items-center gap-3">
+                <Skeleton className="h-6 w-6 rounded" />
+                <SkeletonText className="w-48 h-6" />
+            </div>
+
+            {/* Logbook Cards */}
+            <div className="space-y-4">
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
+                        <div className="flex justify-between">
+                            <div className="space-y-1">
+                                <SkeletonText className="w-48" />
+                                <SkeletonText className="w-32" />
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Skeleton className="h-6 w-16 rounded-full" />
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <div className="flex"><SkeletonText className="w-20 mr-2" /><SkeletonText className="w-32" /></div>
+                            <div className="flex"><SkeletonText className="w-20 mr-2" /><SkeletonText className="w-48" /></div>
+                        </div>
+                        <Skeleton className="h-16 rounded-lg" />
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Management List Skeleton (User, Unit, Etoll, Budget)
+export function SkeletonManagementList() {
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                    <Skeleton className="h-6 w-6 rounded" />
+                    <SkeletonText className="w-40 h-6" />
+                </div>
+                <Skeleton className="h-10 w-32 rounded-lg" />
+            </div>
+
+            {/* Summary Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                    <SkeletonCard key={i} />
+                ))}
+            </div>
+
+            {/* Table */}
+            <SkeletonTable rows={5} cols={5} />
+        </div>
+    );
+}

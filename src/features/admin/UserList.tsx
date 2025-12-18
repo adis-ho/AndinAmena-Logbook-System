@@ -3,6 +3,7 @@ import { ApiService } from '../../services/api';
 import type { User, UserRole } from '../../types';
 import { Plus, Pencil, Trash2, Users, X, RotateCcw } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { SkeletonManagementList } from '../../components/ui/Skeleton';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -129,11 +130,7 @@ export default function UserList() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
+        return <SkeletonManagementList />;
     }
 
     return (

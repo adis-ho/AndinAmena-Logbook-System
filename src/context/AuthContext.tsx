@@ -34,7 +34,8 @@ async function fetchUserWithProfile(sessionUser: { id: string; user_metadata?: R
                 username: profile.username,
                 full_name: profile.full_name,
                 role: profile.role as User['role'],
-                status: profile.status || 'active'
+                status: profile.status || 'active',
+                operational_balance: profile.operational_balance || 0
             };
         }
     } catch (err) {
@@ -47,7 +48,8 @@ async function fetchUserWithProfile(sessionUser: { id: string; user_metadata?: R
         username: (metadata.username as string) || 'user',
         full_name: (metadata.full_name as string) || 'User',
         role: (metadata.role as User['role']) || 'driver',
-        status: 'active'
+        status: 'active',
+        operational_balance: 0
     };
 }
 

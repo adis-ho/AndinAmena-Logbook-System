@@ -1,24 +1,28 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import type { LogbookEntry, Unit } from '../../types';
+import type { LogbookEntry, Unit, Etoll } from '../../types';
 import { History, CheckCircle, XCircle, Clock, Pencil, X } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
+import { SkeletonLogbookHistory } from '../../components/ui/Skeleton';
 
 interface EditFormData {
     date: string;
     unit_id: string;
+    etoll_id: string;
     client_name: string;
     rute: string;
     keterangan: string;
-    toll_parking_cost: number;
+    toll_cost: number;
+    operational_cost: number;
 }
 
 export default function LogbookHistory() {
     const { user } = useAuth();
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
     const [units, setUnits] = useState<Unit[]>([]);
+    const [etolls, setEtolls] = useState<Etoll[]>([]);
     const [loading, setLoading] = useState(true);
     const [editingLogbook, setEditingLogbook] = useState<LogbookEntry | null>(null);
     const [formData, setFormData] = useState<EditFormData | null>(null);
@@ -27,12 +31,14 @@ export default function LogbookHistory() {
     const fetchData = async () => {
         if (!user) return;
         try {
-            const [logsData, unitsData] = await Promise.all([
+            const [logsData, unitsData, etollsData] = await Promise.all([
                 ApiService.getLogbooksByDriverId(user.id),
-                ApiService.getUnits()
+                ApiService.getUnits(),
+                ApiService.getActiveEtolls()
             ]);
             setLogbooks(logsData);
             setUnits(unitsData);
+            setEtolls(etollsData);
         } catch (err) {
             console.error('Gagal mengambil laporan:', err);
         } finally {
@@ -80,10 +86,12 @@ export default function LogbookHistory() {
         setFormData({
             date: logbook.date.split('T')[0],
             unit_id: logbook.unit_id,
+            etoll_id: logbook.etoll_id || '',
             client_name: logbook.client_name,
             rute: logbook.rute,
             keterangan: logbook.keterangan,
-            toll_parking_cost: logbook.toll_parking_cost
+            toll_cost: logbook.toll_cost,
+            operational_cost: logbook.operational_cost
         });
     };
 
@@ -100,6 +108,7 @@ export default function LogbookHistory() {
         try {
             await ApiService.updateLogbook(editingLogbook.id, {
                 ...formData,
+                etoll_id: formData.etoll_id || undefined,
                 status: 'submitted'
             });
 
@@ -114,11 +123,7 @@ export default function LogbookHistory() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
+        return <SkeletonLogbookHistory />;
     }
 
     return (
@@ -167,6 +172,23 @@ export default function LogbookHistory() {
                                 </div>
                             </div>
 
+                            {/* E-Toll Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Kartu E-Toll (Opsional)</label>
+                                <select
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                    value={formData.etoll_id}
+                                    onChange={(e) => setFormData({ ...formData, etoll_id: e.target.value })}
+                                >
+                                    <option value="">-- Tidak Menggunakan E-Toll --</option>
+                                    {etolls.map(etoll => (
+                                        <option key={etoll.id} value={etoll.id}>
+                                            {etoll.card_name} {etoll.card_number ? `(${etoll.card_number})` : ''} - Saldo: Rp {etoll.balance.toLocaleString('id-ID')}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">User (Tamu/Client)</label>
                                 <input
@@ -200,14 +222,27 @@ export default function LogbookHistory() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol & Parkir</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol</label>
                                 <input
                                     type="number"
                                     min="0"
                                     step="1"
                                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-                                    value={formData.toll_parking_cost || ''}
-                                    onChange={(e) => setFormData({ ...formData, toll_parking_cost: Math.round(Number(e.target.value)) || 0 })}
+                                    value={formData.toll_cost || ''}
+                                    onChange={(e) => setFormData({ ...formData, toll_cost: Math.round(Number(e.target.value)) || 0 })}
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Parkir dll.</label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="1"
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                                    value={formData.operational_cost || ''}
+                                    onChange={(e) => setFormData({ ...formData, operational_cost: Math.round(Number(e.target.value)) || 0 })}
                                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
                                 />
                             </div>
@@ -280,10 +315,19 @@ export default function LogbookHistory() {
                                 )}
                             </div>
 
-                            <div className="bg-blue-50 p-3 rounded-lg">
+                            <div className="bg-blue-50 p-3 rounded-lg space-y-1">
+                                <div className="flex justify-between items-center text-sm text-blue-800">
+                                    <span>Biaya Tol:</span>
+                                    <span>{formatCurrency(log.toll_cost)}</span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm text-blue-800">
+                                    <span>Biaya Parkir dll.:</span>
+                                    <span>{formatCurrency(log.operational_cost)}</span>
+                                </div>
+                                <div className="border-t border-blue-200 my-1"></div>
                                 <div className="flex justify-between items-center">
-                                    <span className="text-blue-700 font-medium">Biaya Tol & Parkir:</span>
-                                    <span className="font-bold text-blue-700">{formatCurrency(log.toll_parking_cost)}</span>
+                                    <span className="text-blue-700 font-medium">Total Biaya:</span>
+                                    <span className="font-bold text-blue-700">{formatCurrency(log.toll_cost + log.operational_cost)}</span>
                                 </div>
                             </div>
 

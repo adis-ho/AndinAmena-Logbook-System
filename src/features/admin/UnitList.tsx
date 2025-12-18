@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { Unit } from '../../types';
 import { Plus, Pencil, Trash2, Truck, X } from 'lucide-react';
+import { SkeletonManagementList } from '../../components/ui/Skeleton';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -102,11 +103,7 @@ export default function UnitList() {
     };
 
     if (loading) {
-        return (
-            <div className="flex items-center justify-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            </div>
-        );
+        return <SkeletonManagementList />;
     }
 
     return (

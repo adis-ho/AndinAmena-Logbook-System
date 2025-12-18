@@ -10,7 +10,9 @@ import {
     History,
     LogOut,
     X,
-    ChevronRight
+    ChevronRight,
+    CreditCard,
+    Wallet
 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
@@ -42,6 +44,8 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
     const adminLinks = [
         { to: '/admin', label: 'Dashboard', icon: LayoutDashboard },
         { to: '/admin/logbooks', label: 'Laporan Harian', icon: BookOpen },
+        { to: '/admin/etolls', label: 'E-Toll', icon: CreditCard },
+        { to: '/admin/operational', label: 'Uang Operasional', icon: Wallet },
         { to: '/admin/units', label: 'Units', icon: Car },
         { to: '/admin/users', label: 'Users', icon: Users },
     ];

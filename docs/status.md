@@ -1,12 +1,12 @@
 # Status Proyek Amena Logbook
 
-**Terakhir Diperbarui**: 17 Desember 2025
+**Terakhir Diperbarui**: 19 Desember 2025
 
 ---
 
 ## Ringkasan
 
-Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3.5 (Complete)** dengan integrasi Supabase penuh, Dashboard Analytics, Toast Notifications, Skeleton Loading, dan Soft Delete untuk Users.
+Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3.6 (Complete)** dengan integrasi Supabase penuh, Dashboard Analytics, Cost Management System, dan UI Polish (Skeleton Loading).
 
 ## Apa yang Berhasil ✅
 
@@ -33,7 +33,16 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Soft Delete users (Nonaktifkan) | ✅ |
 | Reactivate users (Aktifkan Kembali) | ✅ |
 | Manajemen Unit (CRUD + Modal) | ✅ |
+| Manajemen Unit (CRUD + Modal) | ✅ |
 | Notifikasi logbook baru | ✅ |
+
+### Cost Management & Funds (NEW)
+| Fitur | Status |
+|-------|--------|
+| Saldo Operasional per Driver | ✅ |
+| Top-up Saldo Driver | ✅ |
+| Detailed Cost Breakdown (Tol + Parkir dll.) | ✅ |
+| Deduksi saldo otomatis saat approve | ✅ |
 
 ### Dashboard Analytics (NEW)
 | Fitur | Status |
@@ -58,7 +67,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Fitur | Status |
 |-------|--------|
 | Toast notifications (success/error/warning/info) | ✅ |
-| Skeleton loading components | ✅ |
+| Skeleton loading components (8 Halaman) | ✅ |
 | Plus Jakarta Sans font | ✅ |
 | Responsive layout | ✅ |
 | Drawer navigation (slide) | ✅ |

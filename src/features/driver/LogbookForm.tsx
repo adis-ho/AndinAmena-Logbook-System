@@ -2,25 +2,35 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import type { Unit } from '../../types';
-import { BookPlus } from 'lucide-react';
+import type { Unit, Etoll } from '../../types';
+import { BookPlus, Wallet } from 'lucide-react';
 
 export default function LogbookForm() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [units, setUnits] = useState<Unit[]>([]);
+    const [etolls, setEtolls] = useState<Etoll[]>([]);
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
         unit_id: '',
+        etoll_id: '',
         client_name: '',
         rute: '',
         keterangan: '',
-        toll_parking_cost: 0
+        toll_cost: 0,
+        parking_cost: 0,
+        operational_cost: 0
     });
 
     useEffect(() => {
-        ApiService.getUnits().then(setUnits);
+        Promise.all([
+            ApiService.getUnits(),
+            ApiService.getActiveEtolls()
+        ]).then(([unitsData, etollsData]) => {
+            setUnits(unitsData);
+            setEtolls(etollsData);
+        });
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -31,6 +41,7 @@ export default function LogbookForm() {
         try {
             await ApiService.createLogbook({
                 ...formData,
+                etoll_id: formData.etoll_id || undefined,
                 driver_id: user.id,
                 status: 'submitted'
             });
@@ -50,6 +61,12 @@ export default function LogbookForm() {
         } finally {
             setLoading(false);
         }
+    };
+
+    const totalCost = formData.toll_cost + formData.operational_cost;
+
+    const formatCurrency = (value: number) => {
+        return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
     };
 
     return (
@@ -124,25 +141,66 @@ export default function LogbookForm() {
                     />
                 </div>
 
+                {/* E-Toll Selection */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol & Parkir</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Kartu E-Toll (Opsional)</label>
+                    <select
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                        value={formData.etoll_id}
+                        onChange={(e) => setFormData({ ...formData, etoll_id: e.target.value })}
+                    >
+                        <option value="">-- Tidak Menggunakan E-Toll --</option>
+                        {etolls.map(etoll => (
+                            <option key={etoll.id} value={etoll.id}>
+                                {etoll.card_name} {etoll.card_number ? `(${etoll.card_number})` : ''} - Saldo: Rp {etoll.balance.toLocaleString('id-ID')}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Toll Cost */}
+                <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol</label>
                     <input
                         type="number"
                         min="0"
                         step="1"
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                         placeholder="Rp 0"
-                        value={formData.toll_parking_cost || ''}
-                        onChange={(e) => setFormData({ ...formData, toll_parking_cost: Math.round(Number(e.target.value)) || 0 })}
+                        value={formData.toll_cost || ''}
+                        onChange={(e) => setFormData({ ...formData, toll_cost: Math.round(Number(e.target.value)) || 0 })}
                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     />
+                </div>
+
+                {/* Biaya Parkir dll. */}
+                <div>
+                    <div className="flex items-center justify-between mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Biaya Parkir dll.</label>
+                        <div className="flex items-center gap-1 text-sm">
+                            <Wallet className="h-4 w-4 text-green-600" />
+                            <span className="text-gray-500">Saldo:</span>
+                            <span className="font-semibold text-green-600">{formatCurrency(user?.operational_balance || 0)}</span>
+                        </div>
+                    </div>
+                    <input
+                        type="number"
+                        min="0"
+                        step="1"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+                        placeholder="Rp 0"
+                        value={formData.operational_cost || ''}
+                        onChange={(e) => setFormData({ ...formData, operational_cost: Math.round(Number(e.target.value)) || 0 })}
+                        onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                    />
+                    <p className="text-xs text-gray-500 mt-1">Uang operasional yang digunakan (makan, bensin, dll)</p>
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">
                     <div className="flex justify-between items-center">
                         <span className="font-medium text-blue-900">Total Biaya:</span>
                         <span className="text-xl font-bold text-blue-600">
-                            Rp {formData.toll_parking_cost.toLocaleString('id-ID')}
+                            Rp {totalCost.toLocaleString('id-ID')}
                         </span>
                     </div>
                 </div>
