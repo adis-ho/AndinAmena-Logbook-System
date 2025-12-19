@@ -6,7 +6,7 @@
 
 ## Ringkasan
 
-Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3.6 (Complete)** dengan integrasi Supabase penuh, Dashboard Analytics, Cost Management System, dan UI Polish (Skeleton Loading).
+Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3.7 (Complete)** dengan integrasi Supabase penuh, Dashboard Analytics, Cost Management System, E-Toll Management, dan UI Polish.
 
 ## Apa yang Berhasil ✅
 
@@ -23,12 +23,14 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Fitur | Status |
 |-------|--------|
 | Dashboard dengan statistik & charts | ✅ |
-| Lihat semua logbook | ✅ |
+| Manajemen E-Toll (CRUD + Saldo) | ✅ |
+| Lihat semua logbook (Pagination) | ✅ |
 | Approve/Reject logbook | ✅ |
 | Detail logbook modal | ✅ |
-| Filter logbook by status | ✅ |
-| Export ke Excel | ✅ |
-| Export ke PDF | ✅ |
+| Filter logbook (Status, Driver, Unit, Date) | ✅ |
+| Sorting logbook (Terbaru/Terlama) | ✅ |
+| Export ke Excel (Unit + Biaya Lain) | ✅ |
+| Export ke PDF (Unit + Biaya Lain) | ✅ |
 | Manajemen User (CRUD + Modal) | ✅ |
 | Soft Delete users (Nonaktifkan) | ✅ |
 | Reactivate users (Aktifkan Kembali) | ✅ |
@@ -41,7 +43,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 |-------|--------|
 | Saldo Operasional per Driver | ✅ |
 | Top-up Saldo Driver | ✅ |
-| Detailed Cost Breakdown (Tol + Parkir dll.) | ✅ |
+| Detailed Cost Breakdown (Tol + Biaya Lain) | ✅ |
 | Deduksi saldo otomatis saat approve | ✅ |
 
 ### Dashboard Analytics (NEW)

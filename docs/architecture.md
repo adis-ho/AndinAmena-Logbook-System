@@ -131,6 +131,18 @@ CREATE TABLE units (
   status TEXT CHECK (status IN ('available', 'in_use', 'maintenance')),
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+### E-Tolls (Kartu Tol)
+```sql
+CREATE TABLE etolls (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  card_name TEXT NOT NULL,
+  card_number TEXT,
+  balance INTEGER DEFAULT 0,
+  status TEXT CHECK (status IN ('active', 'inactive')),
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
 ```
 
 ### Logbooks
@@ -144,7 +156,8 @@ CREATE TABLE logbooks (
   rute TEXT,                 -- Rute perjalanan
   keterangan TEXT,           -- Keterangan/catatan
   toll_cost INTEGER,         -- Biaya Tol
-  operational_cost INTEGER,  -- Biaya Parkir dll. (Ex-parking_cost)
+  operational_cost INTEGER,  -- Biaya Lain (Ex-parking_cost)
+  etoll_id UUID REFERENCES etolls(id), -- Kartu E-Toll yang digunakan
   status TEXT CHECK (status IN ('submitted', 'approved', 'rejected')),
   created_at TIMESTAMPTZ DEFAULT now()
 );

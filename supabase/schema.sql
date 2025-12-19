@@ -183,3 +183,95 @@ ALTER TABLE public.logbooks ADD COLUMN IF NOT EXISTS rute TEXT;
 -- Rename activities ke keterangan
 ALTER TABLE public.logbooks RENAME COLUMN activities TO keterangan;
 */
+
+-- =============================================
+-- RPC FUNCTIONS: Dashboard Statistics Aggregation
+-- =============================================
+
+-- Function: Get Admin Dashboard Statistics
+CREATE OR REPLACE FUNCTION get_admin_dashboard_stats(period_days INTEGER DEFAULT 7)
+RETURNS JSON AS $$
+DECLARE
+  result JSON;
+  period_start DATE := CURRENT_DATE - period_days;
+BEGIN
+  SELECT json_build_object(
+    'totalLogbooks', (SELECT COUNT(*) FROM logbooks),
+    'todayLogbooks', (SELECT COUNT(*) FROM logbooks WHERE date = CURRENT_DATE),
+    'weekLogbooks', (SELECT COUNT(*) FROM logbooks WHERE date >= CURRENT_DATE - 7),
+    'monthLogbooks', (SELECT COUNT(*) FROM logbooks WHERE date >= CURRENT_DATE - 30),
+    'totalDrivers', (SELECT COUNT(*) FROM profiles WHERE role = 'driver' AND status = 'active'),
+    'totalUnits', (SELECT COUNT(*) FROM units),
+    'totalCost', (SELECT COALESCE(SUM(toll_cost + operational_cost), 0) FROM logbooks),
+    'todayCost', (SELECT COALESCE(SUM(toll_cost + operational_cost), 0) FROM logbooks WHERE date = CURRENT_DATE),
+    'periodCost', (SELECT COALESCE(SUM(toll_cost + operational_cost), 0) FROM logbooks WHERE date >= period_start),
+    'statusData', (
+      SELECT json_agg(row_to_json(t)) FROM (
+        SELECT 
+          CASE status 
+            WHEN 'approved' THEN 'Disetujui'
+            WHEN 'submitted' THEN 'Pending'
+            WHEN 'rejected' THEN 'Ditolak'
+          END as name,
+          COUNT(*) as value
+        FROM logbooks
+        GROUP BY status
+      ) t
+    ),
+    'dailyData', (
+      SELECT json_agg(row_to_json(t) ORDER BY t.date) FROM (
+        SELECT 
+          to_char(d.date, 'DD Mon') as date,
+          COALESCE(l.count, 0) as count,
+          COALESCE(l.cost, 0) as cost
+        FROM generate_series(
+          CURRENT_DATE - (period_days - 1),
+          CURRENT_DATE,
+          '1 day'::interval
+        ) d(date)
+        LEFT JOIN (
+          SELECT 
+            date,
+            COUNT(*) as count,
+            SUM(toll_cost + operational_cost) as cost
+          FROM logbooks
+          WHERE date >= CURRENT_DATE - (period_days - 1)
+          GROUP BY date
+        ) l ON l.date = d.date::date
+      ) t
+    ),
+    'topDrivers', (
+      SELECT json_agg(row_to_json(t)) FROM (
+        SELECT 
+          p.full_name as name,
+          COALESCE(SUM(l.toll_cost + l.operational_cost), 0) as cost
+        FROM profiles p
+        LEFT JOIN logbooks l ON l.driver_id = p.id
+        WHERE p.role = 'driver'
+        GROUP BY p.id, p.full_name
+        ORDER BY cost DESC
+        LIMIT 5
+      ) t
+    ),
+    'recentLogbooks', (
+      SELECT json_agg(row_to_json(t)) FROM (
+        SELECT 
+          l.id,
+          l.date,
+          l.client_name,
+          l.rute,
+          l.toll_cost,
+          l.operational_cost,
+          l.status,
+          p.full_name as driver_name
+        FROM logbooks l
+        LEFT JOIN profiles p ON p.id = l.driver_id
+        ORDER BY l.created_at DESC
+        LIMIT 5
+      ) t
+    )
+  ) INTO result;
+  
+  RETURN result;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;

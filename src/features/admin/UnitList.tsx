@@ -2,11 +2,13 @@ import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { Unit } from '../../types';
 import { Plus, Pencil, Trash2, Truck, X } from 'lucide-react';
+import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 
 type FormMode = 'add' | 'edit' | null;
 
 export default function UnitList() {
+    const { showToast } = useToast();
     const [units, setUnits] = useState<Unit[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -66,10 +68,11 @@ export default function UnitList() {
             } else if (formMode === 'edit' && editingUnit) {
                 await ApiService.updateUnit(editingUnit.id, formData);
             }
+            showToast('success', formMode === 'add' ? 'Unit berhasil ditambahkan' : 'Unit berhasil diupdate');
             resetForm();
             fetchUnits();
         } catch (err) {
-            alert(formMode === 'add' ? 'Gagal menambah unit' : 'Gagal mengupdate unit');
+            showToast('error', formMode === 'add' ? 'Gagal menambah unit' : 'Gagal mengupdate unit');
             console.error(err);
         } finally {
             setFormLoading(false);
@@ -82,8 +85,9 @@ export default function UnitList() {
         try {
             await ApiService.deleteUnit(id);
             setUnits(units.filter(u => u.id !== id));
+            showToast('success', 'Unit berhasil dihapus');
         } catch (err) {
-            alert('Gagal menghapus unit');
+            showToast('error', 'Gagal menghapus unit');
             console.error(err);
         }
     };

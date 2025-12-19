@@ -235,7 +235,7 @@ export default function LogbookHistory() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Parkir dll.</label>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Lain</label>
                                 <input
                                     type="number"
                                     min="0"
@@ -321,7 +321,7 @@ export default function LogbookHistory() {
                                     <span>{formatCurrency(log.toll_cost)}</span>
                                 </div>
                                 <div className="flex justify-between items-center text-sm text-blue-800">
-                                    <span>Biaya Parkir dll.:</span>
+                                    <span>Biaya Lain:</span>
                                     <span>{formatCurrency(log.operational_cost)}</span>
                                 </div>
                                 <div className="border-t border-blue-200 my-1"></div>

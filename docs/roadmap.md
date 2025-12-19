@@ -87,12 +87,21 @@
 - [x] Tampilan status user (Aktif/Nonaktif)
 
 ### 2.3.6 Cost Management & UI Polish ✅ (NEW)
-- [x] Refactor `parking_cost` ke `operational_cost` ("Biaya Parkir dll.")
+- [x] Refactor `parking_cost` ke `operational_cost` ("Biaya Lain")
 - [x] Implementasi Saldo Operasional per Driver (`operational_balance`)
 - [x] Hapus tabel `operational_budget` (company-wide)
 - [x] Driver Dashboard: Unified Hero Card (Saldo + Stats)
-- [x] Detailed Cost Breakdown (Tol vs Parkir dll.) di History & Detail
+- [x] Detailed Cost Breakdown (Tol vs Biaya Lain) di History & Detail
 - [x] Global Skeleton Loading Implementation (8 halaman)
+
+### 2.3.7 E-Toll & Advanced Features ✅ (LATEST)
+- [x] Manajemen E-Toll (CRUD, Saldo, Status) 
+- [x] Integrasi E-Toll dengan Driver Logbook Input
+- [x] Filter Unit di Admin Logbook List
+- [x] Pagination Server-side untuk Logbook List
+- [x] Sorting (Terbaru/Terlama) untuk Logbook List
+- [x] Export PDF & Excel: Kolom Unit (Nama Pendek + Plat) dan Biaya Lain
+- [x] UX: Rename "Biaya Parkir dll." ke "Biaya Lain" di semua form
 
 ### 2.4 UI/UX Improvements ✅
 - [x] Drawer navigation (Flowbite-style)

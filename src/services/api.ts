@@ -395,6 +395,7 @@ export const ApiService = {
     },
 
     // ==================== LOGBOOKS ====================
+    // ==================== LOGBOOKS ====================
     getLogbooks: async (): Promise<LogbookEntry[]> => {
         const { data, error } = await supabase
             .from('logbooks')
@@ -421,6 +422,66 @@ export const ApiService = {
             status: log.status as LogbookEntry['status'],
             created_at: log.created_at
         }));
+    },
+
+    getLogbooksPaginated: async (params: {
+        page: number;
+        pageSize: number;
+        driverId?: string;
+        unitId?: string;
+        clientName?: string;
+        dateStart?: string;
+        dateEnd?: string;
+        status?: string;
+        sortOrder?: 'asc' | 'desc';
+    }): Promise<{ data: LogbookEntry[]; count: number }> => {
+        let query = supabase
+            .from('logbooks')
+            .select('*', { count: 'exact' });
+
+        // Apply filters
+        if (params.driverId) query = query.eq('driver_id', params.driverId);
+        if (params.unitId) query = query.eq('unit_id', params.unitId);
+        if (params.clientName) query = query.ilike('client_name', `%${params.clientName}%`);
+        if (params.dateStart) query = query.gte('date', params.dateStart);
+        if (params.dateEnd) query = query.lte('date', params.dateEnd);
+        if (params.status && params.status !== 'all') query = query.eq('status', params.status);
+
+        // Sorting (default to date)
+        const order = params.sortOrder || 'desc';
+        // Secondary sort by created_at to ensure consistent pagination
+        query = query.order('date', { ascending: order === 'asc' })
+            .order('created_at', { ascending: false });
+
+        // Pagination
+        const from = (params.page - 1) * params.pageSize;
+        const to = from + params.pageSize - 1;
+        query = query.range(from, to);
+
+        const { data, error, count } = await query;
+
+        if (error) {
+            console.error('[ApiService] Get logbooks paginated error:', error.message);
+            return { data: [], count: 0 };
+        }
+
+        const logbooks = data.map(log => ({
+            id: log.id,
+            date: log.date,
+            driver_id: log.driver_id,
+            unit_id: log.unit_id,
+            etoll_id: log.etoll_id || undefined,
+            client_name: log.client_name || '',
+            rute: log.rute || '',
+            keterangan: log.keterangan || '',
+            toll_cost: log.toll_cost || 0,
+            parking_cost: log.parking_cost || 0,
+            operational_cost: log.operational_cost || 0,
+            status: log.status as LogbookEntry['status'],
+            created_at: log.created_at
+        }));
+
+        return { data: logbooks, count: count || 0 };
     },
 
     getLogbooksByDriverId: async (driverId: string): Promise<LogbookEntry[]> => {
@@ -880,6 +941,48 @@ export const ApiService = {
                 message: notification.message,
                 link: notification.link
             });
+        }
+    },
+
+    // ==================== DASHBOARD STATISTICS (RPC) ====================
+    getAdminDashboardStats: async (periodDays: number = 7): Promise<{
+        totalLogbooks: number;
+        todayLogbooks: number;
+        weekLogbooks: number;
+        monthLogbooks: number;
+        totalDrivers: number;
+        totalUnits: number;
+        totalCost: number;
+        todayCost: number;
+        periodCost: number;
+        statusData: Array<{ name: string; value: number }>;
+        dailyData: Array<{ date: string; count: number; cost: number }>;
+        topDrivers: Array<{ name: string; cost: number }>;
+        recentLogbooks: Array<{
+            id: string;
+            date: string;
+            client_name: string;
+            rute: string;
+            toll_cost: number;
+            operational_cost: number;
+            status: string;
+            driver_name: string;
+        }>;
+    } | null> => {
+        try {
+            const { data, error } = await supabase.rpc('get_admin_dashboard_stats', {
+                period_days: periodDays
+            });
+
+            if (error) {
+                console.error('[ApiService] Dashboard stats RPC error:', error.message);
+                return null;
+            }
+
+            return data;
+        } catch (err) {
+            console.error('[ApiService] Dashboard stats error:', err);
+            return null;
         }
     }
 };

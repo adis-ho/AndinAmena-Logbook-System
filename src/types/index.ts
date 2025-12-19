@@ -38,7 +38,7 @@ export interface LogbookEntry {
     keterangan: string; // Keterangan/catatan
     toll_cost: number; // Biaya Tol
     parking_cost: number; // Biaya Parkir
-    operational_cost: number; // Biaya Operasional
+    operational_cost: number; // Biaya Lain
     status: LogbookStatus;
     created_at: string;
 }

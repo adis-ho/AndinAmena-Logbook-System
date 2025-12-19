@@ -173,10 +173,10 @@ export default function LogbookForm() {
                     />
                 </div>
 
-                {/* Biaya Parkir dll. */}
+                {/* Biaya Lain */}
                 <div>
                     <div className="flex items-center justify-between mb-1">
-                        <label className="block text-sm font-medium text-gray-700">Biaya Parkir dll.</label>
+                        <label className="block text-sm font-medium text-gray-700">Biaya Lain</label>
                         <div className="flex items-center gap-1 text-sm">
                             <Wallet className="h-4 w-4 text-green-600" />
                             <span className="text-gray-500">Saldo:</span>
@@ -193,7 +193,6 @@ export default function LogbookForm() {
                         onChange={(e) => setFormData({ ...formData, operational_cost: Math.round(Number(e.target.value)) || 0 })}
                         onWheel={(e) => (e.target as HTMLInputElement).blur()}
                     />
-                    <p className="text-xs text-gray-500 mt-1">Uang operasional yang digunakan (makan, bensin, dll)</p>
                 </div>
 
                 <div className="bg-blue-50 p-4 rounded-lg">
@@ -212,7 +211,7 @@ export default function LogbookForm() {
                 >
                     {loading ? 'Menyimpan...' : 'Simpan Laporan'}
                 </button>
-            </form>
-        </div>
+            </form >
+        </div >
     );
 }

@@ -1,13 +1,12 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
-import type { LogbookEntry, User } from '../../types';
-import { LayoutDashboard, BookOpen, Users, Truck, TrendingUp, Calendar } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Users, Truck, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
-import { format, subDays, startOfDay, isToday, isThisWeek, isThisMonth } from 'date-fns';
+import { format, differenceInDays, startOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SkeletonDashboard } from '../../components/ui/Skeleton';
 
-interface DashboardStats {
+interface DashboardData {
     totalLogbooks: number;
     todayLogbooks: number;
     weekLogbooks: number;
@@ -16,98 +15,50 @@ interface DashboardStats {
     totalUnits: number;
     totalCost: number;
     todayCost: number;
+    periodCost: number;
+    statusData: Array<{ name: string; value: number }> | null;
+    dailyData: Array<{ date: string; count: number; cost: number }> | null;
+    topDrivers: Array<{ name: string; cost: number }> | null;
+    recentLogbooks: Array<{
+        id: string;
+        date: string;
+        client_name: string;
+        rute: string;
+        toll_cost: number;
+        operational_cost: number;
+        status: string;
+        driver_name: string;
+    }> | null;
 }
 
 const COLORS = ['#10B981', '#F59E0B', '#EF4444'];
 
 export default function AdminDashboard() {
-    const [stats, setStats] = useState<DashboardStats>({
-        totalLogbooks: 0, todayLogbooks: 0, weekLogbooks: 0, monthLogbooks: 0,
-        totalDrivers: 0, totalUnits: 0, totalCost: 0, todayCost: 0
-    });
-    const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
+    const [data, setData] = useState<DashboardData | null>(null);
     const [loading, setLoading] = useState(true);
-    const [dailyData, setDailyData] = useState<{ date: string; count: number; cost: number }[]>([]);
-    const [statusData, setStatusData] = useState<{ name: string; value: number }[]>([]);
-    const [driverData, setDriverData] = useState<{ name: string; cost: number }[]>([]);
+    const [error, setError] = useState<string | null>(null);
+    const [period, setPeriod] = useState<number>(7);
 
     useEffect(() => {
         const fetchData = async () => {
+            setLoading(true);
             try {
-                const [logsData, usersData, unitsData] = await Promise.all([
-                    ApiService.getLogbooks(),
-                    ApiService.getUsers(),
-                    ApiService.getUnits()
-                ]);
+                const result = await ApiService.getAdminDashboardStats(period);
 
-                setLogbooks(logsData);
-                setUsers(usersData);
-
-                const drivers = usersData.filter((u: User) => u.role === 'driver');
-                const today = startOfDay(new Date());
-
-                const todayLogs = logsData.filter((l: LogbookEntry) => isToday(new Date(l.date)));
-                const weekLogs = logsData.filter((l: LogbookEntry) => isThisWeek(new Date(l.date)));
-                const monthLogs = logsData.filter((l: LogbookEntry) => isThisMonth(new Date(l.date)));
-
-                setStats({
-                    totalLogbooks: logsData.length,
-                    todayLogbooks: todayLogs.length,
-                    weekLogbooks: weekLogs.length,
-                    monthLogbooks: monthLogs.length,
-                    totalDrivers: drivers.length,
-                    totalUnits: unitsData.length,
-                    totalCost: logsData.reduce((sum: number, l: LogbookEntry) => sum + l.toll_cost + l.operational_cost, 0),
-                    todayCost: todayLogs.reduce((sum: number, l: LogbookEntry) => sum + l.toll_cost + l.operational_cost, 0)
-                });
-
-                // Daily data (7 days)
-                const daily: { date: string; count: number; cost: number }[] = [];
-                for (let i = 6; i >= 0; i--) {
-                    const date = subDays(today, i);
-                    const dateStr = format(date, 'yyyy-MM-dd');
-                    const dayLogs = logsData.filter((l: LogbookEntry) => l.date.startsWith(dateStr));
-                    daily.push({
-                        date: format(date, 'dd MMM', { locale: id }),
-                        count: dayLogs.length,
-                        cost: dayLogs.reduce((sum: number, l: LogbookEntry) => sum + l.toll_cost + l.operational_cost, 0)
-                    });
+                if (result) {
+                    setData(result);
+                } else {
+                    setError('Gagal memuat data dashboard. Pastikan RPC function sudah dibuat di Supabase.');
                 }
-                setDailyData(daily);
-
-                // Status data
-                const approved = logsData.filter((l: LogbookEntry) => l.status === 'approved').length;
-                const pending = logsData.filter((l: LogbookEntry) => l.status === 'submitted').length;
-                const rejected = logsData.filter((l: LogbookEntry) => l.status === 'rejected').length;
-                setStatusData([
-                    { name: 'Disetujui', value: approved },
-                    { name: 'Pending', value: pending },
-                    { name: 'Ditolak', value: rejected }
-                ]);
-
-                // Top 5 Driver by cost
-                const driverCosts: Record<string, number> = {};
-                logsData.forEach((l: LogbookEntry) => {
-                    const driver = drivers.find((d: User) => d.id === l.driver_id);
-                    if (driver) {
-                        driverCosts[driver.full_name] = (driverCosts[driver.full_name] || 0) + l.toll_cost + l.operational_cost;
-                    }
-                });
-                const driverArr = Object.entries(driverCosts)
-                    .map(([name, cost]) => ({ name, cost }))
-                    .sort((a, b) => b.cost - a.cost)
-                    .slice(0, 5);
-                setDriverData(driverArr);
-
             } catch (err) {
                 console.error('Failed to fetch dashboard data:', err);
+                setError('Terjadi kesalahan saat memuat data.');
             } finally {
                 setLoading(false);
             }
         };
         fetchData();
-    }, []);
+    }, [period]);
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
@@ -117,59 +68,68 @@ export default function AdminDashboard() {
         return <SkeletonDashboard />;
     }
 
+    if (error || !data) {
+        return (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+                <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-3" />
+                <h3 className="font-bold text-red-700 mb-2">Error Memuat Dashboard</h3>
+                <p className="text-red-600 text-sm mb-4">{error || 'Data tidak tersedia'}</p>
+                <p className="text-xs text-gray-500">
+                    Pastikan RPC function <code className="bg-red-100 px-1 rounded">get_admin_dashboard_stats</code> sudah dibuat di Supabase SQL Editor.
+                </p>
+            </div>
+        );
+    }
+
+    const statsCards = [
+        { label: 'Total Laporan', value: data.totalLogbooks, icon: BookOpen, color: 'blue' },
+        { label: 'Hari Ini', value: data.todayLogbooks, icon: Calendar, color: 'green' },
+        { label: 'Total Driver', value: data.totalDrivers, icon: Users, color: 'purple' },
+        { label: 'Total Unit', value: data.totalUnits, icon: Truck, color: 'yellow' },
+    ];
+
+    const statusData = data.statusData || [];
+    const dailyData = data.dailyData || [];
+    const topDrivers = data.topDrivers || [];
+    const recentLogbooks = data.recentLogbooks || [];
+
     return (
         <div className="space-y-6">
-            <div className="flex items-center gap-3">
-                <LayoutDashboard className="h-6 w-6 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                    <LayoutDashboard className="h-6 w-6 text-blue-600" />
+                    <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
+                </div>
+
+                <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-200">
+                    <select
+                        value={period}
+                        onChange={(e) => setPeriod(Number(e.target.value))}
+                        className="bg-transparent border-none text-sm font-medium text-gray-600 focus:ring-0 cursor-pointer py-1 px-3"
+                    >
+                        <option value="7">7 Hari Terakhir</option>
+                        <option value="30">30 Hari Terakhir</option>
+                        <option value="90">3 Bulan Terakhir</option>
+                        <option value={differenceInDays(new Date(), startOfMonth(new Date())) + 1}>Bulan Ini</option>
+                    </select>
+                </div>
             </div>
 
             {/* Stats Cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-blue-100 p-2 rounded-lg">
-                            <BookOpen className="h-5 w-5 text-blue-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Total Laporan</p>
-                            <p className="text-xl font-bold text-gray-900">{stats.totalLogbooks}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-green-100 p-2 rounded-lg">
-                            <Calendar className="h-5 w-5 text-green-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Hari Ini</p>
-                            <p className="text-xl font-bold text-green-600">{stats.todayLogbooks}</p>
+                {statsCards.map((stat) => (
+                    <div key={stat.label} className="bg-white p-4 rounded-xl border border-gray-100">
+                        <div className="flex items-center gap-3">
+                            <div className={`bg-${stat.color}-100 p-2 rounded-lg`}>
+                                <stat.icon className={`h-5 w-5 text-${stat.color}-600`} />
+                            </div>
+                            <div>
+                                <p className="text-sm text-gray-500">{stat.label}</p>
+                                <p className="text-xl font-bold text-gray-900">{stat.value}</p>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-purple-100 p-2 rounded-lg">
-                            <Users className="h-5 w-5 text-purple-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Total Driver</p>
-                            <p className="text-xl font-bold text-gray-900">{stats.totalDrivers}</p>
-                        </div>
-                    </div>
-                </div>
-                <div className="bg-white p-4 rounded-xl border border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="bg-yellow-100 p-2 rounded-lg">
-                            <Truck className="h-5 w-5 text-yellow-600" />
-                        </div>
-                        <div>
-                            <p className="text-sm text-gray-500">Total Unit</p>
-                            <p className="text-xl font-bold text-gray-900">{stats.totalUnits}</p>
-                        </div>
-                    </div>
-                </div>
+                ))}
             </div>
 
             {/* Cost Summary */}
@@ -179,14 +139,14 @@ export default function AdminDashboard() {
                         <TrendingUp className="h-4 w-4" />
                         <span className="text-sm">Total Biaya (Semua)</span>
                     </div>
-                    <p className="text-3xl font-bold mt-2">{formatCurrency(stats.totalCost)}</p>
+                    <p className="text-3xl font-bold mt-2">{formatCurrency(data.totalCost)}</p>
                 </div>
                 <div className="bg-gradient-to-r from-green-500 to-green-600 p-6 rounded-xl text-white">
                     <div className="flex items-center gap-2 text-green-100">
                         <Calendar className="h-4 w-4" />
                         <span className="text-sm">Biaya Hari Ini</span>
                     </div>
-                    <p className="text-3xl font-bold mt-2">{formatCurrency(stats.todayCost)}</p>
+                    <p className="text-3xl font-bold mt-2">{formatCurrency(data.todayCost)}</p>
                 </div>
             </div>
 
@@ -194,7 +154,7 @@ export default function AdminDashboard() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Daily Logbook Bar Chart */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100">
-                    <h3 className="font-bold text-gray-900 mb-4">Laporan 7 Hari Terakhir</h3>
+                    <h3 className="font-bold text-gray-900 mb-4">Laporan {period} Hari Terakhir</h3>
                     <ResponsiveContainer width="100%" height={250}>
                         <BarChart data={dailyData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -242,7 +202,7 @@ export default function AdminDashboard() {
 
                 {/* Cost Trend Line Chart */}
                 <div className="bg-white p-6 rounded-xl border border-gray-100">
-                    <h3 className="font-bold text-gray-900 mb-4">Trend Biaya 7 Hari</h3>
+                    <h3 className="font-bold text-gray-900 mb-4">Trend Biaya {period} Hari</h3>
                     <ResponsiveContainer width="100%" height={250}>
                         <LineChart data={dailyData}>
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -258,7 +218,7 @@ export default function AdminDashboard() {
                 <div className="bg-white p-6 rounded-xl border border-gray-100">
                     <h3 className="font-bold text-gray-900 mb-4">Top 5 Driver (Biaya)</h3>
                     <ResponsiveContainer width="100%" height={250}>
-                        <BarChart data={driverData} layout="vertical">
+                        <BarChart data={topDrivers} layout="vertical">
                             <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
                             <XAxis type="number" tick={{ fontSize: 12 }} tickFormatter={(v) => `${(v / 1000)}k`} />
                             <YAxis type="category" dataKey="name" tick={{ fontSize: 11 }} width={100} />
@@ -273,14 +233,15 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl border border-gray-100 p-6">
                 <h3 className="font-bold text-gray-900 mb-4">Laporan Terbaru</h3>
                 <div className="space-y-3">
-                    {logbooks.slice(0, 5).map(log => {
-                        const driver = users.find(u => u.id === log.driver_id);
-                        return (
+                    {recentLogbooks.length === 0 ? (
+                        <p className="text-gray-500 text-center py-4">Belum ada laporan</p>
+                    ) : (
+                        recentLogbooks.map(log => (
                             <div key={log.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                 <div>
                                     <p className="font-medium text-gray-900">{log.client_name} - {log.rute}</p>
                                     <p className="text-sm text-gray-500">
-                                        {driver?.full_name} • {format(new Date(log.date), 'dd MMM yyyy', { locale: id })}
+                                        {log.driver_name} • {format(new Date(log.date), 'dd MMM yyyy', { locale: id })}
                                     </p>
                                 </div>
                                 <div className="text-right">
@@ -293,8 +254,8 @@ export default function AdminDashboard() {
                                     <p className="text-sm text-gray-500 mt-1">{formatCurrency(log.toll_cost + log.operational_cost)}</p>
                                 </div>
                             </div>
-                        );
-                    })}
+                        ))
+                    )}
                 </div>
             </div>
         </div>
