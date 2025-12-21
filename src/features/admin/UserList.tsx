@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, Users, X, RotateCcw, Ban } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
+import { MIN_PASSWORD_LENGTH } from '../../constants';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -210,11 +211,11 @@ export default function UserList() {
                                         <input
                                             type="password"
                                             required
-                                            minLength={6}
+                                            minLength={MIN_PASSWORD_LENGTH}
                                             className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                                             value={formData.password}
                                             onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                            placeholder="Minimal 6 karakter"
+                                            placeholder={`Minimal ${MIN_PASSWORD_LENGTH} karakter`}
                                         />
                                     </div>
                                 </>

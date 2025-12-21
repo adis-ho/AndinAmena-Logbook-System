@@ -8,6 +8,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
+import { PAGE_SIZE } from '../../constants';
 
 export default function LogbookList() {
     const { showToast } = useToast();
@@ -20,7 +21,7 @@ export default function LogbookList() {
 
     // Server-side State
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(20);
+    const [pageSize, setPageSize] = useState(PAGE_SIZE);
     const [totalCount, setTotalCount] = useState(0);
     const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { User, Lock, UserCircle, Mail } from 'lucide-react';
 import { ApiService } from '../../services/api';
+import { MIN_PASSWORD_LENGTH } from '../../constants';
 
 export default function RegisterPage() {
     const navigate = useNavigate();
@@ -154,9 +155,9 @@ export default function RegisterPage() {
                                 name="password"
                                 type="password"
                                 required
-                                minLength={6}
+                                minLength={MIN_PASSWORD_LENGTH}
                                 className="pl-10 appearance-none rounded-lg block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                                placeholder="Minimal 6 karakter"
+                                placeholder={`Minimal ${MIN_PASSWORD_LENGTH} karakter`}
                                 value={formData.password}
                                 onChange={handleChange}
                             />
