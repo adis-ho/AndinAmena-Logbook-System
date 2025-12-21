@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { User, UserRole } from '../../types';
-import { Plus, Pencil, Trash2, Users, X, RotateCcw } from 'lucide-react';
+import { Plus, Pencil, Trash2, Users, X, RotateCcw, Ban } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
+import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -30,6 +31,13 @@ export default function UserList() {
         role: 'driver'
     });
     const [formLoading, setFormLoading] = useState(false);
+
+    // State for Hard Delete Modal
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; userId: string; userName: string }>({
+        isOpen: false,
+        userId: '',
+        userName: ''
+    });
 
     const fetchUsers = async () => {
         try {
@@ -77,7 +85,7 @@ export default function UserList() {
         try {
             if (formMode === 'add') {
                 if (!formData.email || !formData.password) {
-                    alert('Email dan password wajib diisi');
+                    showToast('error', 'Email dan password wajib diisi');
                     setFormLoading(false);
                     return;
                 }
@@ -95,10 +103,11 @@ export default function UserList() {
                     role: formData.role
                 });
             }
+            showToast('success', formMode === 'add' ? 'Pengguna berhasil ditambahkan' : 'Pengguna berhasil diupdate');
             resetForm();
             fetchUsers();
         } catch (err) {
-            alert(formMode === 'add' ? 'Gagal menambah pengguna' : 'Gagal mengupdate pengguna');
+            showToast('error', formMode === 'add' ? 'Gagal menambah pengguna' : 'Gagal mengupdate pengguna');
             console.error(err);
         } finally {
             setFormLoading(false);
@@ -126,6 +135,27 @@ export default function UserList() {
         } catch (err) {
             showToast('error', 'Gagal mengaktifkan pengguna');
             console.error(err);
+        }
+    };
+
+    const handleHardDeleteClick = (id: string, name: string) => {
+        setDeleteModal({ isOpen: true, userId: id, userName: name });
+    };
+
+    const executeHardDelete = async () => {
+        if (!deleteModal.userId) return;
+        setFormLoading(true);
+
+        try {
+            await ApiService.deleteUserPermanently(deleteModal.userId);
+            setUsers(users.filter(u => u.id !== deleteModal.userId));
+            showToast('success', 'Pengguna berhasil dihapus permanen');
+            setDeleteModal({ ...deleteModal, isOpen: false });
+        } catch (err: any) {
+            showToast('error', 'Gagal menghapus pengguna: ' + (err.message || 'Error unknown'));
+            console.error(err);
+        } finally {
+            setFormLoading(false);
         }
     };
 
@@ -298,16 +328,25 @@ export default function UserList() {
                                                         className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                         title="Nonaktifkan"
                                                     >
-                                                        <Trash2 className="h-4 w-4" />
+                                                        <Ban className="h-4 w-4" />
                                                     </button>
                                                 ) : (
-                                                    <button
-                                                        onClick={() => handleReactivate(user.id)}
-                                                        className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
-                                                        title="Aktifkan Kembali"
-                                                    >
-                                                        <RotateCcw className="h-4 w-4" />
-                                                    </button>
+                                                    <>
+                                                        <button
+                                                            onClick={() => handleReactivate(user.id)}
+                                                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                            title="Aktifkan Kembali"
+                                                        >
+                                                            <RotateCcw className="h-4 w-4" />
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleHardDeleteClick(user.id, user.full_name)}
+                                                            className="p-2 text-red-900 hover:bg-red-100 rounded-lg transition-colors"
+                                                            title="Hapus Permanen"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    </>
                                                 )}
                                             </div>
                                         </td>
@@ -318,6 +357,17 @@ export default function UserList() {
                     </table>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={executeHardDelete}
+                title="Konfirmasi Hapus Pengguna"
+                description={`Apakah Anda yakin ingin menghapus "${deleteModal.userName}" dari sistem?`}
+                warningText="Dengan menghapus pengguna ini, semua data logbook terkait juga akan dihapus secara permanen. Tindakan ini tidak dapat dibatalkan."
+                loading={formLoading}
+            />
         </div>
     );
 }

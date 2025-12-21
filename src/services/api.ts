@@ -309,6 +309,31 @@ export const ApiService = {
         }
     },
 
+    // Hard delete - delete permanently (and cleanup logbooks)
+    deleteUserPermanently: async (id: string): Promise<void> => {
+        // 1. Delete associated logbooks first (no cascade in schema for logbooks)
+        const { error: logbookError } = await supabase
+            .from('logbooks')
+            .delete()
+            .eq('driver_id', id);
+
+        if (logbookError) {
+            console.error('[ApiService] Delete user logbooks error:', logbookError.message);
+            throw logbookError;
+        }
+
+        // 2. Delete profile
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .delete()
+            .eq('id', id);
+
+        if (profileError) {
+            console.error('[ApiService] Hard delete user error:', profileError.message);
+            throw profileError;
+        }
+    },
+
     // ==================== UNITS ====================
     getUnits: async (): Promise<Unit[]> => {
         const { data, error } = await supabase

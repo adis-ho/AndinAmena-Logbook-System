@@ -34,6 +34,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Manajemen User (CRUD + Modal) | ✅ |
 | Soft Delete users (Nonaktifkan) | ✅ |
 | Reactivate users (Aktifkan Kembali) | ✅ |
+| **Hard Delete users (Permanen + Warning)** | ✅ |
 | Manajemen Unit (CRUD + Modal) | ✅ |
 | Manajemen Unit (CRUD + Modal) | ✅ |
 | Notifikasi logbook baru | ✅ |
