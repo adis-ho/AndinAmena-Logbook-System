@@ -4,6 +4,7 @@ import type { Etoll } from '../../types';
 import { Plus, Pencil, Trash2, CreditCard, X, Wallet } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
+import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -21,6 +22,10 @@ export default function EtollList() {
         status: 'active' as Etoll['status']
     });
     const [formLoading, setFormLoading] = useState(false);
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; etollId: string }>({
+        isOpen: false,
+        etollId: ''
+    });
 
     const fetchEtolls = async () => {
         try {
@@ -86,16 +91,24 @@ export default function EtollList() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Yakin ingin menghapus kartu E-Toll ini?')) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteModal({ isOpen: true, etollId: id });
+    };
+
+    const executeDelete = async () => {
+        if (!deleteModal.etollId) return;
+        setFormLoading(true);
 
         try {
-            await ApiService.deleteEtoll(id);
-            setEtolls(etolls.filter(e => e.id !== id));
+            await ApiService.deleteEtoll(deleteModal.etollId);
+            setEtolls(etolls.filter(e => e.id !== deleteModal.etollId));
             showToast('success', 'Kartu E-Toll berhasil dihapus');
+            setDeleteModal({ ...deleteModal, isOpen: false });
         } catch (err) {
             showToast('error', 'Gagal menghapus E-Toll');
             console.error(err);
+        } finally {
+            setFormLoading(false);
         }
     };
 
@@ -334,7 +347,7 @@ export default function EtollList() {
                                                 <Pencil className="h-4 w-4" />
                                             </button>
                                             <button
-                                                onClick={() => handleDelete(etoll.id)}
+                                                onClick={() => handleDeleteClick(etoll.id)}
                                                 className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
                                                 title="Hapus"
                                             >
@@ -348,6 +361,18 @@ export default function EtollList() {
                     </table>
                 </div>
             )}
+
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={executeDelete}
+                title="Hapus E-Toll?"
+                description="Apakah Anda yakin ingin menghapus kartu E-Toll ini?"
+                confirmText="Hapus"
+                cancelText="Batal"
+                loading={formLoading}
+            />
         </div>
     );
 }

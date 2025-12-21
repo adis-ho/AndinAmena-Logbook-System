@@ -4,6 +4,7 @@ import type { Unit } from '../../types';
 import { Plus, Pencil, Trash2, Truck, X } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
+import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -20,6 +21,10 @@ export default function UnitList() {
         status: 'available' as Unit['status']
     });
     const [formLoading, setFormLoading] = useState(false);
+    const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; unitId: string }>({
+        isOpen: false,
+        unitId: ''
+    });
 
     const fetchUnits = async () => {
         try {
@@ -79,16 +84,24 @@ export default function UnitList() {
         }
     };
 
-    const handleDelete = async (id: string) => {
-        if (!confirm('Yakin ingin menghapus unit ini?')) return;
+    const handleDeleteClick = (id: string) => {
+        setDeleteModal({ isOpen: true, unitId: id });
+    };
+
+    const executeDelete = async () => {
+        if (!deleteModal.unitId) return;
+        setFormLoading(true);
 
         try {
-            await ApiService.deleteUnit(id);
-            setUnits(units.filter(u => u.id !== id));
+            await ApiService.deleteUnit(deleteModal.unitId);
+            setUnits(units.filter(u => u.id !== deleteModal.unitId));
             showToast('success', 'Unit berhasil dihapus');
+            setDeleteModal({ ...deleteModal, isOpen: false });
         } catch (err) {
             showToast('error', 'Gagal menghapus unit');
             console.error(err);
+        } finally {
+            setFormLoading(false);
         }
     };
 
@@ -228,7 +241,7 @@ export default function UnitList() {
                                                     <Pencil className="h-4 w-4" />
                                                 </button>
                                                 <button
-                                                    onClick={() => handleDelete(unit.id)}
+                                                    onClick={() => handleDeleteClick(unit.id)}
                                                     className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                                                     title="Hapus"
                                                 >
@@ -243,6 +256,18 @@ export default function UnitList() {
                     </table>
                 </div>
             </div>
+
+            {/* Delete Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={deleteModal.isOpen}
+                onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+                onConfirm={executeDelete}
+                title="Hapus Unit?"
+                description="Apakah Anda yakin ingin menghapus unit ini?"
+                confirmText="Hapus"
+                cancelText="Batal"
+                loading={formLoading}
+            />
         </div>
     );
 }
