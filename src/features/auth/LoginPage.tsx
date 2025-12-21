@@ -3,6 +3,8 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { ApiService } from '../../services/api';
+import logoAndin from '../../assets/images/logo-andin.png';
+import logoAss from '../../assets/images/logo-ass.png';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -60,9 +62,9 @@ export default function LoginPage() {
             <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-xl shadow-lg border border-gray-100">
                 <div className="text-center">
                     <div className="flex justify-center items-center gap-4 mb-6">
-                        <div className="h-12 w-12 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">A</div>
+                        <img src={logoAndin} alt="Andin Logo" className="h-12 w-auto object-contain" />
                         <div className="h-1 w-1 bg-gray-300 rounded-full"></div>
-                        <div className="h-12 w-12 bg-green-600 rounded-lg flex items-center justify-center text-white font-bold">S</div>
+                        <img src={logoAss} alt="ASS Logo" className="h-12 w-auto object-contain" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-900">Amena Laporan</h2>
                     <p className="mt-2 text-sm text-gray-600">Masuk untuk melanjutkan</p>
