@@ -91,7 +91,7 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
                         <div className="h-9 w-9 bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg flex items-center justify-center shadow-lg shadow-blue-500/20">
                             <Car className="h-5 w-5 text-white" />
                         </div>
-                        <span className="font-bold text-lg text-gray-900">Amena Logs</span>
+                        <span className="font-bold text-lg text-gray-900">Laporan Harian</span>
                     </div>
                     <button
                         onClick={onClose}

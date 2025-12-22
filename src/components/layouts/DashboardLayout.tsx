@@ -26,7 +26,7 @@ export default function DashboardLayout() {
 
                 {/* Footer */}
                 <footer className="py-4 px-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
-                    © 2024 Amena Laporan Harian. All rights reserved.
+                    © 2026 Andin-Amena Laporan Harian. All rights reserved.
                 </footer>
             </div>
         </div>

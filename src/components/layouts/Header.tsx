@@ -23,7 +23,7 @@ export default function Header({ onMenuClick }: HeaderProps) {
 
                 <div className="hidden sm:block">
                     <h1 className="text-lg font-semibold text-gray-900">
-                        {user?.role === 'admin' ? 'Admin Panel' : 'Driver Portal'}
+                        {user?.role === 'admin' ? 'Admin Panel' : 'Laporan Harian'}
                     </h1>
                 </div>
             </div>

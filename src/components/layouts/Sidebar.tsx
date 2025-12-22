@@ -50,7 +50,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <div className="flex h-16 items-center justify-between px-6 font-bold text-xl border-b border-slate-800">
                     <span className="flex items-center gap-2">
                         <Car className="h-6 w-6 text-blue-400" />
-                        Amena Logs
+                        Laporan Harian
                     </span>
                     <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white">
                         <X className="h-6 w-6" />

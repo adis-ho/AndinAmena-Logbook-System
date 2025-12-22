@@ -66,7 +66,7 @@ export default function LoginPage() {
                         <div className="h-1 w-1 bg-gray-300 rounded-full"></div>
                         <img src={logoAss} alt="ASS Logo" className="h-12 w-auto object-contain" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-900">Amena Laporan</h2>
+                    <h2 className="text-2xl font-bold text-gray-900">Laporan Harian</h2>
                     <p className="mt-2 text-sm text-gray-600">Masuk untuk melanjutkan</p>
                 </div>
 
