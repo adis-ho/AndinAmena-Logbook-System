@@ -81,14 +81,14 @@ export default function OperationalBudgetPage() {
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                     <Wallet className="h-6 w-6 text-green-600" />
                     <h1 className="text-2xl font-bold text-gray-900">Uang Operasional</h1>
                 </div>
                 <button
                     onClick={fetchDrivers}
-                    className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg"
+                    className="flex items-center justify-center gap-2 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg border border-gray-200"
                 >
                     <RefreshCw className="h-4 w-4" />
                     Refresh
@@ -131,13 +131,13 @@ export default function OperationalBudgetPage() {
                 </ul>
             </div>
 
-            {/* Driver List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Driver List - Desktop Table */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="px-6 py-4 border-b border-gray-100">
                     <h2 className="text-lg font-semibold text-gray-900">Daftar Driver</h2>
                 </div>
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[600px]">
                         <thead className="bg-gray-50">
                             <tr>
                                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Driver</th>
@@ -188,6 +188,48 @@ export default function OperationalBudgetPage() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Driver List - Mobile Cards */}
+            <div className="md:hidden space-y-4">
+                <h2 className="text-lg font-semibold text-gray-900">Daftar Driver</h2>
+                {drivers.length === 0 ? (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                        <Users className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500">Belum ada driver</p>
+                    </div>
+                ) : (
+                    drivers.map(driver => (
+                        <div key={driver.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <p className="font-semibold text-gray-900">{driver.full_name}</p>
+                                    <p className="text-sm text-gray-500">@{driver.username}</p>
+                                </div>
+                                <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${driver.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
+                                    {driver.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                                </span>
+                            </div>
+
+                            <div className="bg-green-50 p-3 rounded-lg mb-3">
+                                <div className="flex justify-between items-center">
+                                    <span className="text-green-700 text-sm">Saldo Operasional</span>
+                                    <span className={`font-bold text-lg ${driver.operational_balance > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                                        {formatCurrency(driver.operational_balance)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => handleOpenTopUp(driver)}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
+                            >
+                                <Plus className="h-4 w-4" />
+                                Top-Up Saldo
+                            </button>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Top-Up Modal */}

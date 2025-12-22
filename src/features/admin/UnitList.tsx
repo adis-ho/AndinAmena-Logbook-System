@@ -207,9 +207,10 @@ export default function UnitList() {
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Desktop Table - Hidden on mobile */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[500px]">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Nama Unit</th>
@@ -255,6 +256,32 @@ export default function UnitList() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Cards - Show on mobile only */}
+            <div className="md:hidden space-y-3">
+                {units.length === 0 ? (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+                        <Truck className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500">Belum ada unit</p>
+                    </div>
+                ) : (
+                    units.map(unit => (
+                        <div key={unit.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                            <div className="flex justify-between items-start mb-2">
+                                <div>
+                                    <p className="font-semibold text-gray-900">{unit.name}</p>
+                                    <p className="text-sm text-gray-500">{unit.plate_number}</p>
+                                </div>
+                                {getStatusBadge(unit.status)}
+                            </div>
+                            <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+                                <button onClick={() => handleEdit(unit)} className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">Edit</button>
+                                <button onClick={() => handleDeleteClick(unit.id)} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">Hapus</button>
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Delete Confirmation Modal */}

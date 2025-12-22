@@ -17,37 +17,28 @@ export default function LoginPage() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
         setError('');
+        setLoading(true);
 
         try {
-            console.log('[LoginPage] Attempting login for:', email);
             const success = await login(email, password);
-
             if (success) {
-                console.log('[LoginPage] Login successful, redirecting...');
-
-                // Try to get current user for role-based redirect
-                try {
-                    const currentUser = await ApiService.getCurrentUser();
-                    console.log('[LoginPage] User role:', currentUser?.role);
-
-                    if (currentUser?.role === 'admin') {
+                // Fetch current user to get role
+                const currentUser = await ApiService.getCurrentUser();
+                if (currentUser) {
+                    // Redirect based on role
+                    if (currentUser.role === 'admin') {
                         navigate('/admin');
                     } else {
                         navigate('/driver');
                     }
-                } catch (profileErr) {
-                    console.warn('[LoginPage] Could not fetch profile, defaulting to driver');
-                    navigate('/driver');
                 }
             } else {
-                setError('Email atau password salah. Silakan coba lagi.');
+                setError('Email atau password salah');
                 setLoading(false);
             }
         } catch (err) {
-            console.error('[LoginPage] Login error:', err);
-            // Handle inactive user error
+            // Check if error is INACTIVE_USER
             if (err instanceof Error && err.message === 'INACTIVE_USER') {
                 setError('Akun Anda telah dinonaktifkan. Hubungi admin untuk bantuan.');
             } else {
@@ -82,9 +73,8 @@ export default function LoginPage() {
                                     id="email"
                                     name="email"
                                     type="email"
-                                    autoComplete="email"
                                     required
-                                    className="appearance-none rounded-lg relative block w-full pl-10 px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="pl-10 appearance-none rounded-lg block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     placeholder="Email"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
@@ -101,10 +91,9 @@ export default function LoginPage() {
                                 <input
                                     id="password"
                                     name="password"
-                                    type={showPassword ? "text" : "password"}
-                                    autoComplete="current-password"
+                                    type={showPassword ? 'text' : 'password'}
                                     required
-                                    className="appearance-none rounded-lg relative block w-full pl-10 pr-10 px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                    className="pl-10 pr-10 appearance-none rounded-lg block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                                     placeholder="Password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
@@ -115,9 +104,9 @@ export default function LoginPage() {
                                     onClick={() => setShowPassword(!showPassword)}
                                 >
                                     {showPassword ? (
-                                        <EyeOff className="h-5 w-5 text-gray-400" />
+                                        <EyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                                     ) : (
-                                        <Eye className="h-5 w-5 text-gray-400" />
+                                        <Eye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
                                     )}
                                 </button>
                             </div>
@@ -125,24 +114,29 @@ export default function LoginPage() {
                     </div>
 
                     {error && (
-                        <div className="text-red-500 text-sm text-center bg-red-50 p-2 rounded">
+                        <div className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-lg">
                             {error}
                         </div>
                     )}
 
-                    <div>
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70 transition-colors"
-                        >
-                            {loading ? 'Memproses...' : 'Masuk'}
-                        </button>
-                    </div>
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
+                        {loading ? (
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        ) : (
+                            'Masuk'
+                        )}
+                    </button>
 
                     <div className="text-center text-sm">
                         <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                            Daftar sebagai Driver
+                            Daftar disini
                         </Link>
                     </div>
                 </form>

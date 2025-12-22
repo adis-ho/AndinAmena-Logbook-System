@@ -1,27 +1,24 @@
 import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
-import Drawer from './Drawer';
+import Sidebar from './Sidebar';
 import Header from './Header';
 
 export default function DashboardLayout() {
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            {/* Drawer Navigation */}
-            <Drawer
-                isOpen={isDrawerOpen}
-                onClose={() => setIsDrawerOpen(false)}
-            />
+        <div className="min-h-screen bg-gray-50 flex">
+            {/* Sidebar (hidden by default, shown on hamburger click) */}
+            <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
-            {/* Main Content Area */}
-            <div className="flex flex-col min-h-screen">
-                <Header onMenuClick={() => setIsDrawerOpen(true)} />
+            {/* Main Content */}
+            <div className="flex-1 flex flex-col min-h-screen">
+                {/* Header */}
+                <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 
-                <main className="flex-1 p-4 sm:p-6 lg:p-8">
-                    <div className="max-w-7xl mx-auto">
-                        <Outlet />
-                    </div>
+                {/* Main area */}
+                <main className="flex-1 p-4 lg:p-8 overflow-auto">
+                    <Outlet />
                 </main>
 
                 {/* Footer */}

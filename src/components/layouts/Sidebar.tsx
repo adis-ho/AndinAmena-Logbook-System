@@ -31,10 +31,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
     return (
         <>
-            {/* Mobile Backdrop */}
+            {/* Backdrop */}
             <div
                 className={cn(
-                    "fixed inset-0 z-20 bg-black/50 transition-opacity lg:hidden",
+                    "fixed inset-0 z-20 bg-black/50 transition-opacity",
                     isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
                 )}
                 onClick={onClose}
@@ -43,52 +43,90 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Sidebar Drawer */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0",
+                    "fixed inset-y-0 left-0 z-30 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out flex flex-col",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                <div className="flex h-16 items-center justify-between px-6 font-bold text-xl border-b border-slate-800">
-                    <span className="flex items-center gap-2">
-                        <Car className="h-6 w-6 text-blue-400" />
-                        Laporan Harian
-                    </span>
-                    <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-white">
-                        <X className="h-6 w-6" />
+                {/* Header */}
+                <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
+                    <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
+                            <Car className="h-5 w-5 text-white" />
+                        </div>
+                        <span className="font-bold text-lg text-gray-900">Laporan Harian</span>
+                    </div>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                    >
+                        <X className="h-5 w-5" />
                     </button>
                 </div>
 
-                <nav className="p-4 space-y-2">
+                {/* User Profile */}
+                {user && (
+                    <div className="px-4 py-4 border-b border-gray-100">
+                        <div className="flex items-center gap-3">
+                            <div className="h-11 w-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg shadow-md overflow-hidden">
+                                {user.avatar_url ? (
+                                    <img
+                                        src={user.avatar_url}
+                                        alt="Avatar"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    user.full_name.charAt(0).toUpperCase()
+                                )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <p className="text-sm font-semibold text-gray-900 truncate">
+                                    {user.full_name}
+                                </p>
+                                <p className="text-xs text-gray-500 truncate capitalize">
+                                    {user.role}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Navigation Links */}
+                <nav className="p-4 space-y-1 flex-1 overflow-y-auto">
                     {links.map((link) => {
                         const Icon = link.icon;
-                        const isActive = location.pathname === link.to; // Exact match or startswtih? Simple match for now.
+                        const isActive = location.pathname === link.to;
                         return (
                             <Link
                                 key={link.to}
                                 to={link.to}
-                                onClick={() => window.innerWidth < 1024 && onClose()}
+                                onClick={onClose}
                                 className={cn(
-                                    "flex items-center gap-3 px-4 py-3 rounded-lg transition-colors",
+                                    "flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200",
                                     isActive
-                                        ? "bg-blue-600 text-white shadow-md shadow-blue-500/20"
-                                        : "text-gray-400 hover:bg-slate-800 hover:text-white"
+                                        ? "bg-blue-50 text-blue-600 font-medium"
+                                        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
                                 )}
                             >
-                                <Icon className="h-5 w-5" />
-                                {link.label}
+                                <Icon className={cn("h-5 w-5", isActive ? "text-blue-600" : "text-gray-400")} />
+                                <span>{link.label}</span>
+                                {isActive && (
+                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-blue-600" />
+                                )}
                             </Link>
                         );
                     })}
-
-                    <div className="pt-8 mt-4 border-t border-slate-800">
-                        <button
-                            onClick={logout}
-                            className="w-full flex items-center gap-3 px-4 py-3 text-red-400 hover:bg-slate-800 hover:text-red-300 rounded-lg transition-colors"
-                        >
-                            <LogOut className="h-5 w-5" />
-                            Logout
-                        </button>
-                    </div>
                 </nav>
+
+                {/* Logout Button */}
+                <div className="p-4 border-t border-gray-100">
+                    <button
+                        onClick={() => { logout(); onClose(); }}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                    >
+                        <LogOut className="h-5 w-5" />
+                        <span>Keluar</span>
+                    </button>
+                </div>
             </aside>
         </>
     );

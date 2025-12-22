@@ -343,7 +343,7 @@ export default function LogbookList() {
                     <button onClick={clearFilters} className="text-sm text-blue-600 hover:underline">Reset Filter</button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {/* Driver Filter */}
                     <div>
                         <label className="block text-xs font-medium text-gray-500 mb-1">Driver</label>
@@ -408,9 +408,9 @@ export default function LogbookList() {
                 </div>
 
                 {/* Status & Sort Section */}
-                <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-4 border-t border-dashed">
+                <div className="flex flex-col gap-4 pt-4 border-t border-dashed">
                     {/* Status Tabs */}
-                    <div className="flex bg-gray-100 p-1 rounded-lg">
+                    <div className="flex flex-wrap bg-gray-100 p-1 rounded-lg gap-1">
                         {(['all', 'submitted', 'approved', 'rejected'] as const).map(f => (
                             <button
                                 key={f}
@@ -426,7 +426,7 @@ export default function LogbookList() {
                     </div>
 
                     {/* SORT TOGGLE */}
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
                         <span className="text-sm text-gray-500">Urutkan Tanggal:</span>
                         <button
                             onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
@@ -450,10 +450,10 @@ export default function LogbookList() {
 
             {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>}
 
-            {/* Table Area */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Table Area - Hidden on mobile */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto min-h-[400px]">
-                    <table className="w-full">
+                    <table className="w-full min-w-[800px]">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Tanggal</th>
@@ -576,6 +576,92 @@ export default function LogbookList() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* Mobile Cards - Show on mobile only */}
+            <div className="md:hidden space-y-4">
+                {logbooks.length === 0 ? (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+                        <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
+                        <p className="text-gray-500">Tidak ada data ditemukan</p>
+                    </div>
+                ) : (
+                    <>
+                        {logbooks.map(log => (
+                            <div key={log.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                                <div className="flex justify-between items-start mb-3">
+                                    <div>
+                                        <p className="font-semibold text-gray-900">
+                                            {format(new Date(log.date), 'EEEE, dd MMMM yyyy', { locale: id })}
+                                        </p>
+                                        <p className="text-sm text-gray-500">{getUnitName(log.unit_id)} ({getUnitPlate(log.unit_id)})</p>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        {getStatusBadge(log.status)}
+                                    </div>
+                                </div>
+
+                                <div className="space-y-2 mb-3">
+                                    <div className="flex">
+                                        <span className="text-gray-500 w-20">Driver:</span>
+                                        <span className="text-gray-900 font-medium">{getDriverName(log.driver_id)}</span>
+                                    </div>
+                                    <div className="flex">
+                                        <span className="text-gray-500 w-20">User:</span>
+                                        <span className="text-gray-900">{log.client_name}</span>
+                                    </div>
+                                    <div className="flex">
+                                        <span className="text-gray-500 w-20">Rute:</span>
+                                        <span className="text-gray-900">{log.rute}</span>
+                                    </div>
+                                </div>
+
+                                <div className="bg-blue-50 p-3 rounded-lg space-y-1">
+                                    <div className="flex justify-between items-center text-sm text-blue-800">
+                                        <span>Biaya Tol:</span>
+                                        <span>{formatCurrency(log.toll_cost)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm text-blue-800">
+                                        <span>Biaya Lain:</span>
+                                        <span>{formatCurrency(log.operational_cost)}</span>
+                                    </div>
+                                    <div className="border-t border-blue-200 my-1"></div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-blue-700 font-medium">Total:</span>
+                                        <span className="font-bold text-blue-700">{formatCurrency(log.toll_cost + log.operational_cost)}</span>
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-100">
+                                    <button onClick={() => setSelectedLogbook(log)} className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">
+                                        Detail
+                                    </button>
+                                    {log.status === 'submitted' && (
+                                        <>
+                                            <button onClick={() => handleStatusChange(log.id, 'approved')} className="px-3 py-1.5 text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium">
+                                                Setujui
+                                            </button>
+                                            <button onClick={() => handleStatusChange(log.id, 'rejected')} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">
+                                                Tolak
+                                            </button>
+                                        </>
+                                    )}
+                                    <button onClick={() => setDeleteLogbook(log)} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">
+                                        Hapus
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                        {/* Mobile Pagination */}
+                        <div className="flex justify-between items-center bg-white rounded-xl p-4 shadow-sm border border-gray-100">
+                            <span className="text-sm text-gray-500">Halaman {page} dari {totalPages}</span>
+                            <div className="flex gap-2">
+                                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 border rounded-lg disabled:opacity-50 text-sm">Sebelumnya</button>
+                                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 border rounded-lg disabled:opacity-50 text-sm">Selanjutnya</button>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
 
             {/* Modals */}

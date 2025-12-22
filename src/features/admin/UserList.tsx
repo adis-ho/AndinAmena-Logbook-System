@@ -274,9 +274,10 @@ export default function UserList() {
                 </div>
             )}
 
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Desktop Table - Hidden on mobile */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full min-w-[600px]">
                         <thead className="bg-gray-50 border-b border-gray-100">
                             <tr>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Username</th>
@@ -357,6 +358,46 @@ export default function UserList() {
                         </tbody>
                     </table>
                 </div>
+            </div>
+
+            {/* Mobile Cards - Show on mobile only */}
+            <div className="md:hidden space-y-3">
+                {users.length === 0 ? (
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8 text-center">
+                        <Users className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+                        <p className="text-gray-500">Belum ada pengguna</p>
+                    </div>
+                ) : (
+                    users.map(user => (
+                        <div key={user.id} className={`bg-white rounded-xl shadow-sm border border-gray-100 p-4 ${user.status === 'inactive' ? 'opacity-60' : ''}`}>
+                            <div className="flex justify-between items-start mb-3">
+                                <div>
+                                    <p className="font-semibold text-gray-900">{user.full_name}</p>
+                                    <p className="text-sm text-gray-500">@{user.username}</p>
+                                </div>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+                                    {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                                </span>
+                            </div>
+                            <div className="flex items-center gap-2 mb-3">
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
+                                    {user.role === 'admin' ? 'Admin' : 'Driver'}
+                                </span>
+                            </div>
+                            <div className="flex justify-end gap-2 pt-3 border-t border-gray-100">
+                                <button onClick={() => handleEdit(user)} className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">Edit</button>
+                                {user.status === 'active' ? (
+                                    <button onClick={() => handleDelete(user.id)} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">Nonaktifkan</button>
+                                ) : (
+                                    <>
+                                        <button onClick={() => handleReactivate(user.id)} className="px-3 py-1.5 text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium">Aktifkan</button>
+                                        <button onClick={() => handleHardDeleteClick(user.id, user.full_name)} className="px-3 py-1.5 text-red-900 hover:bg-red-100 rounded-lg text-sm font-medium">Hapus</button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ))
+                )}
             </div>
 
             {/* Delete Confirmation Modal */}

@@ -1,6 +1,6 @@
 # Roadmap Pengembangan Amena Logbook
 
-## Status Proyek: Phase 2.3.6 Cost Management & Polish ✅
+## Status Proyek: Phase 2.3.8 Mobile Responsiveness ✅
 
 ---
 
@@ -110,6 +110,17 @@
 - [x] Notification triggers pada CRUD events
 - [x] Modern glassmorphism header
 
+### 2.3.8 Mobile Responsiveness ✅ (LATEST)
+- [x] Responsive card view untuk LogbookList (mobile cards + desktop table)
+- [x] Responsive card view untuk UserList 
+- [x] Responsive card view untuk UnitList
+- [x] Responsive card view untuk EtollList
+- [x] Responsive card view untuk OperationalBudgetPage
+- [x] Improved filter grid layout (md:grid-cols-2 lg:grid-cols-3)
+- [x] Wrap-able status tabs untuk mobile
+- [x] Mobile-friendly pagination
+- [x] Consistent card styling sesuai LogbookHistory pattern
+
 ### 2.5 Deployment ⏳ (Next)
 - [ ] Setup `vercel.json` untuk SPA routing
 - [ ] Configure environment variables di Vercel
@@ -143,7 +154,7 @@
 
 ## Catatan Penting
 
-> **Status Saat Ini**: Aplikasi sudah terintegrasi dengan Supabase dengan Dashboard Analytics, Toast Notifications, Skeleton Loading, dan Soft Delete. Siap untuk deployment ke Vercel.
+> **Status Saat Ini**: Aplikasi sudah terintegrasi dengan Supabase dengan Dashboard Analytics, Toast Notifications, Skeleton Loading, Soft Delete, dan **Mobile Responsive UI**. Siap untuk deployment ke Vercel.
 
 ### Teknologi yang Digunakan:
 - **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4

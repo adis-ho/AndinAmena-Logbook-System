@@ -221,4 +221,4 @@ VITE_SUPABASE_ANON_KEY=xxxxx
 - **Realtime**: Notifikasi berfungsi real-time menggunakan Supabase Realtime
 - **Security**: Row Level Security (RLS) aktif di semua tabel
 - **Analytics**: Dashboard dengan Recharts (bar, pie, line charts)
-- **UX**: Toast notifications, skeleton loading, soft delete
+- **UX**: Toast notifications, skeleton loading, soft delete, **Mobile Responsive (Card/Table views)**
