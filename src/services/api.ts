@@ -7,14 +7,16 @@ import { USER_STATUS } from '../constants';
 // =============================================
 
 // Helper: Map database profile to User object
-function mapProfileToUser(profile: Record<string, unknown>): User {
+function mapProfileToUser(profile: Record<string, unknown>, email?: string): User {
     return {
         id: profile.id as string,
+        email: email,
         username: profile.username as string,
         full_name: profile.full_name as string,
         role: profile.role as User['role'],
         status: (profile.status as User['status']) || USER_STATUS.ACTIVE,
-        operational_balance: (profile.operational_balance as number) || 0
+        operational_balance: (profile.operational_balance as number) || 0,
+        avatar_url: (profile.avatar_url as string) || undefined
     };
 }
 
@@ -189,6 +191,88 @@ export const ApiService = {
             console.error('[ApiService] getCurrentUser exception:', err);
             return null;
         }
+    },
+
+    // ==================== PROFILE ====================
+    updateProfile: async (userId: string, data: { full_name?: string; avatar_url?: string }): Promise<void> => {
+        const { error } = await supabase
+            .from('profiles')
+            .update(data)
+            .eq('id', userId);
+
+        if (error) {
+            console.error('[ApiService] Update profile error:', error.message);
+            throw error;
+        }
+    },
+
+    updatePassword: async (oldPassword: string, newPassword: string): Promise<void> => {
+        // First verify old password by attempting to sign in
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user?.email) {
+            throw new Error('User not found');
+        }
+
+        // Verify old password
+        const { error: signInError } = await supabase.auth.signInWithPassword({
+            email: user.email,
+            password: oldPassword
+        });
+
+        if (signInError) {
+            throw new Error('Password lama salah');
+        }
+
+        // Update to new password
+        const { error: updateError } = await supabase.auth.updateUser({
+            password: newPassword
+        });
+
+        if (updateError) {
+            console.error('[ApiService] Update password error:', updateError.message);
+            throw updateError;
+        }
+    },
+
+    updateEmail: async (newEmail: string): Promise<void> => {
+        const { error } = await supabase.auth.updateUser({
+            email: newEmail
+        });
+
+        if (error) {
+            console.error('[ApiService] Update email error:', error.message);
+            throw error;
+        }
+    },
+
+    uploadAvatar: async (userId: string, file: File): Promise<string> => {
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${userId}-${Date.now()}.${fileExt}`;
+
+        // Upload to storage
+        const { error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(fileName, file, { upsert: true });
+
+        if (uploadError) {
+            console.error('[ApiService] Upload avatar error:', uploadError.message);
+            throw uploadError;
+        }
+
+        // Get public URL
+        const { data: urlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+
+        const avatarUrl = urlData.publicUrl;
+
+        // Update profile with new avatar URL
+        await supabase
+            .from('profiles')
+            .update({ avatar_url: avatarUrl })
+            .eq('id', userId);
+
+        return avatarUrl;
     },
 
     // ==================== USERS ====================

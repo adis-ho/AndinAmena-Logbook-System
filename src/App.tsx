@@ -17,6 +17,9 @@ import DriverDashboard from './features/driver/Dashboard';
 import LogbookForm from './features/driver/LogbookForm';
 import LogbookHistory from './features/driver/LogbookHistory';
 
+// Shared components
+import ProfilePage from './features/profile/ProfilePage';
+
 function App() {
   return (
     <Routes>
@@ -34,6 +37,7 @@ function App() {
           <Route path="logbooks" element={<LogbookList />} />
           <Route path="etolls" element={<EtollList />} />
           <Route path="operational" element={<OperationalBudgetPage />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 
@@ -43,6 +47,7 @@ function App() {
           <Route index element={<DriverDashboard />} />
           <Route path="logbook" element={<LogbookForm />} />
           <Route path="history" element={<LogbookHistory />} />
+          <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>
 

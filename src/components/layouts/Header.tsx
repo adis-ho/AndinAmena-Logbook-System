@@ -1,4 +1,5 @@
 import { Menu } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import NotificationPanel from '../NotificationPanel';
 
@@ -8,6 +9,7 @@ interface HeaderProps {
 
 export default function Header({ onMenuClick }: HeaderProps) {
     const { user } = useAuth();
+    const profilePath = user?.role === 'admin' ? '/admin/profile' : '/driver/profile';
 
     return (
         <header className="sticky top-0 z-30 h-16 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 shadow-sm">
@@ -33,16 +35,27 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 {/* Notification Panel */}
                 <NotificationPanel />
 
-                {/* User Profile */}
-                <div className="flex items-center gap-3 pl-3 border-l border-gray-200">
+                {/* User Profile - Clickable */}
+                <Link
+                    to={profilePath}
+                    className="flex items-center gap-3 pl-3 border-l border-gray-200 hover:bg-gray-50 rounded-lg -ml-1 pr-2 py-1 transition-colors"
+                >
                     <div className="text-right hidden sm:block">
                         <p className="text-sm font-semibold text-gray-900">{user?.full_name}</p>
                         <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
                     </div>
-                    <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold shadow-md">
-                        {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}
+                    <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold shadow-md overflow-hidden">
+                        {user?.avatar_url ? (
+                            <img
+                                src={user.avatar_url}
+                                alt="Avatar"
+                                className="w-full h-full object-cover"
+                            />
+                        ) : (
+                            user?.full_name?.charAt(0)?.toUpperCase() || 'U'
+                        )}
                     </div>
-                </div>
+                </Link>
             </div>
         </header>
     );

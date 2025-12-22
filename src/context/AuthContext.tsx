@@ -6,14 +6,16 @@ import { ApiService } from '../services/api';
 interface AuthContextType extends AuthState {
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => Promise<void>;
+    refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // Helper to extract user from session with profile fetch
 // Returns null if user is inactive
-async function fetchUserWithProfile(sessionUser: { id: string; user_metadata?: Record<string, unknown> }): Promise<User | null> {
+async function fetchUserWithProfile(sessionUser: { id: string; email?: string; user_metadata?: Record<string, unknown> }): Promise<User | null> {
     const metadata = sessionUser.user_metadata || {};
+    const email = sessionUser.email;
 
     try {
         const { data: profile } = await supabase
@@ -31,11 +33,13 @@ async function fetchUserWithProfile(sessionUser: { id: string; user_metadata?: R
 
             return {
                 id: profile.id,
+                email: email,
                 username: profile.username,
                 full_name: profile.full_name,
                 role: profile.role as User['role'],
                 status: profile.status || 'active',
-                operational_balance: profile.operational_balance || 0
+                operational_balance: profile.operational_balance || 0,
+                avatar_url: profile.avatar_url || undefined
             };
         }
     } catch (err) {
@@ -188,8 +192,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
     };
 
+    const refreshUser = async () => {
+        console.log('[AuthContext] Refreshing user data...');
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.user) {
+                const user = await fetchUserWithProfile(session.user);
+                if (user) {
+                    setState(prev => ({ ...prev, user }));
+                }
+            }
+        } catch (err) {
+            console.error('[AuthContext] Refresh user error:', err);
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ ...state, login, logout }}>
+        <AuthContext.Provider value={{ ...state, login, logout, refreshUser }}>
             {children}
         </AuthContext.Provider>
     );

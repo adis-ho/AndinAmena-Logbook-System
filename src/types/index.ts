@@ -2,11 +2,13 @@ export type UserRole = 'admin' | 'driver';
 
 export interface User {
     id: string;
+    email?: string;
     username: string;
     full_name: string;
     role: UserRole;
     status: 'active' | 'inactive';
     operational_balance: number; // Saldo Uang Operasional per Driver
+    avatar_url?: string; // URL foto profil
 }
 
 export interface Unit {
