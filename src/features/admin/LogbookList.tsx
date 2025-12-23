@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { ApiService } from '../../services/api';
 import type { LogbookEntry, User, Unit } from '../../types';
 import { BookOpen, CheckCircle, XCircle, Clock, Eye, Trash2, FileSpreadsheet, FileText, X, ChevronLeft, ChevronRight, ArrowUpNarrowWide, ArrowDownNarrowWide, Search } from 'lucide-react';
@@ -88,13 +88,17 @@ export default function LogbookList() {
         return () => clearTimeout(timeoutId);
     }, [page, pageSize, sortOrder, statusFilter, filterDriver, filterUnit, filterClient, filterDateStart, filterDateEnd]);
 
-    const getDriverName = (driverId: string) => users.find(u => u.id === driverId)?.full_name || '-';
-    const getUnitName = (unitId: string) => units.find(u => u.id === unitId)?.name || '-';
-    const getUnitPlate = (unitId: string) => units.find(u => u.id === unitId)?.plate_number || '-';
+    const userMap = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
+    const unitMap = useMemo(() => new Map(units.map(u => [u.id, u])), [units]);
+
+    const getDriverName = (driverId: string) => userMap.get(driverId)?.full_name || '-';
+    // const getUnitName = (unitId: string) => unitMap.get(unitId)?.name || '-'; // Unused
+    const getUnitName = (unitId: string) => unitMap.get(unitId)?.name || '-';
+    const getUnitPlate = (unitId: string) => unitMap.get(unitId)?.plate_number || '-';
 
     // Format: "Reborn (L 1379 LN)" - Last word of name + Plate
     const getUnitShortName = (unitId: string) => {
-        const u = units.find(u => u.id === unitId);
+        const u = unitMap.get(unitId);
         if (!u) return '-';
         const lastWord = u.name.trim().split(' ').pop() || u.name;
         return `${lastWord} (${u.plate_number})`;

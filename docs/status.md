@@ -1,6 +1,6 @@
 # Status Proyek Amena Logbook
 
-**Terakhir Diperbarui**: 19 Desember 2025
+**Terakhir Diperbarui**: 23 Desember 2025
 
 ---
 
@@ -82,6 +82,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Real-time notifications | ✅ |
 | **Mobile Responsiveness (Card View + Table)** | ✅ |
 | **Mobile-friendly Pagination & Filters** | ✅ |
+| **Responsive Add Button (icon-only mobile)** | ✅ |
 
 ### Backend (Supabase)
 | Fitur | Status |

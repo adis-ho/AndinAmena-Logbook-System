@@ -120,6 +120,7 @@
 - [x] Wrap-able status tabs untuk mobile
 - [x] Mobile-friendly pagination
 - [x] Consistent card styling sesuai LogbookHistory pattern
+- [x] Responsive Add Button (icon-only on mobile)
 
 ### 2.5 Deployment ⏳ (Next)
 - [ ] Setup `vercel.json` untuk SPA routing
