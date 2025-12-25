@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, BookOpen, Car, Users, PlusCircle, History, LogOut, X, CreditCard, Wallet } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Car, Users, PlusCircle, History, LogOut, CreditCard, Wallet } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface SidebarProps {
@@ -34,7 +34,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Backdrop */}
             <div
                 className={cn(
-                    "fixed inset-0 z-20 bg-black/50 transition-opacity",
+                    "fixed inset-0 top-16 z-20 bg-black/50 transition-opacity backdrop-blur-sm",
                     isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
                 )}
                 onClick={onClose}
@@ -43,25 +43,10 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Sidebar Drawer */}
             <aside
                 className={cn(
-                    "fixed inset-y-0 left-0 z-30 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out flex flex-col",
+                    "fixed bottom-0 top-16 left-0 z-20 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out flex flex-col border-r border-gray-100",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100">
-                    <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-700 rounded-xl flex items-center justify-center shadow-lg shadow-blue-500/20">
-                            <Car className="h-5 w-5 text-white" />
-                        </div>
-                        <span className="font-bold text-lg text-gray-900">Laporan Harian</span>
-                    </div>
-                    <button
-                        onClick={onClose}
-                        className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                    >
-                        <X className="h-5 w-5" />
-                    </button>
-                </div>
 
                 {/* User Profile */}
                 {user && (
