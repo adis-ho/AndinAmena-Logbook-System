@@ -137,7 +137,7 @@ export default function ProfilePage() {
 
             {/* Avatar Section */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                <div className="flex items-center gap-6">
+                <div className="flex flex-col sm:flex-row items-center gap-6 text-center sm:text-left">
                     <div className="relative">
                         <div
                             className="w-24 h-24 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white text-3xl font-bold overflow-hidden cursor-pointer ring-4 ring-white shadow-lg"
@@ -202,23 +202,23 @@ export default function ProfilePage() {
                 {/* Full Name */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap</label>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <input
                             type="text"
                             value={fullName}
                             onChange={(e) => setFullName(e.target.value)}
                             disabled={!isEditingName}
-                            className={`flex-1 px-4 py-2.5 border rounded-lg transition-colors ${isEditingName
+                            className={`w-full sm:flex-1 px-4 py-2.5 border rounded-lg transition-colors ${isEditingName
                                 ? 'border-blue-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                                 : 'bg-gray-50 border-gray-200'
                                 }`}
                         />
                         {isEditingName ? (
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 w-full sm:w-auto">
                                 <button
                                     onClick={handleSaveName}
                                     disabled={savingName}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                                    className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     {savingName ? 'Menyimpan...' : 'Simpan'}
@@ -228,7 +228,7 @@ export default function ProfilePage() {
                                         setFullName(user?.full_name || '');
                                         setIsEditingName(false);
                                     }}
-                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                    className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-center"
                                 >
                                     Batal
                                 </button>
@@ -236,7 +236,7 @@ export default function ProfilePage() {
                         ) : (
                             <button
                                 onClick={() => setIsEditingName(true)}
-                                className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="w-full sm:w-auto px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
                             >
                                 Edit
                             </button>
@@ -250,23 +250,23 @@ export default function ProfilePage() {
                         <Mail className="w-4 h-4 inline mr-1" />
                         Email
                     </label>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <input
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             disabled={!isEditingEmail}
-                            className={`flex-1 px-4 py-2.5 border rounded-lg transition-colors ${isEditingEmail
+                            className={`w-full sm:flex-1 px-4 py-2.5 border rounded-lg transition-colors ${isEditingEmail
                                 ? 'border-blue-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                                 : 'bg-gray-50 border-gray-200'
                                 }`}
                         />
                         {isEditingEmail ? (
-                            <div className="flex gap-2">
+                            <div className="flex gap-2 w-full sm:w-auto">
                                 <button
                                     onClick={handleSaveEmail}
                                     disabled={savingEmail}
-                                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+                                    className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                                 >
                                     <Save className="w-4 h-4" />
                                     {savingEmail ? 'Menyimpan...' : 'Simpan'}
@@ -276,7 +276,7 @@ export default function ProfilePage() {
                                         setEmail(user?.email || '');
                                         setIsEditingEmail(false);
                                     }}
-                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                    className="flex-1 sm:flex-none px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 text-center"
                                 >
                                     Batal
                                 </button>
@@ -284,7 +284,7 @@ export default function ProfilePage() {
                         ) : (
                             <button
                                 onClick={() => setIsEditingEmail(true)}
-                                className="px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="w-full sm:w-auto px-4 py-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-transparent hover:border-blue-100"
                             >
                                 Edit
                             </button>
@@ -373,14 +373,7 @@ export default function ProfilePage() {
                             />
                         </div>
 
-                        <div className="flex gap-3 pt-2">
-                            <button
-                                type="submit"
-                                disabled={savingPassword}
-                                className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-                            >
-                                {savingPassword ? 'Menyimpan...' : 'Simpan Password'}
-                            </button>
+                        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-2">
                             <button
                                 type="button"
                                 onClick={() => {
@@ -389,9 +382,16 @@ export default function ProfilePage() {
                                     setNewPassword('');
                                     setConfirmPassword('');
                                 }}
-                                className="px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                className="flex-1 sm:flex-none px-6 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-center"
                             >
                                 Batal
+                            </button>
+                            <button
+                                type="submit"
+                                disabled={savingPassword}
+                                className="flex-1 sm:flex-none px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                            >
+                                {savingPassword ? 'Menyimpan...' : 'Simpan Password'}
                             </button>
                         </div>
                     </form>
