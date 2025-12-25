@@ -247,7 +247,7 @@ export default function LogbookHistory() {
                                 />
                             </div>
 
-                            <div className="flex gap-3 pt-4">
+                            <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
                                 <button
                                     type="button"
                                     onClick={handleCloseEdit}
@@ -258,7 +258,7 @@ export default function LogbookHistory() {
                                 <button
                                     type="submit"
                                     disabled={formLoading}
-                                    className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium"
+                                    className="flex-1 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 font-medium whitespace-nowrap"
                                 >
                                     {formLoading ? 'Menyimpan...' : 'Simpan & Submit Ulang'}
                                 </button>
