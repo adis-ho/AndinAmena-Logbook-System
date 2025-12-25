@@ -127,7 +127,7 @@ export default function ProfilePage() {
     };
 
     return (
-        <div className="max-w-2xl mx-auto space-y-6 px-4">
+        <div className="max-w-2xl mx-auto space-y-6 px-4 w-full overflow-hidden">
             <div className="flex items-center gap-3">
                 <div className="flex-shrink-0">
                     <User className="h-6 w-6 text-blue-600" />
@@ -169,8 +169,8 @@ export default function ProfilePage() {
                         />
                     </div>
                     <div>
-                        <h2 className="text-xl font-semibold text-gray-900">{user?.full_name}</h2>
-                        <p className="text-gray-500">@{user?.username}</p>
+                        <h2 className="text-xl font-semibold text-gray-900 break-all">{user?.full_name}</h2>
+                        <p className="text-gray-500 break-all">@{user?.username}</p>
                         <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 capitalize mt-2">
                             {user?.role}
                         </span>
@@ -188,12 +188,12 @@ export default function ProfilePage() {
                 {/* Username (Read-only) */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">Username</label>
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                         <input
                             type="text"
                             value={user?.username || ''}
                             disabled
-                            className="flex-1 px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed"
+                            className="w-full sm:flex-1 px-4 py-2.5 bg-gray-100 border border-gray-200 rounded-lg text-gray-500 cursor-not-allowed min-w-0"
                         />
                         <span className="text-xs text-gray-400">Tidak dapat diubah</span>
                     </div>
