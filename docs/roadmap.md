@@ -123,6 +123,8 @@
 - [x] Responsive Add Button (icon-only on mobile)
 - [x] Responsive Notification Panel (fixed on mobile)
 - [x] Responsive Edit Modal buttons (stacked on mobile)
+- [x] Responsive Profile Page (stacked fields, overflow fix)
+- [x] Clipped Drawer (side menu below header)
 
 ### 2.5 Deployment ✅ (DEPLOYED)
 - [x] Setup `vercel.json` untuk SPA routing
@@ -130,6 +132,7 @@
 - [x] Deploy ke Vercel
 - [x] Domain: andinlaporanharian.vercel.app
 - [x] Database reset script (`scripts/reset-database.sql`)
+- [x] Cleanup unused files (mockData.ts, Drawer.tsx)
 
 ---
 
@@ -165,4 +168,4 @@
 - **Charts**: Recharts
 - **Backend**: Supabase (PostgreSQL + Auth + Realtime)
 - **Fonts**: Plus Jakarta Sans
-- **Deployment**: Vercel (planned)
+- **Deployment**: Vercel ✅ (Live)
