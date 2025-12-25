@@ -205,9 +205,6 @@ export default function ProfilePage() {
                         </span>
                     </div>
                 </div>
-                {uploadingAvatar && (
-                    <p className="text-sm text-blue-600 mt-3">Mengupload foto...</p>
-                )}
             </div>
 
             {/* Profile Info */}
