@@ -1,6 +1,6 @@
 # Roadmap Pengembangan Amena Logbook
 
-## Status Proyek: Phase 2.3.8 Mobile Responsiveness ✅
+## Status Proyek: Phase 2.5 Deployed to Vercel ✅
 
 ---
 
@@ -110,7 +110,7 @@
 - [x] Notification triggers pada CRUD events
 - [x] Modern glassmorphism header
 
-### 2.3.8 Mobile Responsiveness ✅ (LATEST)
+### 2.3.8 Mobile Responsiveness ✅
 - [x] Responsive card view untuk LogbookList (mobile cards + desktop table)
 - [x] Responsive card view untuk UserList 
 - [x] Responsive card view untuk UnitList
@@ -121,12 +121,15 @@
 - [x] Mobile-friendly pagination
 - [x] Consistent card styling sesuai LogbookHistory pattern
 - [x] Responsive Add Button (icon-only on mobile)
+- [x] Responsive Notification Panel (fixed on mobile)
+- [x] Responsive Edit Modal buttons (stacked on mobile)
 
-### 2.5 Deployment ⏳ (Next)
-- [ ] Setup `vercel.json` untuk SPA routing
-- [ ] Configure environment variables di Vercel
-- [ ] Deploy ke Vercel
-- [ ] Custom domain (optional)
+### 2.5 Deployment ✅ (DEPLOYED)
+- [x] Setup `vercel.json` untuk SPA routing
+- [x] Configure environment variables di Vercel
+- [x] Deploy ke Vercel
+- [x] Domain: andinlaporanharian.vercel.app
+- [x] Database reset script (`scripts/reset-database.sql`)
 
 ---
 

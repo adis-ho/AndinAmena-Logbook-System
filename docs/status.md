@@ -6,7 +6,7 @@
 
 ## Ringkasan
 
-Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.3.8 (Complete)** dengan integrasi Supabase penuh, Dashboard Analytics, Cost Management System, E-Toll Management, dan Mobile Responsive UI.
+Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.5 (Deployed)** - sudah live di **[andinlaporanharian.vercel.app](https://andinlaporanharian.vercel.app)**.
 
 ## Apa yang Berhasil ✅
 
@@ -110,11 +110,11 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 
 ## Langkah Selanjutnya
 
-### Phase 2.4: Deployment (Next)
-- [ ] Setup Vercel project
-- [ ] Configure environment variables
-- [ ] Deploy ke Vercel
-- [ ] Test production build
+### Phase 2.5: Deployment ✅ (COMPLETED)
+- [x] Setup Vercel project
+- [x] Configure environment variables
+- [x] Deploy ke Vercel
+- [x] **Live URL: andinlaporanharian.vercel.app**
 
 ### Phase 3: Enhancements (Future)
 - [ ] Generate laporan bulanan
