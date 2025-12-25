@@ -275,6 +275,45 @@ export const ApiService = {
         return avatarUrl;
     },
 
+    deleteAvatar: async (userId: string): Promise<void> => {
+        // 1. Get current avatar URL from profile to find filename
+        const { data: profile } = await supabase
+            .from('profiles')
+            .select('avatar_url')
+            .eq('id', userId)
+            .single();
+
+        if (profile?.avatar_url) {
+            // Extract filename from URL
+            // URL format: https://.../storage/v1/object/public/avatars/filename.ext
+            const urlParts = profile.avatar_url.split('/');
+            const fileName = urlParts[urlParts.length - 1];
+
+            if (fileName) {
+                // 2. Remove file from storage
+                const { error: deleteError } = await supabase.storage
+                    .from('avatars')
+                    .remove([fileName]);
+
+                if (deleteError) {
+                    console.error('[ApiService] Delete storage avatar error:', deleteError.message);
+                    // Continue to update profile even if storage delete fails (clean up reference)
+                }
+            }
+        }
+
+        // 3. Update profile to remove avatar_url
+        const { error } = await supabase
+            .from('profiles')
+            .update({ avatar_url: null })
+            .eq('id', userId);
+
+        if (error) {
+            console.error('[ApiService] Delete avatar profile update error:', error.message);
+            throw error;
+        }
+    },
+
     // ==================== USERS ====================
     getUsers: async (): Promise<User[]> => {
         const { data, error } = await supabase

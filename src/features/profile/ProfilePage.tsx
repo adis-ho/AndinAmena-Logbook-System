@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
-import { User, Mail, Lock, Camera, Save, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, Camera, Save, Eye, EyeOff, Trash2 } from 'lucide-react';
 import { MIN_PASSWORD_LENGTH } from '../../constants';
 
 export default function ProfilePage() {
@@ -126,6 +126,22 @@ export default function ProfilePage() {
         }
     };
 
+    const handleDeleteAvatar = async () => {
+        if (!user) return;
+
+        setUploadingAvatar(true);
+        try {
+            await ApiService.deleteAvatar(user.id);
+            showToast('success', 'Foto profil berhasil dihapus');
+            refreshUser?.();
+        } catch (err) {
+            showToast('error', 'Gagal menghapus foto profil');
+            console.error(err);
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
+
     return (
         <div className="max-w-2xl mx-auto space-y-6 px-4 w-full overflow-hidden">
             <div className="flex items-center gap-3">
@@ -153,13 +169,26 @@ export default function ProfilePage() {
                                 user?.full_name?.charAt(0).toUpperCase() || 'U'
                             )}
                         </div>
-                        <button
-                            onClick={handleAvatarClick}
-                            disabled={uploadingAvatar}
-                            className="absolute bottom-0 right-0 p-2 bg-white rounded-full shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
-                        >
-                            <Camera className="w-4 h-4 text-gray-600" />
-                        </button>
+                        <div className="absolute -bottom-2 -right-2 flex gap-1">
+                            {user?.avatar_url && (
+                                <button
+                                    onClick={handleDeleteAvatar}
+                                    disabled={uploadingAvatar}
+                                    className="p-1.5 bg-white rounded-full shadow-md border border-gray-100 hover:bg-red-50 text-red-500 transition-colors z-10"
+                                    title="Hapus Foto"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                            )}
+                            <button
+                                onClick={handleAvatarClick}
+                                disabled={uploadingAvatar}
+                                className="p-1.5 bg-white rounded-full shadow-md border border-gray-100 hover:bg-gray-50 text-gray-600 transition-colors z-10"
+                                title="Ganti Foto"
+                            >
+                                <Camera className="w-3.5 h-3.5" />
+                            </button>
+                        </div>
                         <input
                             ref={fileInputRef}
                             type="file"
