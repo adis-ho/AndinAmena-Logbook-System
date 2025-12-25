@@ -109,6 +109,7 @@
 - [x] Notification bell dengan dropdown panel
 - [x] Notification triggers pada CRUD events
 - [x] Modern glassmorphism header
+- [x] Fitur Hapus Foto Profil (kembali ke inisial)
 
 ### 2.3.8 Mobile Responsiveness ✅
 - [x] Responsive card view untuk LogbookList (mobile cards + desktop table)
