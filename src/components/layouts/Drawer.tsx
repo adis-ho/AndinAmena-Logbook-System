@@ -46,7 +46,7 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
 
     return (
         <Transition appear show={isOpen} as={Fragment}>
-            <Dialog as="div" className="relative z-50 lg:hidden" onClose={onClose}>
+            <Dialog as="div" className="relative z-[9999] lg:hidden" onClose={onClose}>
                 {/* Overlay */}
                 <Transition.Child
                     as={Fragment}
@@ -57,7 +57,7 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
                     leaveFrom="opacity-100"
                     leaveTo="opacity-0"
                 >
-                    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" />
+                    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" />
                 </Transition.Child>
 
                 {/* Drawer Panel */}
@@ -129,8 +129,8 @@ export default function Drawer({ isOpen, onClose }: DrawerProps) {
                                                 end={link.end}
                                                 onClick={onClose}
                                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
-                                                        ? 'bg-blue-50 text-blue-600 font-medium'
-                                                        : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                                    ? 'bg-blue-50 text-blue-600 font-medium'
+                                                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                                                     }`}
                                             >
                                                 <Icon className={`h-5 w-5 ${isActive ? 'text-blue-600' : 'text-gray-400'}`} />
