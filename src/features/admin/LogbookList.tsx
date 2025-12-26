@@ -1,5 +1,6 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ApiService } from '../../services/api';
+import DateRangePicker from '../../components/ui/DateRangePicker';
 import type { LogbookEntry, User, Unit } from '../../types';
 import { BookOpen, CheckCircle, XCircle, Clock, Eye, Trash2, FileSpreadsheet, FileText, X, ChevronLeft, ChevronRight, ArrowUpNarrowWide, ArrowDownNarrowWide, Search } from 'lucide-react';
 import { format } from 'date-fns';
@@ -391,22 +392,17 @@ export default function LogbookList() {
                         </div>
                     </div>
                     {/* Date Filters */}
-                    <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Dari Tanggal</label>
-                        <input
-                            type="date"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white transition-colors"
-                            value={filterDateStart}
-                            onChange={(e) => { setFilterDateStart(e.target.value); setPage(1); }}
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Sampai Tanggal</label>
-                        <input
-                            type="date"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white transition-colors"
-                            value={filterDateEnd}
-                            onChange={(e) => { setFilterDateEnd(e.target.value); setPage(1); }}
+                    <div className="sm:col-span-2">
+                        <label className="block text-xs font-medium text-gray-500 mb-1">Rentang Tanggal</label>
+                        <DateRangePicker
+                            startDate={filterDateStart}
+                            endDate={filterDateEnd}
+                            onChange={(start, end) => {
+                                setFilterDateStart(start);
+                                setFilterDateEnd(end);
+                                setPage(1);
+                            }}
+                            className="w-full"
                         />
                     </div>
                 </div>

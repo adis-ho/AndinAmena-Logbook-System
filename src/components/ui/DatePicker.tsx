@@ -10,6 +10,8 @@ interface DatePickerProps {
     required?: boolean;
     disabled?: boolean;
     className?: string;
+    minDate?: string;
+    maxDate?: string;
 }
 
 const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
@@ -25,7 +27,9 @@ export default function DatePicker({
     placeholder = 'Pilih tanggal',
     required,
     disabled,
-    className
+    className,
+    minDate,
+    maxDate
 }: DatePickerProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -101,6 +105,25 @@ export default function DatePicker({
         return `${day}/${month}/${year}`;
     };
 
+    const isDateDisabled = (day: number) => {
+        const checkDate = new Date(currentYear, currentMonth, day);
+        checkDate.setHours(0, 0, 0, 0);
+
+        if (minDate) {
+            const min = new Date(minDate);
+            min.setHours(0, 0, 0, 0);
+            if (checkDate < min) return true;
+        }
+
+        if (maxDate) {
+            const max = new Date(maxDate);
+            max.setHours(0, 0, 0, 0);
+            if (checkDate > max) return true;
+        }
+
+        return false;
+    };
+
     // Calendar generation logic
     const getDaysInMonth = (month: number, year: number) => new Date(year, month + 1, 0).getDate();
     const getFirstDayOfMonth = (month: number, year: number) => {
@@ -145,7 +168,7 @@ export default function DatePicker({
                 <input
                     type="text"
                     className={cn(
-                        "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pl-10 p-2.5",
+                        "bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-10",
                         disabled && "bg-gray-100 cursor-not-allowed text-gray-400",
                         isOpen && "ring-2 ring-blue-500 border-blue-500"
                     )}
@@ -203,18 +226,22 @@ export default function DatePicker({
                                 new Date().getMonth() === currentMonth &&
                                 new Date().getFullYear() === currentYear;
 
+                            const isDisabled = isDateDisabled(day);
+
                             return (
                                 <button
                                     key={day}
                                     type="button"
-                                    onClick={() => handleSelectDate(day)}
+                                    onClick={() => !isDisabled && handleSelectDate(day)}
+                                    disabled={isDisabled}
                                     className={cn(
                                         "w-8 h-8 sm:w-10 sm:h-10 text-sm rounded-lg flex items-center justify-center transition-colors mx-auto",
                                         isSelected
                                             ? "bg-blue-600 text-white font-semibold hover:bg-blue-700"
                                             : isToday
                                                 ? "text-blue-600 font-semibold hover:bg-gray-100"
-                                                : "text-gray-900 hover:bg-gray-100"
+                                                : "text-gray-900 hover:bg-gray-100",
+                                        isDisabled && "text-gray-300 cursor-not-allowed hover:bg-transparent"
                                     )}
                                 >
                                     {day}
