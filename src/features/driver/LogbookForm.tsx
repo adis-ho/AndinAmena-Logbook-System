@@ -4,6 +4,7 @@ import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import type { Unit, Etoll } from '../../types';
 import { BookPlus, Wallet } from 'lucide-react';
+import DatePicker from '../../components/ui/DatePicker';
 
 export default function LogbookForm() {
     const { user } = useAuth();
@@ -80,12 +81,10 @@ export default function LogbookForm() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Tanggal</label>
-                        <input
-                            type="date"
+                        <DatePicker
                             required
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
                             value={formData.date}
-                            onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                            onChange={(date) => setFormData({ ...formData, date })}
                         />
                     </div>
                     <div>

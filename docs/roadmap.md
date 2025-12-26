@@ -111,6 +111,7 @@
 - [x] Modern glassmorphism header
 - [x] Fitur Hapus Foto Profil (kembali ke inisial)
 - [x] Hapus teks status upload avatar (cleaner UI)
+- [x] Custom Date Picker (Flowbite style, ID localized)
 
 ### 2.3.8 Mobile Responsiveness ✅
 - [x] Responsive card view untuk LogbookList (mobile cards + desktop table)
