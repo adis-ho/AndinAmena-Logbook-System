@@ -12,6 +12,13 @@ import { useToast } from '../../context/ToastContext';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
 import { PAGE_SIZE } from '../../constants';
 
+// PDF Layout Constants
+const PDF_MARGIN_LEFT = 14;
+const PDF_TITLE_Y = 20;
+const PDF_SUBTITLE_Y = 28;
+const PDF_TABLE_START_Y = 35;
+const PDF_GRAND_TOTAL_OFFSET = 10;
+
 export default function LogbookList() {
     const { showToast } = useToast();
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
@@ -190,18 +197,20 @@ export default function LogbookList() {
     };
 
     // Build dynamic filename based on active filters
+    const sanitizeFilename = (str: string) => str.replace(/[^a-zA-Z0-9\-]/g, '-').replace(/-+/g, '-');
+
     const buildExportFilename = (ext: 'pdf' | 'xlsx') => {
         const parts = ['Laporan_Harian'];
 
         // Add driver name if filtered
         if (filterDriver) {
-            const driverName = getDriverName(filterDriver).replace(/\s+/g, '-');
+            const driverName = sanitizeFilename(getDriverName(filterDriver));
             parts.push(driverName);
         }
 
         // Add unit name if filtered
         if (filterUnit) {
-            const unitName = getUnitName(filterUnit).replace(/\s+/g, '-');
+            const unitName = sanitizeFilename(getUnitName(filterUnit));
             parts.push(unitName);
         }
 
@@ -267,14 +276,14 @@ export default function LogbookList() {
 
         const doc = new jsPDF({ orientation: 'landscape' });
         doc.setFontSize(18);
-        doc.text('Laporan Harian Kendaraan', 14, 20);
+        doc.text('Laporan Harian Kendaraan', PDF_MARGIN_LEFT, PDF_TITLE_Y);
 
         doc.setFontSize(10);
         let filterInfo = `Tanggal Export: ${format(new Date(), 'dd MMMM yyyy', { locale: id })}`;
         if (filterDateStart || filterDateEnd) {
             filterInfo += ` | Periode: ${filterDateStart || 'Awal'} s/d ${filterDateEnd || 'Akhir'}`;
         }
-        doc.text(filterInfo, 14, 28);
+        doc.text(filterInfo, PDF_MARGIN_LEFT, PDF_SUBTITLE_Y);
 
         // Prepare table data
         const tableData = data.map(log => [
@@ -290,7 +299,7 @@ export default function LogbookList() {
 
         // Generate table with autoTable
         autoTable(doc, {
-            startY: 35,
+            startY: PDF_TABLE_START_Y,
             head: [['Tanggal', 'Unit', 'Driver', 'User', 'Rute', 'Tol', 'Biaya Lain', 'Total']],
             body: tableData,
             theme: 'striped',
@@ -316,15 +325,15 @@ export default function LogbookList() {
             alternateRowStyles: {
                 fillColor: [248, 250, 252] // Gray-50
             },
-            margin: { left: 14, right: 14 }
+            margin: { left: PDF_MARGIN_LEFT, right: PDF_MARGIN_LEFT }
         });
 
         // Add Grand Total after table
-        const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
+        const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + PDF_GRAND_TOTAL_OFFSET;
         const totalAll = data.reduce((sum, l) => sum + l.toll_cost + l.operational_cost, 0);
         doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Grand Total: ${formatCurrency(totalAll)}`, 14, finalY);
+        doc.text(`Grand Total: ${formatCurrency(totalAll)}`, PDF_MARGIN_LEFT, finalY);
 
         doc.save(buildExportFilename('pdf'));
     };
@@ -358,20 +367,20 @@ export default function LogbookList() {
                 </div>
                 <div className="flex gap-2">
                     <button
-                        onClick={exportToExcel}
-                        disabled={exportLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50"
-                    >
-                        <FileSpreadsheet className="h-4 w-4" />
-                        {exportLoading ? '...' : 'Export Excel'}
-                    </button>
-                    <button
                         onClick={exportToPDF}
                         disabled={exportLoading}
-                        className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50"
+                        className="flex items-center gap-2 px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
                     >
                         <FileText className="h-4 w-4" />
-                        {exportLoading ? '...' : 'Export PDF'}
+                        {exportLoading ? '...' : 'PDF'}
+                    </button>
+                    <button
+                        onClick={exportToExcel}
+                        disabled={exportLoading}
+                        className="flex items-center gap-2 px-3 py-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                    >
+                        <FileSpreadsheet className="h-4 w-4" />
+                        {exportLoading ? '...' : 'Excel'}
                     </button>
                 </div>
             </div>

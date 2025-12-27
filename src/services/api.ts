@@ -661,6 +661,40 @@ export const ApiService = {
         }));
     },
 
+    getAllLogbooks: async (dateStart?: string, dateEnd?: string): Promise<LogbookEntry[]> => {
+        let query = supabase
+            .from('logbooks')
+            .select('*');
+
+        if (dateStart) query = query.gte('date', dateStart);
+        if (dateEnd) query = query.lte('date', dateEnd);
+
+        query = query.order('date', { ascending: false });
+
+        const { data, error } = await query;
+
+        if (error) {
+            console.error('[ApiService] Get all logbooks error:', error.message);
+            return [];
+        }
+
+        return data.map(log => ({
+            id: log.id,
+            date: log.date,
+            driver_id: log.driver_id,
+            unit_id: log.unit_id,
+            etoll_id: log.etoll_id || undefined,
+            client_name: log.client_name || '',
+            rute: log.rute || '',
+            keterangan: log.keterangan || '',
+            toll_cost: log.toll_cost || 0,
+            parking_cost: log.parking_cost || 0,
+            operational_cost: log.operational_cost || 0,
+            status: log.status as LogbookEntry['status'],
+            created_at: log.created_at
+        }));
+    },
+
     getLogbookById: async (id: string): Promise<LogbookEntry | undefined> => {
         const { data, error } = await supabase
             .from('logbooks')

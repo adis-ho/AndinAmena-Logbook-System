@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, BookOpen, Car, Users, PlusCircle, History, LogOut, CreditCard, Wallet } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Car, Users, PlusCircle, History, LogOut, CreditCard, Wallet, BarChart3 } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface SidebarProps {
@@ -17,6 +17,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
         { to: '/admin/logbooks', label: 'Laporan Harian', icon: BookOpen },
         { to: '/admin/etolls', label: 'E-Toll', icon: CreditCard },
         { to: '/admin/operational', label: 'Uang Operasional', icon: Wallet },
+        { to: '/admin/driver-summary', label: 'Ringkasan Driver', icon: BarChart3 },
         { to: '/admin/units', label: 'Unit Management', icon: Car },
         { to: '/admin/users', label: 'User Management', icon: Users },
     ];

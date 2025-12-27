@@ -137,7 +137,7 @@ export default function DatePicker({
     const firstDay = getFirstDayOfMonth(currentMonth, currentYear);
 
     // Generate dates array
-    const dates = [];
+    const dates: (number | null)[] = [];
     // Previous month filler
     for (let i = 0; i < firstDay; i++) {
         dates.push(null);
@@ -211,44 +211,50 @@ export default function DatePicker({
                     </div>
 
                     <div className="grid grid-cols-7 gap-1">
-                        {dates.map((day, index) => {
-                            if (day === null) {
-                                return <div key={`empty-${index}`} />;
-                            }
+                        {(() => {
+                            const today = new Date();
+                            const todayDay = today.getDate();
+                            const todayMonth = today.getMonth();
+                            const todayYear = today.getFullYear();
 
-                            const isSelected = date &&
-                                date.getDate() === day &&
-                                date.getMonth() === currentMonth &&
-                                date.getFullYear() === currentYear;
+                            return dates.map((day, index) => {
+                                if (day === null) {
+                                    return <div key={`empty-${index}`} />;
+                                }
 
-                            const isToday =
-                                new Date().getDate() === day &&
-                                new Date().getMonth() === currentMonth &&
-                                new Date().getFullYear() === currentYear;
+                                const isSelected = date &&
+                                    date.getDate() === day &&
+                                    date.getMonth() === currentMonth &&
+                                    date.getFullYear() === currentYear;
 
-                            const isDisabled = isDateDisabled(day);
+                                const isToday =
+                                    todayDay === day &&
+                                    todayMonth === currentMonth &&
+                                    todayYear === currentYear;
 
-                            return (
-                                <button
-                                    key={day}
-                                    type="button"
-                                    onClick={() => !isDisabled && handleSelectDate(day)}
-                                    disabled={isDisabled}
-                                    className={cn(
-                                        "w-8 h-8 sm:w-10 sm:h-10 text-sm rounded-lg flex items-center justify-center transition-colors mx-auto",
-                                        isSelected
-                                            ? "bg-blue-600 text-white font-semibold hover:bg-blue-700"
-                                            : isToday
-                                                ? "text-blue-600 font-semibold hover:bg-gray-100"
-                                                : "text-gray-900 hover:bg-gray-100",
-                                        isDisabled && "text-gray-300 cursor-not-allowed hover:bg-transparent"
-                                    )}
-                                >
-                                    {day}
-                                </button>
-                            );
-                        })}
-                    </div>
+                                const isDisabled = isDateDisabled(day);
+
+                                return (
+                                    <button
+                                        key={day}
+                                        type="button"
+                                        onClick={() => !isDisabled && handleSelectDate(day)}
+                                        disabled={isDisabled}
+                                        className={cn(
+                                            "w-8 h-8 sm:w-10 sm:h-10 text-sm rounded-lg flex items-center justify-center transition-colors mx-auto",
+                                            isSelected
+                                                ? "bg-blue-600 text-white font-semibold hover:bg-blue-700"
+                                                : isToday
+                                                    ? "text-blue-600 font-semibold hover:bg-gray-100"
+                                                    : "text-gray-900 hover:bg-gray-100",
+                                            isDisabled && "text-gray-300 cursor-not-allowed hover:bg-transparent"
+                                        )}
+                                    >
+                                        {day}
+                                    </button>
+                                );
+                            });
+                        })()}</div>
                 </div>
             )}
         </div>
