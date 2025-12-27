@@ -427,7 +427,7 @@ export default function LogbookList() {
                             <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
                             <input
                                 type="text"
-                                className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white transition-colors"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white transition-colors"
                                 placeholder="Cari nama..."
                                 value={filterClient}
                                 onChange={(e) => { setFilterClient(e.target.value); setPage(1); }}
