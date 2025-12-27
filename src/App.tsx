@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './features/auth/LoginPage';
-import RegisterPage from './features/auth/RegisterPage';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -25,7 +24,6 @@ function App() {
     <Routes>
       {/* Public Routes */}
       <Route path="/login" element={<LoginPage />} />
-      <Route path="/register" element={<RegisterPage />} />
       <Route path="/unauthorized" element={<div className="min-h-screen flex items-center justify-center">Unauthorized Access</div>} />
 
       {/* Admin Routes */}

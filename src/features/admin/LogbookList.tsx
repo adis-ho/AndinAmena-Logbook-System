@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
 import { PAGE_SIZE } from '../../constants';
@@ -188,6 +189,42 @@ export default function LogbookList() {
         }
     };
 
+    // Build dynamic filename based on active filters
+    const buildExportFilename = (ext: 'pdf' | 'xlsx') => {
+        const parts = ['Laporan_Harian'];
+
+        // Add driver name if filtered
+        if (filterDriver) {
+            const driverName = getDriverName(filterDriver).replace(/\s+/g, '-');
+            parts.push(driverName);
+        }
+
+        // Add unit name if filtered
+        if (filterUnit) {
+            const unitName = getUnitName(filterUnit).replace(/\s+/g, '-');
+            parts.push(unitName);
+        }
+
+        // Add date range if filtered
+        if (filterDateStart && filterDateEnd) {
+            parts.push(`${filterDateStart}_${filterDateEnd}`);
+        } else if (filterDateStart) {
+            parts.push(`dari-${filterDateStart}`);
+        } else if (filterDateEnd) {
+            parts.push(`sampai-${filterDateEnd}`);
+        } else {
+            // Default: export date
+            parts.push(format(new Date(), 'yyyy-MM-dd'));
+        }
+
+        // Add status if not "all"
+        if (statusFilter !== 'all') {
+            parts.push(statusFilter);
+        }
+
+        return `${parts.join('_')}.${ext}`;
+    };
+
     const exportToExcel = async () => {
         const data = await fetchAllForExport();
         if (data.length === 0) return;
@@ -221,8 +258,7 @@ export default function LogbookList() {
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'Laporan');
-        const filename = `Laporan_Harian_${format(new Date(), 'yyyy-MM-dd')}.xlsx`;
-        XLSX.writeFile(wb, filename);
+        XLSX.writeFile(wb, buildExportFilename('xlsx'));
     };
 
     const exportToPDF = async () => {
@@ -240,58 +276,57 @@ export default function LogbookList() {
         }
         doc.text(filterInfo, 14, 28);
 
-        // Headers: Tanggal | Unit | Driver | User | Rute | Tol | Biaya Lain | Total
-        const headers = ['Tanggal', 'Unit', 'Driver', 'User', 'Rute', 'Tol', 'Biaya Lain', 'Total'];
-        const colWidths = [22, 40, 30, 30, 60, 25, 25, 25];
-        let y = 38;
+        // Prepare table data
+        const tableData = data.map(log => [
+            format(new Date(log.date), 'dd/MM/yy'),
+            getUnitShortName(log.unit_id),
+            getDriverName(log.driver_id),
+            log.client_name,
+            log.rute,
+            formatCurrency(log.toll_cost),
+            formatCurrency(log.operational_cost),
+            formatCurrency(log.toll_cost + log.operational_cost)
+        ]);
 
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'bold');
-        let x = 14;
-        headers.forEach((header, i) => {
-            doc.text(header, x, y);
-            x += colWidths[i];
+        // Generate table with autoTable
+        autoTable(doc, {
+            startY: 35,
+            head: [['Tanggal', 'Unit', 'Driver', 'User', 'Rute', 'Tol', 'Biaya Lain', 'Total']],
+            body: tableData,
+            theme: 'striped',
+            headStyles: {
+                fillColor: [59, 130, 246], // Blue-500
+                textColor: 255,
+                fontStyle: 'bold',
+                halign: 'center'
+            },
+            bodyStyles: {
+                fontSize: 8
+            },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 20 }, // Tanggal
+                1: { cellWidth: 35 }, // Unit
+                2: { cellWidth: 30 }, // Driver
+                3: { cellWidth: 30 }, // User
+                4: { cellWidth: 55 }, // Rute
+                5: { halign: 'right', cellWidth: 25 }, // Tol
+                6: { halign: 'right', cellWidth: 25 }, // Biaya Lain
+                7: { halign: 'right', cellWidth: 25, fontStyle: 'bold' } // Total
+            },
+            alternateRowStyles: {
+                fillColor: [248, 250, 252] // Gray-50
+            },
+            margin: { left: 14, right: 14 }
         });
 
-        doc.setFont('helvetica', 'normal');
-        y += 6;
-
-        data.forEach((log) => {
-            if (y > 180) {
-                doc.addPage();
-                y = 20;
-            }
-            x = 14;
-
-            // Format: Short Name (Plate) e.g. "Reborn (L 1379 LN)"
-            const unitShort = getUnitShortName(log.unit_id);
-
-            const rowSimple = [
-                format(new Date(log.date), 'dd/MM/yy'),
-                unitShort,
-                getDriverName(log.driver_id).substring(0, 15),
-                log.client_name.substring(0, 15),
-                log.rute.substring(0, 35),
-                formatCurrency(log.toll_cost),
-                formatCurrency(log.operational_cost),
-                formatCurrency(log.toll_cost + log.operational_cost)
-            ];
-
-            rowSimple.forEach((cell, i) => {
-                doc.text(cell, x, y);
-                x += colWidths[i];
-            });
-            y += 6;
-        });
-
-        // Add Grand Total
-        y += 4;
+        // Add Grand Total after table
+        const finalY = (doc as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
         const totalAll = data.reduce((sum, l) => sum + l.toll_cost + l.operational_cost, 0);
+        doc.setFontSize(11);
         doc.setFont('helvetica', 'bold');
-        doc.text(`Grand Total: ${formatCurrency(totalAll)}`, 14, y);
+        doc.text(`Grand Total: ${formatCurrency(totalAll)}`, 14, finalY);
 
-        const filename = `Laporan_Harian_${format(new Date(), 'yyyy-MM-dd')}.pdf`;
-        doc.save(filename);
+        doc.save(buildExportFilename('pdf'));
     };
 
     const clearFilters = () => {

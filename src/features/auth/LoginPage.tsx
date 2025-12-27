@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { ApiService } from '../../services/api';
 import logoAndin from '../../assets/images/logo-andin.png';
@@ -134,11 +134,7 @@ export default function LoginPage() {
                         )}
                     </button>
 
-                    <div className="text-center text-sm">
-                        <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                            Daftar disini
-                        </Link>
-                    </div>
+
                 </form>
             </div>
         </div>
