@@ -7,6 +7,7 @@ import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SkeletonLogbookHistory } from '../../components/ui/Skeleton';
 import DatePicker from '../../components/ui/DatePicker';
+import Select from '../../components/ui/Select';
 
 interface EditFormData {
     date: string;
@@ -104,6 +105,10 @@ export default function LogbookHistory() {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         if (!editingLogbook || !formData) return;
+        if (!formData.unit_id) {
+            alert('Silakan pilih unit kendaraan');
+            return;
+        }
 
         setFormLoading(true);
         try {
@@ -156,36 +161,34 @@ export default function LogbookHistory() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Unit Kendaraan</label>
-                                    <select
-                                        required
-                                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                    <label className="block text-sm font-medium text-gray-700 mb-1">Unit Kendaraan *</label>
+                                    <Select
                                         value={formData.unit_id}
-                                        onChange={(e) => setFormData({ ...formData, unit_id: e.target.value })}
-                                    >
-                                        <option value="">Pilih Unit</option>
-                                        {units.map(unit => (
-                                            <option key={unit.id} value={unit.id}>{unit.name} - {unit.plate_number}</option>
-                                        ))}
-                                    </select>
+                                        onChange={(val) => setFormData({ ...formData, unit_id: val })}
+                                        options={[
+                                            { value: '', label: 'Pilih Unit', disabled: true },
+                                            ...units.map(unit => ({ value: unit.id, label: `${unit.name} - ${unit.plate_number}` }))
+                                        ]}
+                                        placeholder="Pilih Unit"
+                                    />
                                 </div>
                             </div>
 
                             {/* E-Toll Selection */}
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Kartu E-Toll (Opsional)</label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                <Select
                                     value={formData.etoll_id}
-                                    onChange={(e) => setFormData({ ...formData, etoll_id: e.target.value })}
-                                >
-                                    <option value="">-- Tidak Menggunakan E-Toll --</option>
-                                    {etolls.map(etoll => (
-                                        <option key={etoll.id} value={etoll.id}>
-                                            {etoll.card_name} {etoll.card_number ? `(${etoll.card_number})` : ''} - Saldo: Rp {etoll.balance.toLocaleString('id-ID')}
-                                        </option>
-                                    ))}
-                                </select>
+                                    onChange={(val) => setFormData({ ...formData, etoll_id: val })}
+                                    options={[
+                                        { value: '', label: '-- Tidak Menggunakan E-Toll --' },
+                                        ...etolls.map(etoll => ({
+                                            value: etoll.id,
+                                            label: `${etoll.card_name} ${etoll.card_number ? `(${etoll.card_number})` : ''} - Saldo: Rp ${etoll.balance.toLocaleString('id-ID')}`
+                                        }))
+                                    ]}
+                                    placeholder="Pilih E-Toll"
+                                />
                             </div>
 
                             <div>

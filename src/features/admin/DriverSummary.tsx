@@ -12,6 +12,7 @@ import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/calculations';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
 import { cn } from '../../utils/cn';
+import Select from '../../components/ui/Select';
 
 // PDF Layout Constants
 const PDF_MARGIN_LEFT = 14;
@@ -266,44 +267,46 @@ export default function DriverSummary() {
 
             {/* Filters */}
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0 w-full md:w-auto">
-                    {/* Driver Select Dropdown */}
-                    <div className="min-w-[200px]">
-                        <select
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto">
+                    {/* Driver Select Dropdown - Berdiri sendiri */}
+                    <div className="w-full sm:w-[200px] z-10">
+                        <Select
                             value={filterDriver}
-                            onChange={(e) => setFilterDriver(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-100 transition-colors cursor-pointer"
-                        >
-                            <option value="">Semua Driver</option>
-                            {users.map(u => (
-                                <option key={u.id} value={u.id}>{u.full_name}</option>
-                            ))}
-                        </select>
+                            onChange={setFilterDriver}
+                            options={[
+                                { value: '', label: 'Semua Driver' },
+                                ...users.map(u => ({ value: u.id, label: u.full_name }))
+                            ]}
+                            placeholder="Pilih Driver"
+                        />
                     </div>
 
-                    <div className="h-8 w-px bg-gray-200 mx-2 hidden md:block"></div>
+                    <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
 
-                    <button
-                        onClick={() => handlePeriodChange('month')}
-                        className={cn("px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                            periodLabel === 'Bulan Ini' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                    >
-                        Bulan Ini
-                    </button>
-                    <button
-                        onClick={() => handlePeriodChange(7)}
-                        className={cn("px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                            periodLabel === '7 Hari Terakhir' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                    >
-                        7 Hari
-                    </button>
-                    <button
-                        onClick={() => handlePeriodChange(30)}
-                        className={cn("px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-colors",
-                            periodLabel === '30 Hari Terakhir' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                    >
-                        30 Hari
-                    </button>
+                    {/* Period Buttons - Scrollable */}
+                    <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 font-medium">
+                        <button
+                            onClick={() => handlePeriodChange('month')}
+                            className={cn("px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
+                                periodLabel === 'Bulan Ini' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                        >
+                            Bulan Ini
+                        </button>
+                        <button
+                            onClick={() => handlePeriodChange(7)}
+                            className={cn("px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
+                                periodLabel === '7 Hari Terakhir' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                        >
+                            7 Hari
+                        </button>
+                        <button
+                            onClick={() => handlePeriodChange(30)}
+                            className={cn("px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
+                                periodLabel === '30 Hari Terakhir' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
+                        >
+                            30 Hari
+                        </button>
+                    </div>
                 </div>
 
                 <div className="w-full md:w-auto">

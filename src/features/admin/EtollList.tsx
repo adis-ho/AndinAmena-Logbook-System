@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, CreditCard, X, Wallet } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
+import Select from '../../components/ui/Select';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -261,14 +262,14 @@ export default function EtollList() {
                                 <label className="block text-sm font-medium text-gray-700 mb-1">
                                     Status
                                 </label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                <Select
                                     value={formData.status}
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value as Etoll['status'] })}
-                                >
-                                    <option value="active">Aktif</option>
-                                    <option value="inactive">Nonaktif</option>
-                                </select>
+                                    onChange={(val) => setFormData({ ...formData, status: val as Etoll['status'] })}
+                                    options={[
+                                        { value: 'active', label: 'Aktif' },
+                                        { value: 'inactive', label: 'Nonaktif' }
+                                    ]}
+                                />
                             </div>
 
                             <div className="flex gap-3 pt-4">

@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { format, differenceInDays, startOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SkeletonDashboard } from '../../components/ui/Skeleton';
+import Select from '../../components/ui/Select';
 
 interface DashboardData {
     totalLogbooks: number;
@@ -101,17 +102,17 @@ export default function AdminDashboard() {
                     <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
                 </div>
 
-                <div className="flex items-center gap-2 bg-white p-1 rounded-lg border border-gray-200">
-                    <select
-                        value={period}
-                        onChange={(e) => setPeriod(Number(e.target.value))}
-                        className="bg-transparent border-none text-sm font-medium text-gray-600 focus:ring-0 cursor-pointer py-1 px-3"
-                    >
-                        <option value="7">7 Hari Terakhir</option>
-                        <option value="30">30 Hari Terakhir</option>
-                        <option value="90">3 Bulan Terakhir</option>
-                        <option value={differenceInDays(new Date(), startOfMonth(new Date())) + 1}>Bulan Ini</option>
-                    </select>
+                <div className="w-48">
+                    <Select
+                        value={String(period)}
+                        onChange={(val) => setPeriod(Number(val))}
+                        options={[
+                            { value: "7", label: "7 Hari Terakhir" },
+                            { value: "30", label: "30 Hari Terakhir" },
+                            { value: "90", label: "3 Bulan Terakhir" },
+                            { value: String(differenceInDays(new Date(), startOfMonth(new Date())) + 1), label: "Bulan Ini" }
+                        ]}
+                    />
                 </div>
             </div>
 

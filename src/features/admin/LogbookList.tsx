@@ -8,6 +8,7 @@ import { id } from 'date-fns/locale';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import Select from '../../components/ui/Select';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
 import { PAGE_SIZE } from '../../constants';
@@ -396,30 +397,28 @@ export default function LogbookList() {
                     {/* Driver Filter */}
                     <div>
                         <label className="block text-xs font-medium text-gray-500 mb-1">Driver</label>
-                        <select
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white transition-colors"
+                        <Select
                             value={filterDriver}
-                            onChange={(e) => { setFilterDriver(e.target.value); setPage(1); }}
-                        >
-                            <option value="">Semua Driver</option>
-                            {drivers.map(d => (
-                                <option key={d.id} value={d.id}>{d.full_name}</option>
-                            ))}
-                        </select>
+                            onChange={(val) => { setFilterDriver(val); setPage(1); }}
+                            options={[
+                                { value: '', label: 'Semua Driver' },
+                                ...drivers.map(d => ({ value: d.id, label: d.full_name }))
+                            ]}
+                            placeholder="Semua Driver"
+                        />
                     </div>
                     {/* Unit Filter */}
                     <div>
                         <label className="block text-xs font-medium text-gray-500 mb-1">Unit</label>
-                        <select
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white transition-colors"
+                        <Select
                             value={filterUnit}
-                            onChange={(e) => { setFilterUnit(e.target.value); setPage(1); }}
-                        >
-                            <option value="">Semua Unit</option>
-                            {units.map(u => (
-                                <option key={u.id} value={u.id}>{u.name} - {u.plate_number}</option>
-                            ))}
-                        </select>
+                            onChange={(val) => { setFilterUnit(val); setPage(1); }}
+                            options={[
+                                { value: '', label: 'Semua Unit' },
+                                ...units.map(u => ({ value: u.id, label: `${u.name} - ${u.plate_number}` }))
+                            ]}
+                            placeholder="Semua Unit"
+                        />
                     </div>
                     {/* Client Filter */}
                     <div>
@@ -572,16 +571,18 @@ export default function LogbookList() {
                     </div>
 
                     <div className="flex items-center gap-2">
-                        <select
-                            value={pageSize}
-                            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-                            className="bg-white border border-gray-300 text-gray-700 text-sm rounded-lg p-2 focus:ring-blue-500 focus:border-blue-500"
-                        >
-                            <option value="10">10 / page</option>
-                            <option value="20">20 / page</option>
-                            <option value="50">50 / page</option>
-                            <option value="100">100 / page</option>
-                        </select>
+                        <div className="w-32">
+                            <Select
+                                value={String(pageSize)}
+                                onChange={(val) => { setPageSize(Number(val)); setPage(1); }}
+                                options={[
+                                    { value: "10", label: "10 / page" },
+                                    { value: "20", label: "20 / page" },
+                                    { value: "50", label: "50 / page" },
+                                    { value: "100", label: "100 / page" }
+                                ]}
+                            />
+                        </div>
 
                         <div className="flex gap-1 ml-4">
                             <button

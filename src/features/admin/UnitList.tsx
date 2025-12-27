@@ -5,6 +5,7 @@ import { Plus, Pencil, Trash2, Truck, X } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
+import Select from '../../components/ui/Select';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -176,15 +177,15 @@ export default function UnitList() {
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                <select
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                <Select
                                     value={formData.status}
-                                    onChange={(e) => setFormData({ ...formData, status: e.target.value as Unit['status'] })}
-                                >
-                                    <option value="available">Tersedia</option>
-                                    <option value="in-use">Digunakan</option>
-                                    <option value="maintenance">Maintenance</option>
-                                </select>
+                                    onChange={(val) => setFormData({ ...formData, status: val as Unit['status'] })}
+                                    options={[
+                                        { value: 'available', label: 'Tersedia' },
+                                        { value: 'in-use', label: 'Digunakan' },
+                                        { value: 'maintenance', label: 'Maintenance' }
+                                    ]}
+                                />
                             </div>
                             <div className="flex gap-3 pt-2">
                                 <button
