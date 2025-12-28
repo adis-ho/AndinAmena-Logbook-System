@@ -146,7 +146,19 @@ export default function LogbookForm() {
 
                 {/* E-Toll Selection */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Kartu E-Toll (Opsional)</label>
+                    <div className="flex items-center justify-between mb-1">
+                        <label className="block text-sm font-medium text-gray-700">Kartu E-Toll (Opsional)</label>
+                        <div className="flex items-center gap-1 text-sm">
+                            <Wallet className="h-4 w-4 text-blue-600" />
+                            <span className="text-gray-500">Saldo:</span>
+                            <span className="font-semibold text-blue-600">
+                                {formData.etoll_id
+                                    ? formatCurrency(etolls.find(e => e.id === formData.etoll_id)?.balance || 0)
+                                    : '-'
+                                }
+                            </span>
+                        </div>
+                    </div>
                     <Select
                         value={formData.etoll_id}
                         onChange={(val) => setFormData({ ...formData, etoll_id: val })}
@@ -154,7 +166,7 @@ export default function LogbookForm() {
                             { value: '', label: '-- Tidak Menggunakan E-Toll --' },
                             ...etolls.map(etoll => ({
                                 value: etoll.id,
-                                label: `${etoll.card_name} ${etoll.card_number ? `(${etoll.card_number})` : ''} - Saldo: Rp ${etoll.balance.toLocaleString('id-ID')}`
+                                label: `${etoll.card_name}${etoll.card_number ? ` (...${etoll.card_number.slice(-4)})` : ''}`
                             }))
                         ]}
                         placeholder="Pilih E-Toll"

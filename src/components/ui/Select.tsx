@@ -46,7 +46,7 @@ export default function Select({
 
     return (
         <Listbox value={value} onChange={onChange} disabled={disabled}>
-            <div className={cn("relative", className)}>
+            <div className={cn("relative min-w-0", className)}>
                 <ListboxButton
                     className={cn(
                         "relative w-full cursor-pointer rounded-lg bg-gray-50 py-2 pl-3 pr-10 text-left text-sm",
@@ -71,7 +71,7 @@ export default function Select({
                 >
                     <ListboxOptions
                         className={cn(
-                            "absolute z-50 mt-1 max-h-60 w-full overflow-auto rounded-lg bg-white py-1",
+                            "absolute z-50 mt-1 max-h-60 w-full min-w-0 overflow-auto rounded-lg bg-white py-1",
                             "text-sm shadow-lg ring-1 ring-black/5 focus:outline-none"
                         )}
                     >

@@ -11,6 +11,7 @@ import LogbookList from './features/admin/LogbookList';
 import EtollList from './features/admin/EtollList';
 import OperationalBudgetPage from './features/admin/OperationalBudgetPage';
 import DriverSummary from './features/admin/DriverSummary';
+import MonthlyReport from './features/admin/MonthlyReport';
 
 // Driver components
 import DriverDashboard from './features/driver/Dashboard';
@@ -37,6 +38,7 @@ function App() {
           <Route path="etolls" element={<EtollList />} />
           <Route path="operational" element={<OperationalBudgetPage />} />
           <Route path="driver-summary" element={<DriverSummary />} />
+          <Route path="laporan" element={<MonthlyReport />} />
           <Route path="profile" element={<ProfilePage />} />
         </Route>
       </Route>

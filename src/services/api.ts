@@ -1166,5 +1166,91 @@ export const ApiService = {
             console.error('[ApiService] Dashboard stats error:', err);
             return null;
         }
+    },
+
+    // ==================== REPORTING ====================
+    getMonthlyReportData: async (month: number, year: number, driverId?: string, unitId?: string) => {
+        // Calculate start and end date of the month (1-indexed month)
+        const startDate = `${year}-${month.toString().padStart(2, '0')}-01`;
+        const lastDay = new Date(year, month, 0).getDate();
+        const endDate = `${year}-${month.toString().padStart(2, '0')}-${lastDay}`;
+
+        // Fetch Approved Logbooks only
+        let query = supabase
+            .from('logbooks')
+            .select('*')
+            .gte('date', startDate)
+            .lte('date', endDate)
+            .eq('status', 'approved');
+
+        if (driverId) query = query.eq('driver_id', driverId);
+        if (unitId) query = query.eq('unit_id', unitId);
+
+        const { data: logbooks, error } = await query;
+
+        if (error || !logbooks) {
+            console.error('[ApiService] Get monthly report error:', error?.message);
+            return null;
+        }
+
+        // Fetch drivers and units for mapping names
+        // Note: In a larger app, we might want to optimize this or join in DB, 
+        // but for now fetching lists is fine given the scale.
+        const [usersResult, unitsResult] = await Promise.all([
+            ApiService.getUsers(),
+            ApiService.getUnits()
+        ]);
+
+        const driversMap = new Map(usersResult.map(u => [u.id, u.full_name]));
+        const unitsMap = new Map(unitsResult.map(u => [u.id, u]));
+
+        // Aggregate
+        let totalCost = 0;
+        const driverStatsMap = new Map<string, { trips: number, cost: number }>();
+        const unitStatsMap = new Map<string, { trips: number }>();
+
+        logbooks.forEach(log => {
+            // Cost = Toll + Operational (Excluding BBM, excluding Parking if unused)
+            const cost = (log.toll_cost || 0) + (log.operational_cost || 0);
+            totalCost += cost;
+
+            // Driver Stats
+            const dStats = driverStatsMap.get(log.driver_id) || { trips: 0, cost: 0 };
+            dStats.trips++;
+            dStats.cost += cost;
+            driverStatsMap.set(log.driver_id, dStats);
+
+            // Unit Stats
+            const uStats = unitStatsMap.get(log.unit_id) || { trips: 0 };
+            uStats.trips++;
+            unitStatsMap.set(log.unit_id, uStats);
+        });
+
+        // Format Output
+        const driverStats = Array.from(driverStatsMap.entries()).map(([id, stats]) => ({
+            driver_id: id,
+            name: driversMap.get(id) || 'Unknown Driver',
+            trips: stats.trips,
+            total_cost: stats.cost
+        })).sort((a, b) => b.total_cost - a.total_cost);
+
+        const unitStats = Array.from(unitStatsMap.entries()).map(([id, stats]) => {
+            const unit = unitsMap.get(id);
+            return {
+                unit_id: id,
+                name: unit ? unit.name : 'Unknown Unit',
+                plate_number: unit ? unit.plate_number : '',
+                trips: stats.trips
+            };
+        }).sort((a, b) => b.trips - a.trips);
+
+        return {
+            summary: {
+                total_trips: logbooks.length,
+                total_cost: totalCost
+            },
+            driver_stats: driverStats,
+            unit_stats: unitStats
+        };
     }
 };
