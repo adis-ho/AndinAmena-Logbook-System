@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { FileText, Download, Loader2, Filter } from 'lucide-react';
+import { FileText, Loader2, Filter } from 'lucide-react';
 import Select from '../../components/ui/Select';
 import { ApiService } from '../../services/api';
 import { generateMonthlyReportPDF } from '../../utils/reportPdfGenerator';
@@ -194,6 +194,18 @@ export default function MonthlyReport() {
             {/* Preview Section */}
             {reportData && (
                 <div className="space-y-6 animate-fadeIn">
+                    {/* Action Button */}
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleDownloadPDF}
+                            disabled={isLoading}
+                            className="flex items-center gap-2 px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                        >
+                            {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FileText className="w-4 h-4" />}
+                            Download PDF
+                        </button>
+                    </div>
+
                     {/* Summary Cards */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
@@ -208,17 +220,6 @@ export default function MonthlyReport() {
                             </p>
                             <p className="text-xs text-gray-400 mt-2">Tidak termasuk BBM</p>
                         </div>
-                    </div>
-
-                    <div className="flex justify-end">
-                        <button
-                            onClick={handleDownloadPDF}
-                            disabled={isLoading}
-                            className="flex items-center gap-2 px-6 py-3 bg-gray-900 text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 transition-colors shadow-lg"
-                        >
-                            {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Download className="w-5 h-5" />}
-                            Download PDF
-                        </button>
                     </div>
 
                     {/* Tables Preview */}

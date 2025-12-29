@@ -5,7 +5,7 @@ import { cn } from '../../utils/cn';
 
 export interface SelectOption {
     value: string;
-    label: string;
+    label: React.ReactNode | string;
     disabled?: boolean;
 }
 
