@@ -32,7 +32,12 @@ interface DashboardData {
     }> | null;
 }
 
-const COLORS = ['#10B981', '#F59E0B', '#EF4444'];
+const STATUS_COLORS: Record<string, string> = {
+    'Disetujui': '#10B981', // Green
+    'Pending': '#F59E0B',   // Yellow/Orange
+    'Ditolak': '#EF4444',   // Red
+};
+const DEFAULT_COLOR = '#9CA3AF'; // Gray
 
 export default function AdminDashboard() {
     const [data, setData] = useState<DashboardData | null>(null);
@@ -184,7 +189,7 @@ export default function AdminDashboard() {
                                 labelLine={{ stroke: '#666', strokeWidth: 1 }}
                             >
                                 {statusData.filter(d => d.value > 0).map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={COLORS[statusData.findIndex(s => s.name === entry.name) % COLORS.length]} />
+                                    <Cell key={`cell-${index}`} fill={STATUS_COLORS[entry.name] || DEFAULT_COLOR} />
                                 ))}
                             </Pie>
                             <Tooltip />
@@ -192,9 +197,9 @@ export default function AdminDashboard() {
                     </ResponsiveContainer>
                     {/* Legend */}
                     <div className="flex justify-center gap-4 mt-2">
-                        {statusData.map((item, index) => (
+                        {statusData.map((item) => (
                             <div key={item.name} className="flex items-center gap-1">
-                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: COLORS[index % COLORS.length] }}></div>
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: STATUS_COLORS[item.name] || DEFAULT_COLOR }}></div>
                                 <span className="text-sm text-gray-600">{item.name}: {item.value}</span>
                             </div>
                         ))}

@@ -184,7 +184,16 @@ export default function LogbookHistory() {
                                         { value: '', label: '-- Tidak Menggunakan E-Toll --' },
                                         ...etolls.map(etoll => ({
                                             value: etoll.id,
-                                            label: `${etoll.card_name} ${etoll.card_number ? `(${etoll.card_number})` : ''} - Saldo: Rp ${etoll.balance.toLocaleString('id-ID')}`
+                                            label: (
+                                                <>
+                                                    <span className="md:hidden">
+                                                        {`${etoll.card_name}${etoll.card_number ? ` (...${etoll.card_number.slice(-4)})` : ''}`}
+                                                    </span>
+                                                    <span className="hidden md:inline">
+                                                        {`${etoll.card_name}${etoll.card_number ? ` (${etoll.card_number})` : ''}`}
+                                                    </span>
+                                                </>
+                                            )
                                         }))
                                     ]}
                                     placeholder="Pilih E-Toll"

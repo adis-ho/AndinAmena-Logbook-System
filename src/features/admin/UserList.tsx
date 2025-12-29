@@ -370,18 +370,18 @@ export default function UserList() {
                     </div>
                 ) : (
                     users.map(user => (
-                        <div key={user.id} className={`bg - white rounded - xl shadow - sm border border - gray - 100 p - 4 ${user.status === 'inactive' ? 'opacity-60' : ''} `}>
+                        <div key={user.id} className={`bg-white rounded-xl shadow-sm border border-gray-100 p-4 ${user.status === 'inactive' ? 'opacity-60' : ''}`}>
                             <div className="flex justify-between items-start mb-3">
                                 <div>
                                     <p className="font-semibold text-gray-900">{user.full_name}</p>
                                     <p className="text-sm text-gray-500">@{user.username}</p>
                                 </div>
-                                <span className={`px - 2 py - 1 rounded - full text - xs font - medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'} `}>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
                                     {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
                                 </span>
                             </div>
                             <div className="flex items-center gap-2 mb-3">
-                                <span className={`px - 2 py - 1 rounded - full text - xs font - medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'} `}>
+                                <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                                     {user.role === 'admin' ? 'Admin' : 'Driver'}
                                 </span>
                             </div>
