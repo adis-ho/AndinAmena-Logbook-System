@@ -222,15 +222,7 @@ export default function LogbookHistory() {
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                                <textarea
-                                    rows={3}
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
-                                    value={formData.keterangan}
-                                    onChange={(e) => setFormData({ ...formData, keterangan: e.target.value })}
-                                />
-                            </div>
+
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol</label>
@@ -255,6 +247,16 @@ export default function LogbookHistory() {
                                     value={formData.operational_cost || ''}
                                     onChange={(e) => setFormData({ ...formData, operational_cost: Math.round(Number(e.target.value)) || 0 })}
                                     onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                />
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
+                                <textarea
+                                    rows={3}
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500 resize-none"
+                                    value={formData.keterangan}
+                                    onChange={(e) => setFormData({ ...formData, keterangan: e.target.value })}
                                 />
                             </div>
 
