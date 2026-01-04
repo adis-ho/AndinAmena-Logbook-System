@@ -1096,6 +1096,17 @@ export const ApiService = {
         }
     },
 
+    deleteAllNotifications: async (userId: string): Promise<void> => {
+        const { error } = await supabase
+            .from('notifications')
+            .delete()
+            .eq('user_id', userId);
+
+        if (error) {
+            console.error('[ApiService] Delete all notifications error:', error.message);
+        }
+    },
+
     // Helper: Send notification to all admins
     notifyAdmins: async (notification: {
         type: 'logbook_submitted' | 'user_registered' | 'system';

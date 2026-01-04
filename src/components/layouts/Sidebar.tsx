@@ -1,6 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { LayoutDashboard, BookOpen, Car, Users, PlusCircle, History, LogOut, CreditCard, Wallet, BarChart3, FileText } from 'lucide-react';
+import { LayoutDashboard, BookOpen, Car, Users, PlusCircle, History, LogOut, CreditCard, Wallet, BarChart3, FileText, X } from 'lucide-react';
 import { cn } from '../../utils/cn';
 
 interface SidebarProps {
@@ -52,9 +52,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
 
                 {/* User Profile */}
                 {user && (
-                    <div className="px-4 py-4 border-b border-gray-100">
-                        <div className="flex items-center gap-3">
-                            <div className="h-11 w-11 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg shadow-md overflow-hidden">
+                    <div className="px-4 py-4 border-b border-gray-100 flex items-center justify-between">
+                        <div className="flex items-center gap-3 min-w-0">
+                            <div className="h-11 w-11 flex-shrink-0 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-white font-semibold text-lg shadow-md overflow-hidden">
                                 {user.avatar_url ? (
                                     <img
                                         src={user.avatar_url}
@@ -65,7 +65,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                     user.full_name.charAt(0).toUpperCase()
                                 )}
                             </div>
-                            <div className="flex-1 min-w-0">
+                            <div className="min-w-0">
                                 <p className="text-sm font-semibold text-gray-900 truncate">
                                     {user.full_name}
                                 </p>
@@ -74,6 +74,13 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                                 </p>
                             </div>
                         </div>
+                        <button
+                            onClick={onClose}
+                            className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                            title="Tutup Menu"
+                        >
+                            <X className="h-5 w-5" />
+                        </button>
                     </div>
                 )}
 

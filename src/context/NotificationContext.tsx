@@ -19,6 +19,7 @@ interface NotificationContextType {
     markAsRead: (id: string) => void;
     markAllAsRead: () => void;
     clearNotification: (id: string) => void;
+    clearAllNotifications: () => void;
     refreshNotifications: () => Promise<void>;
 }
 
@@ -154,6 +155,13 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         await ApiService.deleteNotification(id);
     };
 
+    const clearAllNotifications = async () => {
+        if (!user) return;
+        // Optimistic update
+        setNotifications([]);
+        await ApiService.deleteAllNotifications(user.id);
+    };
+
     const refreshNotifications = async () => {
         await fetchNotifications();
     };
@@ -165,6 +173,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
             markAsRead,
             markAllAsRead,
             clearNotification,
+            clearAllNotifications,
             refreshNotifications
         }}>
             {children}

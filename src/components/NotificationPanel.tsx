@@ -43,7 +43,7 @@ export default function NotificationPanel() {
     const navigate = useNavigate();
     const [isOpen, setIsOpen] = useState(false);
     const panelRef = useRef<HTMLDivElement>(null);
-    const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification } = useNotifications();
+    const { notifications, unreadCount, markAsRead, markAllAsRead, clearNotification, clearAllNotifications } = useNotifications();
 
     // Close on click outside
     useEffect(() => {
@@ -119,20 +119,31 @@ export default function NotificationPanel() {
                         <Bell className="h-4 w-4" />
                         <span className="font-semibold">Notifikasi</span>
                         {unreadCount > 0 && (
-                            <span className="px-2 py-0.5 text-xs font-bold bg-white/20 rounded-full">
-                                {unreadCount} baru
+                            <span className="px-2 py-0.5 text-[10px] font-bold bg-white/20 rounded-full">
+                                {unreadCount}
                             </span>
                         )}
                     </div>
-                    {unreadCount > 0 && (
-                        <button
-                            onClick={markAllAsRead}
-                            className="flex items-center gap-1 text-xs text-blue-100 hover:text-white transition-colors"
-                        >
-                            <CheckCheck className="h-3.5 w-3.5" />
-                            Tandai semua dibaca
-                        </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                        {unreadCount > 0 && (
+                            <button
+                                onClick={markAllAsRead}
+                                className="p-1.5 text-blue-100 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+                                title="Tandai semua dibaca"
+                            >
+                                <CheckCheck className="h-4 w-4" />
+                            </button>
+                        )}
+                        {notifications.length > 0 && (
+                            <button
+                                onClick={clearAllNotifications}
+                                className="p-1.5 text-blue-100 hover:text-red-200 hover:bg-red-500/20 rounded-lg transition-colors"
+                                title="Hapus semua notifikasi"
+                            >
+                                <Trash2 className="h-4 w-4" />
+                            </button>
+                        )}
+                    </div>
                 </div>
 
                 {/* Notification List */}
