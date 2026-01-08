@@ -40,8 +40,9 @@ export default function Select({
     options,
     placeholder = 'Pilih...',
     disabled = false,
+    position = 'bottom',
     className
-}: SelectProps) {
+}: SelectProps & { position?: 'top' | 'bottom' }) {
     const selectedOption = options.find(opt => opt.value === value);
 
     return (
@@ -71,8 +72,9 @@ export default function Select({
                 >
                     <ListboxOptions
                         className={cn(
-                            "absolute z-50 mt-1 max-h-60 w-full min-w-0 overflow-auto rounded-lg bg-white py-1",
-                            "text-sm shadow-lg ring-1 ring-black/5 focus:outline-none"
+                            "absolute z-50 w-full min-w-0 overflow-auto rounded-lg bg-white py-1",
+                            "text-sm shadow-lg ring-1 ring-black/5 focus:outline-none",
+                            position === 'bottom' ? "mt-1 max-h-60" : "bottom-full mb-1 max-h-60"
                         )}
                     >
                         {options.map((option) => (

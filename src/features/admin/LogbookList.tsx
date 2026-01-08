@@ -612,6 +612,7 @@ export default function LogbookList() {
                             <Select
                                 value={String(pageSize)}
                                 onChange={(val) => { setPageSize(Number(val)); setPage(1); }}
+                                position="top"
                                 options={[
                                     { value: "10", label: "10 / page" },
                                     { value: "20", label: "20 / page" },
