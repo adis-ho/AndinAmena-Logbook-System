@@ -116,25 +116,58 @@ export default function LogbookList() {
 
     const drivers = users.filter(u => u.role === 'driver');
 
-    const handleStatusChange = async (logbookId: string, status: LogbookEntry['status']) => {
+    const handleApprove = async (logbookId: string) => {
         try {
-            await ApiService.updateLogbookStatus(logbookId, status);
             const logbook = logbooks.find(l => l.id === logbookId);
-            if (logbook) {
-                const statusText = status === 'approved' ? 'disetujui' : 'ditolak';
-                await ApiService.createNotification({
-                    user_id: logbook.driver_id,
-                    type: status === 'approved' ? 'logbook_approved' : 'logbook_rejected',
-                    title: `Laporan ${status === 'approved' ? 'Disetujui' : 'Ditolak'}`,
-                    message: `Laporan tanggal ${new Date(logbook.date).toLocaleDateString('id-ID')} telah ${statusText} oleh admin`,
-                    link: '/driver/history'
-                });
+            if (!logbook) return;
+
+            await ApiService.updateLogbookStatus(logbookId, 'approved');
+
+            await ApiService.createNotification({
+                user_id: logbook.driver_id,
+                type: 'logbook_approved',
+                title: 'Laporan Disetujui',
+                message: `Laporan tanggal ${new Date(logbook.date).toLocaleDateString('id-ID')} telah disetujui oleh admin`,
+                link: '/driver/history'
+            });
+
+            setLogbooks(logbooks.map(l => l.id === logbookId ? { ...l, status: 'approved' } : l));
+            if (selectedLogbook?.id === logbookId) {
+                setSelectedLogbook({ ...selectedLogbook, status: 'approved' });
+            } else {
+                setSelectedLogbook(null);
             }
-            setLogbooks(logbooks.map(l => l.id === logbookId ? { ...l, status } : l));
-            setSelectedLogbook(null);
-            showToast('success', status === 'approved' ? 'Laporan berhasil disetujui' : 'Laporan berhasil ditolak');
+            showToast('success', 'Laporan berhasil disetujui');
         } catch (err) {
-            showToast('error', 'Gagal mengubah status laporan');
+            showToast('error', 'Gagal menyetujui laporan');
+            console.error(err);
+        }
+    };
+
+    const handleReject = async (logbookId: string) => {
+        try {
+            const logbook = logbooks.find(l => l.id === logbookId);
+            if (!logbook) return;
+
+            await ApiService.updateLogbookStatus(logbookId, 'rejected');
+
+            await ApiService.createNotification({
+                user_id: logbook.driver_id,
+                type: 'logbook_rejected',
+                title: 'Laporan Ditolak',
+                message: `Laporan tanggal ${new Date(logbook.date).toLocaleDateString('id-ID')} telah ditolak oleh admin`,
+                link: '/driver/history'
+            });
+
+            setLogbooks(logbooks.map(l => l.id === logbookId ? { ...l, status: 'rejected' } : l));
+            if (selectedLogbook?.id === logbookId) {
+                setSelectedLogbook({ ...selectedLogbook, status: 'rejected' });
+            } else {
+                setSelectedLogbook(null);
+            }
+            showToast('success', 'Laporan berhasil ditolak');
+        } catch (err) {
+            showToast('error', 'Gagal menolak laporan');
             console.error(err);
         }
     };
@@ -544,10 +577,10 @@ export default function LogbookList() {
                                                 </button>
                                                 {log.status === 'submitted' && (
                                                     <>
-                                                        <button onClick={() => handleStatusChange(log.id, 'approved')} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg">
+                                                        <button onClick={() => handleApprove(log.id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg">
                                                             <CheckCircle className="h-4 w-4" />
                                                         </button>
-                                                        <button onClick={() => handleStatusChange(log.id, 'rejected')} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
+                                                        <button onClick={() => handleReject(log.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
                                                             <XCircle className="h-4 w-4" />
                                                         </button>
                                                     </>
@@ -567,7 +600,11 @@ export default function LogbookList() {
                 {/* PAGINATION */}
                 <div className="border-t border-gray-100 p-4 bg-gray-50 flex items-center justify-between">
                     <div className="text-sm text-gray-500">
-                        Menampilkan <span className="font-medium">{(page - 1) * pageSize + 1}</span> - <span className="font-medium">{Math.min(page * pageSize, totalCount)}</span> dari <span className="font-medium">{totalCount}</span> data
+                        {totalCount === 0 ? (
+                            'Tidak ada data'
+                        ) : (
+                            <>Menampilkan <span className="font-medium">{(page - 1) * pageSize + 1}</span> - <span className="font-medium">{Math.min(page * pageSize, totalCount)}</span> dari <span className="font-medium">{totalCount}</span> data</>
+                        )}
                     </div>
 
                     <div className="flex items-center gap-2">
@@ -683,10 +720,10 @@ export default function LogbookList() {
                                     </button>
                                     {log.status === 'submitted' && (
                                         <>
-                                            <button onClick={() => handleStatusChange(log.id, 'approved')} className="px-3 py-1.5 text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium">
+                                            <button onClick={() => handleApprove(log.id)} className="px-3 py-1.5 text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium">
                                                 Setujui
                                             </button>
-                                            <button onClick={() => handleStatusChange(log.id, 'rejected')} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">
+                                            <button onClick={() => handleReject(log.id)} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">
                                                 Tolak
                                             </button>
                                         </>
@@ -789,10 +826,10 @@ export default function LogbookList() {
 
                             {selectedLogbook.status === 'submitted' && (
                                 <div className="flex gap-3 pt-4 border-t">
-                                    <button onClick={() => handleStatusChange(selectedLogbook.id, 'approved')} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
+                                    <button onClick={() => handleApprove(selectedLogbook.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
                                         <CheckCircle className="h-4 w-4" /> Setujui
                                     </button>
-                                    <button onClick={() => handleStatusChange(selectedLogbook.id, 'rejected')} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
+                                    <button onClick={() => handleReject(selectedLogbook.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
                                         <XCircle className="h-4 w-4" /> Tolak
                                     </button>
                                 </div>

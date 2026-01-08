@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import type { LogbookEntry, Unit, Etoll } from '../../types';
-import { History, CheckCircle, XCircle, Clock, Pencil, X } from 'lucide-react';
+import { History, CheckCircle, XCircle, Clock, Pencil, X, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SkeletonLogbookHistory } from '../../components/ui/Skeleton';
@@ -29,6 +29,7 @@ export default function LogbookHistory() {
     const [editingLogbook, setEditingLogbook] = useState<LogbookEntry | null>(null);
     const [formData, setFormData] = useState<EditFormData | null>(null);
     const [formLoading, setFormLoading] = useState(false);
+    const [deleteLogbook, setDeleteLogbook] = useState<LogbookEntry | null>(null);
 
     const fetchData = async () => {
         if (!user) return;
@@ -97,6 +98,27 @@ export default function LogbookHistory() {
         });
     };
 
+    const handleDelete = async () => {
+        if (!deleteLogbook || !user) return;
+
+        // Only allow deleting rejected logbooks
+        if (deleteLogbook.status !== 'rejected') {
+            alert('Hanya laporan yang ditolak yang dapat dihapus.');
+            setDeleteLogbook(null);
+            return;
+        }
+
+        try {
+            await ApiService.deleteLogbookByDriver(deleteLogbook.id, user.id);
+            setLogbooks(logbooks.filter(l => l.id !== deleteLogbook.id));
+            setDeleteLogbook(null);
+            alert('Laporan berhasil dihapus');
+        } catch (err) {
+            console.error('Delete error:', err);
+            alert('Gagal menghapus laporan. Pastikan laporan ini milik Anda dan statusnya ditolak.');
+        }
+    };
+
     const handleCloseEdit = () => {
         setEditingLogbook(null);
         setFormData(null);
@@ -138,6 +160,32 @@ export default function LogbookHistory() {
                 <History className="h-6 w-6 text-blue-600" />
                 <h1 className="text-2xl font-bold text-gray-900">Riwayat Laporan Harian</h1>
             </div>
+
+            {/* Modal Delete Confirmation */}
+            {deleteLogbook && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-6 rounded-xl w-full max-w-md">
+                        <h2 className="text-xl font-bold text-gray-900 mb-4">Hapus Laporan?</h2>
+                        <p className="text-gray-600 mb-6">
+                            Apakah Anda yakin ingin menghapus laporan tanggal <strong>{format(new Date(deleteLogbook.date), 'dd MMMM yyyy', { locale: id })}</strong>?
+                        </p>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setDeleteLogbook(null)}
+                                className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                            >
+                                Batal
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                            >
+                                Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Modal Edit */}
             {editingLogbook && formData && (
@@ -308,6 +356,15 @@ export default function LogbookHistory() {
                                             <Pencil className="h-4 w-4" />
                                         </button>
                                     )}
+                                    {log.status === 'rejected' && (
+                                        <button
+                                            onClick={() => setDeleteLogbook(log)}
+                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            title="Hapus Laporan Ditolak"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
                                 </div>
                             </div>
 
@@ -346,7 +403,7 @@ export default function LogbookHistory() {
 
                             {log.status === 'rejected' && (
                                 <p className="mt-3 text-sm text-red-600 bg-red-50 p-2 rounded-lg">
-                                    ⚠️ Laporan ini ditolak. Silakan edit dan submit ulang.
+                                    ⚠️ Laporan ini ditolak. Silakan edit dan submit ulang, atau hapus jika tidak diperlukan.
                                 </p>
                             )}
                         </div>

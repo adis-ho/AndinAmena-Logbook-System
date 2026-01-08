@@ -95,8 +95,11 @@ export default function DriverSummary() {
             });
         });
 
-        // Sum up logbooks
+        // Sum up logbooks - ONLY count approved logbooks
         logbooks.forEach(log => {
+            // Skip if not approved
+            if (log.status !== 'approved') return;
+
             // Skip if driver filtered out
             if (filterDriver && log.driver_id !== filterDriver) return;
 

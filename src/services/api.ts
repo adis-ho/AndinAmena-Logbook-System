@@ -859,6 +859,27 @@ export const ApiService = {
         }
     },
 
+    // Delete logbook by driver - only allows deleting rejected logbooks owned by the driver
+    deleteLogbookByDriver: async (id: string, driverId: string): Promise<void> => {
+        const { data, error } = await supabase
+            .from('logbooks')
+            .delete()
+            .eq('id', id)
+            .eq('driver_id', driverId)
+            .eq('status', 'rejected')
+            .select();  // Return deleted rows to verify
+
+        if (error) {
+            console.error('[ApiService] Delete logbook by driver error:', error.message);
+            throw error;
+        }
+
+        // Check if any row was actually deleted
+        if (!data || data.length === 0) {
+            throw new Error('Tidak dapat menghapus. Pastikan laporan milik Anda dan statusnya ditolak.');
+        }
+    },
+
     // ==================== E-TOLLS ====================
     getEtolls: async (): Promise<Etoll[]> => {
         const { data, error } = await supabase
