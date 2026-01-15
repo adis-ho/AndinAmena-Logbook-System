@@ -98,9 +98,15 @@ export default function UnitList() {
             setUnits(units.filter(u => u.id !== deleteModal.unitId));
             showToast('success', 'Unit berhasil dihapus');
             setDeleteModal({ ...deleteModal, isOpen: false });
-        } catch (err) {
-            showToast('error', 'Gagal menghapus unit');
-            console.error(err);
+        } catch (err: any) {
+            const message = err.message || 'Gagal menghapus unit';
+            // Check for foreign key violation (Postgres error 23503)
+            if (message.includes('foreign key constraint') || message.includes('violates foreign key')) {
+                showToast('error', 'Gagal: Unit ini memiliki riwayat Logbook / digunakan. Hapus logbook terkait terlebih dahulu.');
+            } else {
+                showToast('error', `Gagal menghapus unit: ${message}`);
+            }
+            console.error('Delete unit error:', err);
         } finally {
             setFormLoading(false);
         }

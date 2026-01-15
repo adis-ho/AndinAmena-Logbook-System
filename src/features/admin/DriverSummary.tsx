@@ -365,8 +365,52 @@ export default function DriverSummary() {
                 </div>
             </div>
 
-            {/* Summary Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            {/* Mobile Card View */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {driverStats.length === 0 ? (
+                    <div className="bg-white p-8 rounded-xl shadow-sm border border-gray-100 text-center text-gray-500">
+                        Tidak ada data untuk periode ini
+                    </div>
+                ) : (
+                    driverStats.map((stat, index) => (
+                        <div key={stat.driverId} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                            <div className="flex justify-between items-start mb-4">
+                                <div>
+                                    <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600 mb-1">
+                                        #{index + 1}
+                                    </span>
+                                    <h3 className="text-lg font-bold text-gray-900">{stat.driverName}</h3>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                    <span className="text-xs text-gray-500 mb-1">Total Trip</span>
+                                    <span className="bg-blue-100 text-blue-800 text-sm font-bold px-2.5 py-1 rounded-full">
+                                        {stat.totalTrips}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p className="text-xs text-gray-500 mb-1">Biaya Tol</p>
+                                    <p className="font-semibold text-gray-700">{formatCurrency(stat.totalToll)}</p>
+                                </div>
+                                <div className="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                    <p className="text-xs text-gray-500 mb-1">Biaya Lain</p>
+                                    <p className="font-semibold text-gray-700">{formatCurrency(stat.totalOperational)}</p>
+                                </div>
+                            </div>
+
+                            <div className="pt-3 border-t border-dashed border-gray-200 flex justify-between items-center">
+                                <span className="font-medium text-gray-600">Total Biaya</span>
+                                <span className="font-bold text-lg text-blue-600">{formatCurrency(stat.totalCost)}</span>
+                            </div>
+                        </div>
+                    ))
+                )}
+            </div>
+
+            {/* Summary Table - Desktop Only */}
+            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[800px]">
                         <thead className="bg-gray-50 border-b border-gray-100">
