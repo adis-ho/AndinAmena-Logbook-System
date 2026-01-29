@@ -175,7 +175,7 @@ export default function LogbookForm() {
 
                 {/* Toll Cost */}
                 <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol</label>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Biaya Tol & Parkir (E-Toll)</label>
                     <input
                         type="number"
                         min="0"
