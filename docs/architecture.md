@@ -177,12 +177,28 @@ CREATE TABLE notifications (
 );
 ```
 
+### Balance Logs (NEW)
+```sql
+CREATE TABLE balance_logs (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  driver_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
+  admin_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
+  action_type TEXT CHECK (action_type IN ('top_up', 'edit', 'reset')),
+  amount NUMERIC,
+  previous_balance NUMERIC NOT NULL,
+  new_balance NUMERIC NOT NULL,
+  description TEXT,
+  created_at TIMESTAMPTZ DEFAULT now()
+);
+```
+
 ## RLS Policies
 
 ### Profiles
 - Anyone can view profiles
 - Users can update own profile
 - **Admins can update any profile** (untuk soft delete)
+- **Admins can insert profiles** (untuk create user baru)
 - Insert only for authenticated users
 
 ### Units
@@ -190,8 +206,13 @@ CREATE TABLE notifications (
 
 ### Logbooks
 - Drivers can view/insert/update own logbooks
+- **Drivers can delete own rejected logbooks**
 - Admins can view all logbooks
 - Admins can update all logbooks (approve/reject)
+
+### Balance Logs
+- Admins can view/insert all balance logs
+- Drivers can view own balance logs
 
 ## Role Pengguna
 
@@ -217,9 +238,11 @@ VITE_SUPABASE_ANON_KEY=xxxxx
 
 ## Catatan Pengembangan
 
-- **State saat ini**: Terintegrasi dengan Supabase, data persisten
+- **State saat ini**: Phase 3.0 - Advanced Features
 - **Realtime**: Notifikasi berfungsi real-time menggunakan Supabase Realtime
 - **Security**: Row Level Security (RLS) aktif di semua tabel
 - **Analytics**: Dashboard dengan Recharts (bar, pie, line charts)
+- **Reporting**: Laporan Bulanan, Driver Summary dengan PDF export
+- **Cost Management**: Top Up, Edit, Reset saldo + Balance Logs
 - **UX**: Toast notifications, skeleton loading, soft delete, **Mobile Responsive (Card/Table views)**
 - **Deployment**: Live di **andinlaporanharian.vercel.app**

@@ -1,12 +1,12 @@
 # Status Proyek Amena Logbook
 
-**Terakhir Diperbarui**: 25 Desember 2025
+**Terakhir Diperbarui**: 29 Januari 2026
 
 ---
 
 ## Ringkasan
 
-Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 2.5 (Deployed)** - sudah live di **[andinlaporanharian.vercel.app](https://andinlaporanharian.vercel.app)**.
+Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 3.0 (Advanced Features)** - sudah live di **[andinlaporanharian.vercel.app](https://andinlaporanharian.vercel.app)**.
 
 ## Apa yang Berhasil ✅
 
@@ -39,11 +39,14 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Manajemen Unit (CRUD + Modal) | ✅ |
 | Notifikasi logbook baru | ✅ |
 
-### Cost Management & Funds (NEW)
+### Cost Management & Funds
 | Fitur | Status |
 |-------|--------|
 | Saldo Operasional per Driver | ✅ |
 | Top-up Saldo Driver | ✅ |
+| **Edit Saldo Driver** | ✅ |
+| **Reset Saldo Driver ke Rp 0** | ✅ |
+| **Balance Logs (Riwayat Perubahan Saldo)** | ✅ |
 | Detailed Cost Breakdown (Tol + Biaya Lain) | ✅ |
 | Deduksi saldo otomatis saat approve | ✅ |
 
@@ -64,6 +67,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Input logbook baru | ✅ |
 | Lihat riwayat logbook | ✅ |
 | Edit logbook (semua status) | ✅ |
+| **Hapus logbook yang ditolak** | ✅ |
 | Notifikasi approve/reject | ✅ |
 
 ### UI/UX Enhancements (NEW)
@@ -92,12 +96,19 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | PostgreSQL database | ✅ |
 | Row Level Security (RLS) | ✅ |
 | Admin RLS untuk update semua profiles | ✅ |
+| **Admin RLS untuk insert profiles** | ✅ |
 | Email authentication | ✅ |
 | Real-time subscriptions | ✅ |
 | Auto-create profile trigger | ✅ |
 | Soft delete support (status column) | ✅ |
 
----
+### Reporting
+| Fitur | Status |
+|-------|--------|
+| **Laporan Bulanan** | ✅ |
+| **Driver Summary** (Ringkasan Per Driver) | ✅ |
+| Export PDF Laporan Bulanan | ✅ |
+| Export PDF Driver Summary | ✅ |
 
 ## Database Tables
 
@@ -106,22 +117,26 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | `profiles` | User data (extends auth.users) | ✅ | ✅ active/inactive |
 | `units` | Kendaraan | ✅ | ✅ available/in_use/maintenance |
 | `logbooks` | Entry logbook | ✅ | ✅ submitted/approved/rejected |
+| `etolls` | Kartu E-Toll | ✅ | ✅ active/inactive |
 | `notifications` | In-app notifications | ✅ | - |
+| `balance_logs` | Riwayat perubahan saldo operasional | ✅ | - |
 
 ---
 
 ## Langkah Selanjutnya
 
-### Phase 2.5: Deployment ✅ (COMPLETED)
-- [x] Setup Vercel project
-- [x] Configure environment variables
-- [x] Deploy ke Vercel
-- [x] **Live URL: andinlaporanharian.vercel.app**
+### Phase 3.0: Advanced Features ✅ (COMPLETED)
+- [x] Laporan Bulanan
+- [x] Driver Summary
+- [x] Edit & Reset Saldo Operasional + Logging
+- [x] Admin User Creation Fix
+- [x] UI/UX Polish (DatePicker, Select, Mobile Cards)
 
-### Phase 3: Enhancements (Future)
-- [ ] Generate laporan bulanan
+### Phase 4: Future Enhancements (Planned)
+- [ ] Halaman Riwayat Transaksi (Balance Logs viewer)
 - [ ] Email notifications
 - [ ] PWA support
+- [ ] Push notifications
 
 ---
 

@@ -1,6 +1,6 @@
 # Roadmap Pengembangan Amena Logbook
 
-## Status Proyek: Phase 2.5 Deployed to Vercel ✅
+## Status Proyek: Phase 3.0 - Advanced Features ✅
 
 ---
 
@@ -139,36 +139,73 @@
 
 ---
 
-## Phase 3: Enhancements ⏳ (Future)
+## Phase 3: Advanced Features ✅ (CURRENT)
 
-### 3.1 Data Visualization
-- [x] Dashboard charts (Recharts) ✅
-- [x] Statistik logbook per periode ✅
-- [x] Cost analysis ✅
+### 3.1 Laporan Bulanan ✅
+- [x] Halaman Laporan Bulanan (`/admin/laporan`)
+- [x] Filter: Bulan, Tahun, Driver (opsional), Unit (opsional)
+- [x] Preview ringkasan umum (Total Trip, Total Biaya)
+- [x] Summary per Driver
+- [x] Summary per Unit
+- [x] Export PDF dengan jsPDF + jsPDF-AutoTable
 
-### 3.2 Reporting
-- [x] Export ke Excel & PDF ✅
-- [ ] Generate laporan bulanan
-- [ ] Summary per driver
-- [ ] Summary per unit
+### 3.2 Driver Summary ✅
+- [x] Halaman Driver Summary (`/admin/driver-summary`)
+- [x] Statistik performa driver (Total Trip, Tol, Biaya Lain)
+- [x] Filter berdasarkan rentang tanggal
+- [x] Export ke PDF
+- [x] Hanya menghitung logbook dengan status `approved`
+- [x] Mobile-responsive (Card view)
 
-### 3.3 Mobile Optimization
+### 3.3 Operational Budget Management ✅
+- [x] **Top-Up Saldo Driver**: Menambah saldo operasional
+- [x] **Edit Saldo Driver**: Mengubah saldo ke nominal tertentu
+- [x] **Reset Saldo Driver**: Mengembalikan saldo ke Rp 0
+- [x] **Balance Logs**: Riwayat perubahan saldo (tabel `balance_logs`)
+- [x] UI: 3 tombol aksi (Top Up, Edit, Reset) di Desktop & Mobile
+- [x] Modal konfirmasi untuk Reset
+
+### 3.4 Admin User Creation Fix ✅
+- [x] Fix: Admin tidak lagi di-redirect ke `/unauthorized` saat membuat user baru
+- [x] Fix: Profil user baru langsung muncul di UserList setelah dibuat
+- [x] RLS Policy: "Admin can insert profiles"
+
+### 3.5 UI/UX Improvements ✅
+- [x] DatePicker alignment fix (kalender tidak terpotong)
+- [x] Select dropdown position (bisa buka ke atas)
+- [x] Mobile card layout untuk Driver Summary
+- [x] Opacity fix untuk user inactive di UserList
+- [x] Driver dapat menghapus logbook yang ditolak
+
+---
+
+## Phase 4: Future Enhancements ⏳
+
+### 4.1 Reporting & Analytics
+- [ ] Halaman Riwayat Transaksi (Balance Logs viewer)
+- [ ] Dashboard trends (grafik mingguan/bulanan)
+- [ ] Export laporan otomatis (scheduled)
+
+### 4.2 Mobile Optimization
 - [ ] Progressive Web App (PWA)
 - [ ] Offline support
+- [ ] Push notifications
 
-### 3.4 Email Notifications
-- [ ] Email notification untuk approval
+### 4.3 Email Notifications
+- [ ] Email notification untuk approval/rejection
 - [ ] Welcome email untuk user baru
+- [ ] Reminder untuk logbook yang pending
 
 ---
 
 ## Catatan Penting
 
-> **Status Saat Ini**: Aplikasi sudah terintegrasi dengan Supabase dengan Dashboard Analytics, Toast Notifications, Skeleton Loading, Soft Delete, dan **Mobile Responsive UI**. Siap untuk deployment ke Vercel.
+> **Status Saat Ini**: Aplikasi sudah dalam **Phase 3.0** dengan fitur Laporan Bulanan, Driver Summary, dan manajemen saldo operasional (Edit/Reset + Logging). Sudah live di Vercel.
 
 ### Teknologi yang Digunakan:
 - **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4
 - **Charts**: Recharts
+- **PDF Export**: jsPDF + jsPDF-AutoTable
 - **Backend**: Supabase (PostgreSQL + Auth + Realtime)
 - **Fonts**: Plus Jakarta Sans
 - **Deployment**: Vercel ✅ (Live)
