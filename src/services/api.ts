@@ -1,6 +1,7 @@
 import { supabase } from '../lib/supabase';
 import type { User, Unit, LogbookEntry, Etoll } from '../types';
 import { USER_STATUS } from '../constants';
+import { setCreatingUserFlag } from '../context/AuthContext';
 
 // =============================================
 // API SERVICE - Supabase Implementation
@@ -362,7 +363,19 @@ export const ApiService = {
         full_name: string;
         role: User['role'];
     }): Promise<User | null> => {
-        // Admin creating user - use signUp with metadata
+        // Step 1: Save current admin session BEFORE creating user
+        const { data: sessionData } = await supabase.auth.getSession();
+        const adminSession = sessionData?.session;
+
+        if (!adminSession) {
+            console.error('[ApiService] No admin session found');
+            return null;
+        }
+
+        // Step 2: Set flag to prevent AuthContext from reacting to session change
+        setCreatingUserFlag(true);
+
+        // Step 3: Create new user with signUp (this will switch session to new user)
         const { data, error } = await supabase.auth.signUp({
             email: userData.email,
             password: userData.password,
@@ -377,7 +390,44 @@ export const ApiService = {
 
         if (error || !data.user) {
             console.error('[ApiService] Create user error:', error?.message);
+            setCreatingUserFlag(false); // Reset flag
+            // Restore admin session even on error
+            await supabase.auth.setSession({
+                access_token: adminSession.access_token,
+                refresh_token: adminSession.refresh_token
+            });
             return null;
+        }
+
+        // Step 4: IMMEDIATELY restore admin session
+        const { error: restoreError } = await supabase.auth.setSession({
+            access_token: adminSession.access_token,
+            refresh_token: adminSession.refresh_token
+        });
+
+        // Step 5: Reset flag AFTER session is restored
+        setCreatingUserFlag(false);
+
+        if (restoreError) {
+            console.error('[ApiService] Failed to restore admin session:', restoreError.message);
+        }
+
+        // Step 4: Manually INSERT profile (bypass trigger dependency on email confirmation)
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .insert({
+                id: data.user.id,
+                username: userData.username,
+                full_name: userData.full_name,
+                role: userData.role,
+                status: 'active',
+                operational_balance: 0
+            });
+
+        if (profileError) {
+            // Log but don't fail - auth user was created successfully
+            // Profile might already exist if trigger ran, or RLS might block
+            console.error('[ApiService] Failed to create profile:', profileError.message);
         }
 
         return {
@@ -1004,25 +1054,139 @@ export const ApiService = {
     },
 
     topUpDriverBalance: async (driverId: string, amount: number): Promise<void> => {
+        // Get current user (admin)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
         // Get current balance
-        const { data: driver } = await supabase
+        const { data: driver, error: fetchError } = await supabase
             .from('profiles')
             .select('operational_balance')
             .eq('id', driverId)
             .single();
 
-        if (driver) {
-            const newBalance = (driver.operational_balance || 0) + amount;
-            const { error } = await supabase
-                .from('profiles')
-                .update({ operational_balance: newBalance })
-                .eq('id', driverId);
-
-            if (error) {
-                console.error('[ApiService] Top up driver balance error:', error.message);
-                throw error;
-            }
+        if (fetchError || !driver) {
+            throw new Error('Driver not found');
         }
+
+        const previousBalance = driver.operational_balance || 0;
+        const newBalance = previousBalance + amount;
+
+        // Update balance
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ operational_balance: newBalance })
+            .eq('id', driverId);
+
+        if (updateError) {
+            console.error('[ApiService] Top up driver balance error:', updateError.message);
+            throw updateError;
+        }
+
+        // Log transaction
+        const { error: logError } = await supabase
+            .from('balance_logs')
+            .insert({
+                driver_id: driverId,
+                admin_id: user.id,
+                action_type: 'top_up',
+                amount: amount,
+                previous_balance: previousBalance,
+                new_balance: newBalance,
+                description: `Top Up saldo sebesar Rp ${amount}`
+            });
+
+        if (logError) {
+            console.error('[ApiService] Failed to log balance change:', logError.message);
+            // Don't throw here, the balance update was successful
+        }
+    },
+
+    updateDriverBalance: async (driverId: string, newBalance: number): Promise<void> => {
+        // Get current user (admin)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Get current balance
+        const { data: driver, error: fetchError } = await supabase
+            .from('profiles')
+            .select('operational_balance')
+            .eq('id', driverId)
+            .single();
+
+        if (fetchError || !driver) throw new Error('Driver not found');
+
+        const previousBalance = driver.operational_balance || 0;
+        const diff = newBalance - previousBalance;
+
+        // Update balance
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ operational_balance: newBalance })
+            .eq('id', driverId);
+
+        if (updateError) {
+            console.error('[ApiService] Update driver balance error:', updateError.message);
+            throw updateError;
+        }
+
+        // Log transaction
+        const { error: logError } = await supabase
+            .from('balance_logs')
+            .insert({
+                driver_id: driverId,
+                admin_id: user.id,
+                action_type: 'edit',
+                amount: diff,
+                previous_balance: previousBalance,
+                new_balance: newBalance,
+                description: `Edit saldo dari Rp ${previousBalance} ke Rp ${newBalance}`
+            });
+
+        if (logError) console.error('[ApiService] Failed to log balance change:', logError.message);
+    },
+
+    resetDriverBalance: async (driverId: string): Promise<void> => {
+        // Get current user (admin)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Get current balance
+        const { data: driver, error: fetchError } = await supabase
+            .from('profiles')
+            .select('operational_balance')
+            .eq('id', driverId)
+            .single();
+
+        if (fetchError || !driver) throw new Error('Driver not found');
+
+        const previousBalance = driver.operational_balance || 0;
+
+        // Update balance to 0
+        const { error: updateError } = await supabase
+            .from('profiles')
+            .update({ operational_balance: 0 })
+            .eq('id', driverId);
+
+        if (updateError) {
+            console.error('[ApiService] Reset driver balance error:', updateError.message);
+            throw updateError;
+        }
+
+        // Log transaction
+        const { error: logError } = await supabase
+            .from('balance_logs')
+            .insert({
+                driver_id: driverId,
+                admin_id: user.id,
+                action_type: 'reset',
+                amount: -previousBalance,
+                previous_balance: previousBalance,
+                new_balance: 0,
+                description: `Reset saldo dari Rp ${previousBalance} ke Rp 0`
+            });
+
+        if (logError) console.error('[ApiService] Failed to log balance change:', logError.message);
     },
 
     getDriverBalance: async (driverId: string): Promise<number> => {

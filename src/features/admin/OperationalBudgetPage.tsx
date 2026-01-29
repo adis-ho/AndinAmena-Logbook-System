@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { User } from '../../types';
-import { Wallet, Plus, RefreshCw, Users, TrendingDown } from 'lucide-react';
+import { Wallet, Plus, RefreshCw, Users, TrendingDown, Pencil, Trash2 } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
+import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 
 export default function OperationalBudgetPage() {
     const { showToast } = useToast();
@@ -14,6 +15,9 @@ export default function OperationalBudgetPage() {
     const [selectedDriver, setSelectedDriver] = useState<User | null>(null);
     const [topUpAmount, setTopUpAmount] = useState<number>(0);
     const [topUpLoading, setTopUpLoading] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showResetModal, setShowResetModal] = useState(false);
+    const [editAmount, setEditAmount] = useState<number>(0);
 
     const fetchDrivers = async () => {
         try {
@@ -61,6 +65,57 @@ export default function OperationalBudgetPage() {
             fetchDrivers();
         } catch (err) {
             showToast('error', 'Gagal melakukan top-up');
+            console.error(err);
+        } finally {
+            setTopUpLoading(false);
+        }
+    };
+
+    const handleOpenEdit = (driver: User) => {
+        setSelectedDriver(driver);
+        setEditAmount(driver.operational_balance || 0);
+        setShowEditModal(true);
+    };
+
+    const handleOpenReset = (driver: User) => {
+        setSelectedDriver(driver);
+        setShowResetModal(true);
+    };
+
+    const handleEditBalance = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!selectedDriver) return;
+        if (editAmount < 0) {
+            showToast('error', 'Jumlah tidak boleh negatif');
+            return;
+        }
+
+        setTopUpLoading(true);
+        try {
+            await ApiService.updateDriverBalance(selectedDriver.id, editAmount);
+            showToast('success', `Berhasil mengubah saldo ${selectedDriver.full_name}`);
+            setShowEditModal(false);
+            setSelectedDriver(null);
+            fetchDrivers();
+        } catch (err) {
+            showToast('error', 'Gagal mengubah saldo');
+            console.error(err);
+        } finally {
+            setTopUpLoading(false);
+        }
+    };
+
+    const handleResetBalance = async () => {
+        if (!selectedDriver) return;
+        setTopUpLoading(true);
+        try {
+            await ApiService.resetDriverBalance(selectedDriver.id);
+            showToast('success', `Berhasil reset saldo ${selectedDriver.full_name}`);
+            setShowResetModal(false);
+            setSelectedDriver(null);
+            fetchDrivers();
+        } catch (err) {
+            showToast('error', 'Gagal reset saldo');
             console.error(err);
         } finally {
             setTopUpLoading(false);
@@ -174,13 +229,29 @@ export default function OperationalBudgetPage() {
                                             </span>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <button
-                                                onClick={() => handleOpenTopUp(driver)}
-                                                className="flex items-center gap-1 px-3 py-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 text-sm font-medium"
-                                            >
-                                                <Plus className="h-4 w-4" />
-                                                Top-Up
-                                            </button>
+                                            <div className="flex items-center gap-1">
+                                                <button
+                                                    onClick={() => handleOpenTopUp(driver)}
+                                                    className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200"
+                                                    title="Top Up"
+                                                >
+                                                    <Plus className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOpenEdit(driver)}
+                                                    className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200"
+                                                    title="Edit Saldo"
+                                                >
+                                                    <Pencil className="h-4 w-4" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleOpenReset(driver)}
+                                                    className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200"
+                                                    title="Reset Saldo"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -220,13 +291,27 @@ export default function OperationalBudgetPage() {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => handleOpenTopUp(driver)}
-                                className="w-full flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium"
-                            >
-                                <Plus className="h-4 w-4" />
-                                Top-Up Saldo
-                            </button>
+                            <div className="flex gap-2">
+                                <button
+                                    onClick={() => handleOpenTopUp(driver)}
+                                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-sm"
+                                >
+                                    <Plus className="h-4 w-4" />
+                                    Top-Up
+                                </button>
+                                <button
+                                    onClick={() => handleOpenEdit(driver)}
+                                    className="px-3 py-2 bg-blue-50 text-blue-600 rounded-lg hover:bg-blue-100 font-medium text-sm"
+                                >
+                                    Edit
+                                </button>
+                                <button
+                                    onClick={() => handleOpenReset(driver)}
+                                    className="px-3 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 font-medium text-sm"
+                                >
+                                    Reset
+                                </button>
+                            </div>
                         </div>
                     ))
                 )}
@@ -290,6 +375,76 @@ export default function OperationalBudgetPage() {
                     </div>
                 </div>
             )}
+
+            {/* Edit Balance Modal */}
+            {showEditModal && selectedDriver && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl w-full max-w-md p-6">
+                        <h2 className="text-xl font-bold mb-4">Edit Saldo Operasional</h2>
+                        <p className="text-gray-600 mb-4">
+                            Driver: <strong>{selectedDriver.full_name}</strong>
+                        </p>
+
+                        <form onSubmit={handleEditBalance} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Saldo Baru (Rp)
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    required
+                                    autoFocus
+                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
+                                    placeholder="0"
+                                    value={editAmount === 0 ? '' : editAmount}
+                                    onChange={(e) => setEditAmount(Number(e.target.value))}
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                />
+                                <p className="text-sm text-gray-500 mt-1">
+                                    Saldo saat ini: {formatCurrency(selectedDriver.operational_balance)}
+                                </p>
+                            </div>
+
+                            <div className="flex gap-3 pt-4">
+                                <button
+                                    type="button"
+                                    onClick={() => {
+                                        setShowEditModal(false);
+                                        setSelectedDriver(null);
+                                    }}
+                                    className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={topUpLoading || editAmount < 0}
+                                    className="flex-1 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                                >
+                                    {topUpLoading ? 'Menyimpan...' : 'Simpan'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Reset Confirmation Modal */}
+            <DeleteConfirmModal
+                isOpen={showResetModal}
+                onClose={() => {
+                    setShowResetModal(false);
+                    setSelectedDriver(null);
+                }}
+                onConfirm={handleResetBalance}
+                title="Reset Saldo Operasional?"
+                description={`Apakah Anda yakin ingin mereset saldo ${selectedDriver?.full_name} menjadi Rp 0?`}
+                warningText="Tindakan ini akan dicatat dalam log riwayat."
+                confirmText="Reset Saldo"
+                cancelText="Batal"
+                loading={topUpLoading}
+            />
         </div>
     );
 }

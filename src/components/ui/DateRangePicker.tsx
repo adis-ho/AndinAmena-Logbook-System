@@ -42,6 +42,7 @@ export default function DateRangePicker({
                     placeholder="Sampai tanggal"
                     minDate={startDate} // End date cannot be before start date
                     className="w-full"
+                    align="right"
                 />
             </div>
         </div>

@@ -46,6 +46,14 @@ FOR DELETE USING (
 CREATE POLICY "Enable insert for authenticated users" ON profiles
 FOR INSERT WITH CHECK (auth.uid() IS NOT NULL);
 
+-- INSERT: Admin bisa insert profile untuk user baru (saat admin membuat user)
+CREATE POLICY "Admin can insert profiles" ON profiles
+FOR INSERT WITH CHECK (
+  EXISTS (
+    SELECT 1 FROM profiles WHERE id = auth.uid() AND role = 'admin'
+  )
+);
+
 
 -- =============================================
 -- 2. UNITS TABLE

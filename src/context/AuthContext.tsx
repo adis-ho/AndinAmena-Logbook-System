@@ -3,6 +3,15 @@ import type { AuthState, User } from '../types';
 import { supabase } from '../lib/supabase';
 import { ApiService } from '../services/api';
 
+// Global flag to prevent auth state changes during admin user creation
+// This is set by api.ts createUser function
+let isCreatingUser = false;
+
+export function setCreatingUserFlag(value: boolean) {
+    isCreatingUser = value;
+    console.log('[AuthContext] isCreatingUser flag set to:', value);
+}
+
 interface AuthContextType extends AuthState {
     login: (email: string, password: string) => Promise<boolean>;
     logout: () => Promise<void>;
@@ -119,6 +128,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             }
 
             if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
+                // SKIP if admin is creating a new user (prevents redirect to /unauthorized)
+                if (isCreatingUser) {
+                    console.log('[AuthContext] Skipping auth state change - admin is creating user');
+                    return;
+                }
+
                 console.log('[AuthContext] User session updated:', session.user.id);
                 // Use non-async approach to avoid race issues
                 fetchUserWithProfile(session.user).then(user => {

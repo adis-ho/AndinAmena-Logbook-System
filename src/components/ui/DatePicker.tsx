@@ -29,11 +29,14 @@ export default function DatePicker({
     disabled,
     className,
     minDate,
-    maxDate
-}: DatePickerProps) {
+    maxDate,
+    align = 'left' // default alignment
+}: DatePickerProps & { align?: 'left' | 'right' }) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
     const [date, setDate] = useState<Date | null>(value ? new Date(value) : null);
+
+    // ... existing logic ...
 
     // View state (for calendar navigation)
     const [currentMonth, setCurrentMonth] = useState(date ? date.getMonth() : new Date().getMonth());
@@ -181,7 +184,10 @@ export default function DatePicker({
             </div>
 
             {isOpen && (
-                <div className="absolute z-50 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-[280px] sm:w-[320px]">
+                <div className={cn(
+                    "absolute z-50 mt-1 bg-white rounded-lg shadow-lg border border-gray-200 p-4 w-[280px] sm:w-[320px]",
+                    align === 'right' ? 'right-0' : 'left-0'
+                )}>
                     <div className="flex items-center justify-between mb-4">
                         <button
                             type="button"

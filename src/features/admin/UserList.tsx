@@ -117,7 +117,7 @@ export default function UserList() {
     };
 
     const handleDelete = async (id: string) => {
-        if (!confirm('Yakin ingin menonaktifkan pengguna ini?')) return;
+        // Confirmation removed as requested
 
         try {
             await ApiService.deleteUser(id);
@@ -297,10 +297,10 @@ export default function UserList() {
                                 </tr>
                             ) : (
                                 users.map(user => (
-                                    <tr key={user.id} className={`border-b border-gray-50 hover:bg-gray-50 transition-colors ${user.status === 'inactive' ? 'opacity-50' : ''}`}>
-                                        <td className="py-3 px-4 text-gray-900">{user.username}</td>
-                                        <td className="py-3 px-4 text-gray-600">{user.full_name}</td>
-                                        <td className="py-3 px-4">
+                                    <tr key={user.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                                        <td className={`py-3 px-4 ${user.status === 'inactive' ? 'text-gray-400' : 'text-gray-900'}`}>{user.username}</td>
+                                        <td className={`py-3 px-4 ${user.status === 'inactive' ? 'text-gray-400' : 'text-gray-600'}`}>{user.full_name}</td>
+                                        <td className={`py-3 px-4 ${user.status === 'inactive' ? 'opacity-50' : ''}`}>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin'
                                                 ? 'bg-purple-100 text-purple-700'
                                                 : 'bg-blue-100 text-blue-700'
@@ -308,7 +308,7 @@ export default function UserList() {
                                                 {user.role === 'admin' ? 'Admin' : 'Driver'}
                                             </span>
                                         </td>
-                                        <td className="py-3 px-4">
+                                        <td className={`py-3 px-4 ${user.status === 'inactive' ? 'opacity-50' : ''}`}>
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.status === 'active'
                                                 ? 'bg-green-100 text-green-700'
                                                 : 'bg-red-100 text-red-700'
@@ -344,7 +344,7 @@ export default function UserList() {
                                                         </button>
                                                         <button
                                                             onClick={() => handleHardDeleteClick(user.id, user.full_name)}
-                                                            className="p-2 text-red-900 hover:bg-red-100 rounded-lg transition-colors"
+                                                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
                                                             title="Hapus Permanen"
                                                         >
                                                             <Trash2 className="h-4 w-4" />
@@ -370,8 +370,8 @@ export default function UserList() {
                     </div>
                 ) : (
                     users.map(user => (
-                        <div key={user.id} className={`bg-white rounded-xl shadow-sm border border-gray-100 p-4 ${user.status === 'inactive' ? 'opacity-60' : ''}`}>
-                            <div className="flex justify-between items-start mb-3">
+                        <div key={user.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
+                            <div className={`flex justify-between items-start mb-3 ${user.status === 'inactive' ? 'opacity-50' : ''}`}>
                                 <div>
                                     <p className="font-semibold text-gray-900">{user.full_name}</p>
                                     <p className="text-sm text-gray-500">@{user.username}</p>
@@ -380,7 +380,7 @@ export default function UserList() {
                                     {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
                                 </span>
                             </div>
-                            <div className="flex items-center gap-2 mb-3">
+                            <div className={`flex items-center gap-2 mb-3 ${user.status === 'inactive' ? 'opacity-50' : ''}`}>
                                 <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>
                                     {user.role === 'admin' ? 'Admin' : 'Driver'}
                                 </span>
@@ -392,7 +392,7 @@ export default function UserList() {
                                 ) : (
                                     <>
                                         <button onClick={() => handleReactivate(user.id)} className="px-3 py-1.5 text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium">Aktifkan</button>
-                                        <button onClick={() => handleHardDeleteClick(user.id, user.full_name)} className="px-3 py-1.5 text-red-900 hover:bg-red-100 rounded-lg text-sm font-medium">Hapus</button>
+                                        <button onClick={() => handleHardDeleteClick(user.id, user.full_name)} className="px-3 py-1.5 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium">Hapus</button>
                                     </>
                                 )}
                             </div>
