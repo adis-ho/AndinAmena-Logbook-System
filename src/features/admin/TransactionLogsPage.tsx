@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ApiService } from '../../services/api';
 import type { BalanceLog, EtollLog, User, Etoll } from '../../types';
-import { FileText, ArrowRight, Wallet, TrendingUp, TrendingDown, RotateCcw, Edit, CreditCard } from 'lucide-react';
+import { FileText, Wallet, TrendingUp, TrendingDown, RotateCcw, Edit, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
@@ -82,8 +82,8 @@ export default function TransactionLogsPage() {
                     <button
                         onClick={() => setActiveTab('operational')}
                         className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'operational'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         <Wallet className="h-4 w-4" />
@@ -92,8 +92,8 @@ export default function TransactionLogsPage() {
                     <button
                         onClick={() => setActiveTab('etoll')}
                         className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${activeTab === 'etoll'
-                                ? 'border-blue-500 text-blue-600'
-                                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                            ? 'border-blue-500 text-blue-600'
+                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                             }`}
                     >
                         <CreditCard className="h-4 w-4" />
