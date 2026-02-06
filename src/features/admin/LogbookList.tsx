@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ApiService } from '../../services/api';
 import DateRangePicker from '../../components/ui/DateRangePicker';
-import type { LogbookEntry, User, Unit } from '../../types';
+import type { LogbookEntry, User, Unit, Etoll } from '../../types';
 import { BookOpen, CheckCircle, XCircle, Clock, Eye, Trash2, FileSpreadsheet, FileText, X, ChevronLeft, ChevronRight, ArrowUpNarrowWide, ArrowDownNarrowWide, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -25,6 +25,7 @@ export default function LogbookList() {
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
     const [users, setUsers] = useState<User[]>([]);
     const [units, setUnits] = useState<Unit[]>([]);
+    const [etolls, setEtolls] = useState<Etoll[]>([]);
     const [loading, setLoading] = useState(true);
     const [exportLoading, setExportLoading] = useState(false);
     const [error, setError] = useState('');
@@ -51,12 +52,14 @@ export default function LogbookList() {
     useEffect(() => {
         const fetchMetadata = async () => {
             try {
-                const [usersData, unitsData] = await Promise.all([
+                const [usersData, unitsData, etollsData] = await Promise.all([
                     ApiService.getUsers(),
-                    ApiService.getUnits()
+                    ApiService.getUnits(),
+                    ApiService.getActiveEtolls()
                 ]);
                 setUsers(usersData);
                 setUnits(unitsData);
+                setEtolls(etollsData);
             } catch (err) {
                 console.error('Failed to fetch metadata:', err);
             }
@@ -112,6 +115,12 @@ export default function LogbookList() {
         if (!u) return '-';
         const lastWord = u.name.trim().split(' ').pop() || u.name;
         return `${lastWord} (${u.plate_number})`;
+    };
+
+    const getEtollInfo = (etollId?: string) => {
+        if (!etollId) return 'Tidak menggunakan E-Toll';
+        const etoll = etolls.find(e => e.id === etollId);
+        return etoll ? `${etoll.card_name} (${etoll.card_number || '-'})` : 'E-Toll tidak ditemukan';
     };
 
     const drivers = users.filter(u => u.role === 'driver');
@@ -572,7 +581,7 @@ export default function LogbookList() {
                                         <td className="py-3 px-4">{getStatusBadge(log.status)}</td>
                                         <td className="py-3 px-4">
                                             <div className="flex justify-center gap-1">
-                                                <button onClick={() => setSelectedLogbook(log)} className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg">
+                                                <button onClick={() => setSelectedLogbook(log)} className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
                                                     <Eye className="h-4 w-4" />
                                                 </button>
                                                 {log.status === 'submitted' && (
@@ -585,7 +594,7 @@ export default function LogbookList() {
                                                         </button>
                                                     </>
                                                 )}
-                                                <button onClick={() => setDeleteLogbook(log)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
+                                                <button onClick={() => setDeleteLogbook(log)} className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
                                                     <Trash2 className="h-4 w-4" />
                                                 </button>
                                             </div>
@@ -790,8 +799,12 @@ export default function LogbookList() {
                                     <p className="text-sm text-gray-500">Unit</p>
                                     <p className="font-medium">{getUnitName(selectedLogbook.unit_id)} ({getUnitPlate(selectedLogbook.unit_id)})</p>
                                 </div>
+                                <div className="col-span-2">
+                                    <p className="text-sm text-gray-500">E-Toll</p>
+                                    <p className="font-medium">{getEtollInfo(selectedLogbook.etoll_id)}</p>
+                                </div>
                             </div>
-                            {/* ... rest of the modal ... */}
+
                             <div className="border-t pt-4 space-y-3">
                                 <div>
                                     <p className="text-sm text-gray-500">User (Tamu/Client)</p>

@@ -344,14 +344,14 @@ export default function EtollList() {
                                             <div className="flex justify-center gap-1">
                                                 <button
                                                     onClick={() => handleEdit(etoll)}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg"
+                                                    className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                                                     title="Edit"
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteClick(etoll.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg"
+                                                    className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                                                     title="Hapus"
                                                 >
                                                     <Trash2 className="h-4 w-4" />

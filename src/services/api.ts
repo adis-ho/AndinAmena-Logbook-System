@@ -1,5 +1,5 @@
 import { supabase } from '../lib/supabase';
-import type { User, Unit, LogbookEntry, Etoll } from '../types';
+import type { User, Unit, LogbookEntry, Etoll, BalanceLog, EtollLog } from '../types';
 import { USER_STATUS } from '../constants';
 import { setCreatingUserFlag } from '../context/AuthContext';
 
@@ -1002,6 +1002,19 @@ export const ApiService = {
     },
 
     updateEtoll: async (id: string, updates: Partial<Etoll>): Promise<void> => {
+        // Get current user (admin)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Fetch current etoll to compare balance
+        const { data: currentEtoll, error: fetchError } = await supabase
+            .from('etolls')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !currentEtoll) throw new Error('E-Toll not found');
+
         const { error } = await supabase
             .from('etolls')
             .update({
@@ -1015,6 +1028,30 @@ export const ApiService = {
         if (error) {
             console.error('[ApiService] Update etoll error:', error.message);
             throw error;
+        }
+
+        // Log if balance changed
+        if (updates.balance !== undefined && updates.balance !== currentEtoll.balance) {
+            const diff = updates.balance - currentEtoll.balance;
+
+            // For manual edit, better to use 'edit' unless we explicitly have top up feature
+            // But since this is a generic update, let's use 'edit' for now, or infer.
+            // Let's use 'edit' for manual updates via this function.
+            // If we add explicit Top Up button later, we can use specific function.
+
+            const { error: logError } = await supabase
+                .from('etoll_logs')
+                .insert({
+                    etoll_id: id,
+                    admin_id: user.id,
+                    action_type: 'edit',
+                    amount: diff,
+                    previous_balance: currentEtoll.balance,
+                    new_balance: updates.balance,
+                    description: `Edit saldo dari Rp ${currentEtoll.balance} ke Rp ${updates.balance}`
+                });
+
+            if (logError) console.error('[ApiService] Failed to log etoll balance change:', logError.message);
         }
     },
 
@@ -1448,5 +1485,34 @@ export const ApiService = {
             driver_stats: driverStats,
             unit_stats: unitStats
         };
+    },
+
+    // ==================== LOGS ====================
+    getBalanceLogs: async (): Promise<BalanceLog[]> => {
+        const { data, error } = await supabase
+            .from('balance_logs')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[ApiService] Get balance logs error:', error.message);
+            return [];
+        }
+
+        return data as BalanceLog[];
+    },
+
+    getEtollLogs: async (): Promise<EtollLog[]> => {
+        const { data, error } = await supabase
+            .from('etoll_logs')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('[ApiService] Get etoll logs error:', error.message);
+            return [];
+        }
+
+        return data as EtollLog[];
     }
 };

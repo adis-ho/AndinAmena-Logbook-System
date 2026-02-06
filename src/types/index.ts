@@ -27,6 +27,30 @@ export interface Etoll {
     created_at: string;
 }
 
+export interface BalanceLog {
+    id: string;
+    driver_id: string;
+    admin_id?: string;
+    action_type: 'top_up' | 'edit' | 'reset';
+    amount: number;
+    previous_balance: number;
+    new_balance: number;
+    description: string;
+    created_at: string;
+}
+
+export interface EtollLog {
+    id: string;
+    etoll_id: string;
+    admin_id?: string;
+    action_type: 'top_up' | 'deduct' | 'edit' | 'reset';
+    amount: number;
+    previous_balance: number;
+    new_balance: number;
+    description: string;
+    created_at: string;
+}
+
 export type LogbookStatus = 'draft' | 'submitted' | 'approved' | 'rejected';
 
 export interface LogbookEntry {

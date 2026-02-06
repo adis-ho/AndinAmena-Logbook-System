@@ -320,7 +320,7 @@ export default function UserList() {
                                             <div className="flex justify-center gap-2">
                                                 <button
                                                     onClick={() => handleEdit(user)}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                                                     title="Edit"
                                                 >
                                                     <Pencil className="h-4 w-4" />
@@ -328,7 +328,7 @@ export default function UserList() {
                                                 {user.status === 'active' ? (
                                                     <button
                                                         onClick={() => handleDelete(user.id)}
-                                                        className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                        className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                                                         title="Nonaktifkan"
                                                     >
                                                         <Ban className="h-4 w-4" />
@@ -337,14 +337,14 @@ export default function UserList() {
                                                     <>
                                                         <button
                                                             onClick={() => handleReactivate(user.id)}
-                                                            className="p-2 text-green-600 hover:bg-green-50 rounded-lg transition-colors"
+                                                            className="p-1.5 bg-green-100 text-green-700 rounded-lg hover:bg-green-200 transition-colors"
                                                             title="Aktifkan Kembali"
                                                         >
                                                             <RotateCcw className="h-4 w-4" />
                                                         </button>
                                                         <button
                                                             onClick={() => handleHardDeleteClick(user.id, user.full_name)}
-                                                            className="p-2 text-red-600 hover:bg-red-100 rounded-lg transition-colors"
+                                                            className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                                                             title="Hapus Permanen"
                                                         >
                                                             <Trash2 className="h-4 w-4" />

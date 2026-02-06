@@ -243,14 +243,14 @@ export default function UnitList() {
                                             <div className="flex justify-center gap-2">
                                                 <button
                                                     onClick={() => handleEdit(unit)}
-                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                                                     title="Edit"
                                                 >
                                                     <Pencil className="h-4 w-4" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteClick(unit.id)}
-                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                                                     title="Hapus"
                                                 >
                                                     <Trash2 className="h-4 w-4" />

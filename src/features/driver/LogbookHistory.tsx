@@ -350,7 +350,7 @@ export default function LogbookHistory() {
                                     {canEdit(log.status) && (
                                         <button
                                             onClick={() => handleEdit(log)}
-                                            className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                            className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
                                             title="Edit Laporan"
                                         >
                                             <Pencil className="h-4 w-4" />
@@ -359,7 +359,7 @@ export default function LogbookHistory() {
                                     {log.status === 'rejected' && (
                                         <button
                                             onClick={() => setDeleteLogbook(log)}
-                                            className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                            className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors"
                                             title="Hapus Laporan Ditolak"
                                         >
                                             <Trash2 className="h-4 w-4" />
