@@ -176,6 +176,8 @@
 - [x] Mobile card layout untuk Driver Summary
 - [x] Opacity fix untuk user inactive di UserList
 - [x] Driver dapat menghapus logbook yang ditolak
+- [x] Filter Unit di Driver Summary
+- [x] Saldo Operasional Minus (Utang Kantor)
 
 ---
 
