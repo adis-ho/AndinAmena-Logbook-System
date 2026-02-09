@@ -1,6 +1,4 @@
-# Status Proyek Amena Logbook
-
-**Terakhir Diperbarui**: 29 Januari 2026
+**Terakhir Diperbarui**: 09 Februari 2026
 
 ---
 
@@ -36,7 +34,6 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Reactivate users (Aktifkan Kembali) | ✅ |
 | **Hard Delete users (Permanen + Warning)** | ✅ |
 | Manajemen Unit (CRUD + Modal) | ✅ |
-| Manajemen Unit (CRUD + Modal) | ✅ |
 | Notifikasi logbook baru | ✅ |
 
 ### Cost Management & Funds
@@ -46,6 +43,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Top-up Saldo Driver | ✅ |
 | **Edit Saldo Driver** | ✅ |
 | **Reset Saldo Driver ke Rp 0** | ✅ |
+| **Saldo Minus (Hutang Kantor)** | ✅ |
 | **Balance Logs (Riwayat Perubahan Saldo)** | ✅ |
 | Detailed Cost Breakdown (Tol + Biaya Lain) | ✅ |
 | Deduksi saldo otomatis saat approve | ✅ |
@@ -82,7 +80,6 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Form validation | ✅ |
 | Confirmation modals | ✅ |
 | Notification bell dropdown | ✅ |
-| Notification bell dropdown | ✅ |
 | Real-time notifications | ✅ |
 | **Mobile Responsiveness (Card View + Table)** | ✅ |
 | **Mobile-friendly Pagination & Filters** | ✅ |
@@ -107,6 +104,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 |-------|--------|
 | **Laporan Bulanan** | ✅ |
 | **Driver Summary** (Ringkasan Per Driver) | ✅ |
+| **Filter Unit di Driver Summary** | ✅ |
 | Export PDF Laporan Bulanan | ✅ |
 | Export PDF Driver Summary | ✅ |
 
@@ -131,6 +129,8 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 - [x] Edit & Reset Saldo Operasional + Logging
 - [x] Admin User Creation Fix
 - [x] UI/UX Polish (DatePicker, Select, Mobile Cards)
+- [x] Filter Unit di Driver Summary
+- [x] Saldo Operasional Minus (Utang Kantor)
 
 ### Phase 4: Future Enhancements (Planned)
 - [ ] Halaman Riwayat Transaksi (Balance Logs viewer)

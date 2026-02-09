@@ -886,7 +886,7 @@ export const ApiService = {
                     .single();
 
                 if (driverData) {
-                    const newBalance = Math.max(0, (driverData.operational_balance || 0) - logbook.operational_cost);
+                    const newBalance = (driverData.operational_balance || 0) - logbook.operational_cost;
                     await supabase
                         .from('profiles')
                         .update({ operational_balance: newBalance })

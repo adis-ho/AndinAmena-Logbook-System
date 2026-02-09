@@ -41,6 +41,7 @@ export default function OperationalBudgetPage() {
     };
 
     const totalBalance = drivers.reduce((sum, d) => sum + d.operational_balance, 0);
+    const totalNegativeBalance = drivers.filter(d => d.operational_balance < 0).reduce((sum, d) => sum + d.operational_balance, 0);
 
     const handleOpenTopUp = (driver: User) => {
         setSelectedDriver(driver);
@@ -175,6 +176,22 @@ export default function OperationalBudgetPage() {
                 </div>
             </div>
 
+            {/* Negative Balance Summary Card */}
+            {totalNegativeBalance < 0 && (
+                <div className="bg-red-50 border border-red-100 rounded-xl p-4 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-red-100 rounded-lg text-red-600">
+                            <TrendingDown className="h-5 w-5" />
+                        </div>
+                        <div>
+                            <p className="text-sm font-medium text-red-800">Total Saldo Minus (Hutang Kantor)</p>
+                            <p className="text-xs text-red-600">Total yang harus dibayarkan kantor ke driver</p>
+                        </div>
+                    </div>
+                    <p className="text-xl font-bold text-red-700">{formatCurrency(Math.abs(totalNegativeBalance))}</p>
+                </div>
+            )}
+
             {/* Info Card */}
             <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
                 <h3 className="font-semibold text-blue-900 mb-2">Cara Kerja:</h3>
@@ -219,7 +236,7 @@ export default function OperationalBudgetPage() {
                                             {driver.username}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`font-semibold ${driver.operational_balance > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                                            <span className={`font-semibold ${driver.operational_balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                                 {formatCurrency(driver.operational_balance)}
                                             </span>
                                         </td>
@@ -285,7 +302,7 @@ export default function OperationalBudgetPage() {
                             <div className="bg-green-50 p-3 rounded-lg mb-3">
                                 <div className="flex justify-between items-center">
                                     <span className="text-green-700 text-sm">Saldo Operasional</span>
-                                    <span className={`font-bold text-lg ${driver.operational_balance > 0 ? 'text-green-600' : 'text-gray-400'}`}>
+                                    <span className={`font-bold text-lg ${driver.operational_balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                                         {formatCurrency(driver.operational_balance)}
                                     </span>
                                 </div>

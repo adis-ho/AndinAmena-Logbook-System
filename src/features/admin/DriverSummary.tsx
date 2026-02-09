@@ -1,9 +1,9 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ApiService } from '../../services/api';
 import DateRangePicker from '../../components/ui/DateRangePicker';
-import type { LogbookEntry, User } from '../../types';
+import type { LogbookEntry, User, Unit } from '../../types';
 import { BarChart3, TrendingUp, Users, Wallet, BookOpen, ArrowUpNarrowWide, ArrowDownNarrowWide, FileSpreadsheet, FileText } from 'lucide-react';
-import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
+import { format, startOfMonth, endOfMonth } from 'date-fns';
 // import { id } from 'date-fns/locale'; // Unused
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
@@ -11,7 +11,7 @@ import autoTable from 'jspdf-autotable';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/calculations';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
-import { cn } from '../../utils/cn';
+
 import Select from '../../components/ui/Select';
 
 // PDF Layout Constants
@@ -35,6 +35,7 @@ export default function DriverSummary() {
     const { showToast } = useToast();
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState<User[]>([]);
+    const [units, setUnits] = useState<Unit[]>([]);
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
 
     // Filters
@@ -45,7 +46,7 @@ export default function DriverSummary() {
         format(endOfMonth(new Date()), 'yyyy-MM-dd')
     );
     const [filterDriver, setFilterDriver] = useState('');
-    const [periodLabel, setPeriodLabel] = useState('Bulan Ini');
+    const [filterUnit, setFilterUnit] = useState('');
 
     // Sorting
     const [sortConfig, setSortConfig] = useState<{ key: keyof DriverStats; direction: 'asc' | 'desc' } | null>({ key: 'totalCost', direction: 'desc' });
@@ -57,12 +58,14 @@ export default function DriverSummary() {
                 // Fetch all drivers and logbooks for the period
                 // Note: We need all logbooks to aggregate client-side for now
                 // In a real large-scale app, this should be an aggregation endpoint
-                const [usersData, logbooksData] = await Promise.all([
+                const [usersData, unitsData, logbooksData] = await Promise.all([
                     ApiService.getUsers(),
+                    ApiService.getUnits(),
                     ApiService.getAllLogbooks(dateStart, dateEnd)
                 ]);
 
                 setUsers(usersData.filter(u => u.role === 'driver' && u.status === 'active'));
+                setUnits(unitsData);
                 setLogbooks(logbooksData);
             } catch (err) {
                 console.error('Failed to fetch summary data:', err);
@@ -103,6 +106,9 @@ export default function DriverSummary() {
             // Skip if driver filtered out
             if (filterDriver && log.driver_id !== filterDriver) return;
 
+            // Skip if unit filtered out
+            if (filterUnit && log.unit_id !== filterUnit) return;
+
             const stats = statsMap.get(log.driver_id);
             if (stats) {
                 stats.totalTrips += 1;
@@ -128,7 +134,7 @@ export default function DriverSummary() {
         }
 
         return result;
-    }, [users, logbooks, sortConfig, filterDriver]);
+    }, [users, logbooks, sortConfig, filterDriver, filterUnit]);
 
 
     // Overall Totals
@@ -150,20 +156,7 @@ export default function DriverSummary() {
         setSortConfig({ key, direction });
     };
 
-    const handlePeriodChange = (days: number | 'month' | 'custom') => {
-        const today = new Date();
-        if (days === 'month') {
-            setDateStart(format(startOfMonth(today), 'yyyy-MM-dd'));
-            setDateEnd(format(endOfMonth(today), 'yyyy-MM-dd'));
-            setPeriodLabel('Bulan Ini');
-        } else if (typeof days === 'number') {
-            setDateStart(format(subDays(today, days), 'yyyy-MM-dd'));
-            setDateEnd(format(today, 'yyyy-MM-dd'));
-            setPeriodLabel(`${days} Hari Terakhir`);
-        } else {
-            setPeriodLabel('Custom Range');
-        }
-    };
+
 
     // Export Logic
     const sanitizeFilename = (str: string) => str.replace(/[^a-zA-Z0-9\-]/g, '-').replace(/-+/g, '-');
@@ -284,31 +277,17 @@ export default function DriverSummary() {
                         />
                     </div>
 
-                    <div className="hidden sm:block h-8 w-px bg-gray-200"></div>
-
-                    {/* Period Buttons - Scrollable */}
-                    <div className="flex items-center gap-2 overflow-x-auto w-full sm:w-auto pb-2 sm:pb-0 font-medium">
-                        <button
-                            onClick={() => handlePeriodChange('month')}
-                            className={cn("px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
-                                periodLabel === 'Bulan Ini' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                        >
-                            Bulan Ini
-                        </button>
-                        <button
-                            onClick={() => handlePeriodChange(7)}
-                            className={cn("px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
-                                periodLabel === '7 Hari Terakhir' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                        >
-                            7 Hari
-                        </button>
-                        <button
-                            onClick={() => handlePeriodChange(30)}
-                            className={cn("px-4 py-2 rounded-lg text-sm whitespace-nowrap transition-colors",
-                                periodLabel === '30 Hari Terakhir' ? "bg-blue-600 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200")}
-                        >
-                            30 Hari
-                        </button>
+                    {/* Unit Select Dropdown */}
+                    <div className="w-full sm:w-[280px] z-10">
+                        <Select
+                            value={filterUnit}
+                            onChange={setFilterUnit}
+                            options={[
+                                { value: '', label: 'Semua Unit' },
+                                ...units.map(u => ({ value: u.id, label: `${u.name} (${u.plate_number})` }))
+                            ]}
+                            placeholder="Pilih Unit"
+                        />
                     </div>
                 </div>
 
@@ -319,7 +298,6 @@ export default function DriverSummary() {
                         onChange={(start, end) => {
                             setDateStart(start);
                             setDateEnd(end);
-                            setPeriodLabel('Custom Range');
                         }}
                     />
                 </div>
