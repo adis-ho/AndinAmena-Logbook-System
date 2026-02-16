@@ -178,7 +178,8 @@
 - [x] Driver dapat menghapus logbook yang ditolak
 - [x] Filter Unit di Driver Summary
 - [x] Saldo Operasional Minus (Utang Kantor)
-- [x] Supabase Realtime Auto-Refresh (Dashboard, LogbookList, Budget, Driver Dashboard)
+- [x] Supabase Realtime Auto-Refresh (5 halaman: Admin Dashboard, LogbookList, Budget, Driver Dashboard, LogbookHistory)
+- [x] REPLICA IDENTITY FULL pada tabel logbooks untuk DELETE events
 
 ---
 
@@ -203,7 +204,7 @@
 
 ## Catatan Penting
 
-> **Status Saat Ini**: Aplikasi sudah dalam **Phase 3.0** dengan fitur Laporan Bulanan, Driver Summary, dan manajemen saldo operasional (Edit/Reset + Logging). Sudah live di Vercel.
+> **Status Saat Ini**: Aplikasi sudah dalam **Phase 3.0** dengan fitur Laporan Bulanan, Driver Summary, manajemen saldo operasional (Edit/Reset + Logging), dan Supabase Realtime Auto-Refresh. Sudah live di Vercel.
 
 ### Teknologi yang Digunakan:
 - **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4

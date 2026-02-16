@@ -69,6 +69,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | Edit logbook (semua status) | ✅ |
 | **Hapus logbook yang ditolak** | ✅ |
 | Notifikasi approve/reject | ✅ |
+| **Realtime auto-refresh (Dashboard + Riwayat)** | ✅ |
 
 ### UI/UX Enhancements (NEW)
 | Fitur | Status |
@@ -98,7 +99,8 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | **Admin RLS untuk insert profiles** | ✅ |
 | Email authentication | ✅ |
 | Real-time subscriptions | ✅ |
-| **Realtime Auto-Refresh (Dashboard, Logbook, Budget)** | ✅ |
+| **Realtime Auto-Refresh (5 halaman: Admin Dashboard, LogbookList, Budget, Driver Dashboard, LogbookHistory)** | ✅ |
+| **REPLICA IDENTITY FULL pada logbooks** | ✅ |
 | Auto-create profile trigger | ✅ |
 | Soft delete support (status column) | ✅ |
 
@@ -134,6 +136,8 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 - [x] UI/UX Polish (DatePicker, Select, Mobile Cards)
 - [x] Filter Unit di Driver Summary
 - [x] Saldo Operasional Minus (Utang Kantor)
+- [x] Supabase Realtime Auto-Refresh (5 halaman)
+- [x] REPLICA IDENTITY FULL untuk DELETE events
 
 ### Phase 4: Future Enhancements (Planned)
 - [ ] Halaman Riwayat Transaksi (Balance Logs viewer)

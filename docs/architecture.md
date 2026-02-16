@@ -47,6 +47,8 @@ src/
 │   ├── admin/             # Admin pages (Dashboard, Users, Units, Logbooks)
 │   ├── auth/              # Login & Register pages
 │   └── driver/            # Driver pages (Dashboard, Logbook entry, History)
+├── hooks/                 # Custom React hooks
+│   └── useRealtimeSubscription.ts  # Supabase Realtime auto-refresh hook
 ├── services/              # Data layer
 │   └── api.ts             # ApiService (Supabase implementation)
 ├── types/                 # TypeScript type definitions
@@ -79,6 +81,21 @@ await ApiService.reactivateUser(id); // Set status active
 
 ### 4. Real-time Notifications
 `NotificationContext` menggunakan Supabase Realtime untuk subscribe ke perubahan tabel `notifications`.
+
+### 4b. Real-time Auto-Refresh (useRealtimeSubscription)
+Custom hook `useRealtimeSubscription` digunakan di 5 halaman untuk auto-refresh data saat ada perubahan di database:
+
+| Halaman | Tabel | Events | Filter |
+|---------|-------|--------|--------|
+| Admin Dashboard | `logbooks` | INSERT, UPDATE, DELETE | - |
+| LogbookList | `logbooks` | INSERT, UPDATE, DELETE | - |
+| OperationalBudgetPage | `profiles` | UPDATE | - |
+| Driver Dashboard | `logbooks` | INSERT, UPDATE, DELETE | `driver_id=eq.{userId}` |
+| LogbookHistory | `logbooks` | UPDATE, DELETE | `driver_id=eq.{userId}` |
+
+**Prasyarat Database:**
+- `ALTER PUBLICATION supabase_realtime ADD TABLE logbooks, profiles;`
+- `ALTER TABLE logbooks REPLICA IDENTITY FULL;` (agar DELETE events mengirim semua kolom)
 
 ### 5. Toast Notifications
 `ToastContext` menyediakan feedback visual untuk CRUD operations dengan auto-dismiss.
@@ -239,10 +256,10 @@ VITE_SUPABASE_ANON_KEY=xxxxx
 ## Catatan Pengembangan
 
 - **State saat ini**: Phase 3.0 - Advanced Features
-- **Realtime**: Notifikasi berfungsi real-time menggunakan Supabase Realtime
+- **Realtime**: Auto-refresh di 5 halaman via `useRealtimeSubscription` hook + Notifikasi real-time via `NotificationContext`
 - **Security**: Row Level Security (RLS) aktif di semua tabel
 - **Analytics**: Dashboard dengan Recharts (bar, pie, line charts)
 - **Reporting**: Laporan Bulanan, Driver Summary dengan PDF export
-- **Cost Management**: Top Up, Edit, Reset saldo + Balance Logs
+- **Cost Management**: Top Up, Edit, Reset saldo + Balance Logs + Saldo Minus (Hutang Kantor)
 - **UX**: Toast notifications, skeleton loading, soft delete, **Mobile Responsive (Card/Table views)**
 - **Deployment**: Live di **andinlaporanharian.vercel.app**
