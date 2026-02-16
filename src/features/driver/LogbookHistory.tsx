@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import type { LogbookEntry, Unit, Etoll } from '../../types';
@@ -52,6 +53,15 @@ export default function LogbookHistory() {
     useEffect(() => {
         fetchData();
     }, [user]);
+
+    // Real-time: auto-refresh when this driver's logbooks change (approve/reject)
+    useRealtimeSubscription({
+        table: 'logbooks',
+        events: ['UPDATE', 'DELETE'],
+        filter: user ? `driver_id=eq.${user.id}` : undefined,
+        onUpdate: fetchData,
+        enabled: !!user,
+    });
 
     const getUnitInfo = (unitId: string) => {
         const unit = units.find(u => u.id === unitId);
