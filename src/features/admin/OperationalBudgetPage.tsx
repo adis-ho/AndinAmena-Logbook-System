@@ -5,6 +5,7 @@ import { Wallet, Plus, RefreshCw, Users, TrendingDown, Pencil, Trash2 } from 'lu
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
+import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 
 export default function OperationalBudgetPage() {
     const { showToast } = useToast();
@@ -35,6 +36,13 @@ export default function OperationalBudgetPage() {
     useEffect(() => {
         fetchDrivers();
     }, []);
+
+    // Real-time: auto-refresh when driver balances change
+    useRealtimeSubscription({
+        table: 'profiles',
+        events: ['UPDATE'],
+        onUpdate: fetchDrivers,
+    });
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);

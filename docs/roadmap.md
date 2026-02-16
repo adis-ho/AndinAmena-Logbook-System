@@ -178,6 +178,7 @@
 - [x] Driver dapat menghapus logbook yang ditolak
 - [x] Filter Unit di Driver Summary
 - [x] Saldo Operasional Minus (Utang Kantor)
+- [x] Supabase Realtime Auto-Refresh (Dashboard, LogbookList, Budget, Driver Dashboard)
 
 ---
 

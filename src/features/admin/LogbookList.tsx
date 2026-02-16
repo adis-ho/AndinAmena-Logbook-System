@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import { ApiService } from '../../services/api';
 import DateRangePicker from '../../components/ui/DateRangePicker';
 import type { LogbookEntry, User, Unit, Etoll } from '../../types';
@@ -47,6 +48,15 @@ export default function LogbookList() {
     // Modal State
     const [selectedLogbook, setSelectedLogbook] = useState<LogbookEntry | null>(null);
     const [deleteLogbook, setDeleteLogbook] = useState<LogbookEntry | null>(null);
+
+    // Realtime trigger: increments when DB changes, causing useEffect to re-fetch
+    const [realtimeTrigger, setRealtimeTrigger] = useState(0);
+    const handleRealtimeUpdate = useCallback(() => setRealtimeTrigger(prev => prev + 1), []);
+    useRealtimeSubscription({
+        table: 'logbooks',
+        events: ['INSERT', 'UPDATE', 'DELETE'],
+        onUpdate: handleRealtimeUpdate,
+    });
 
     // Initial Load (Users & Units)
     useEffect(() => {
@@ -99,7 +109,7 @@ export default function LogbookList() {
         }, 500);
 
         return () => clearTimeout(timeoutId);
-    }, [page, pageSize, sortOrder, statusFilter, filterDriver, filterUnit, filterClient, filterDateStart, filterDateEnd]);
+    }, [page, pageSize, sortOrder, statusFilter, filterDriver, filterUnit, filterClient, filterDateStart, filterDateEnd, realtimeTrigger]);
 
     const userMap = useMemo(() => new Map(users.map(u => [u.id, u])), [users]);
     const unitMap = useMemo(() => new Map(units.map(u => [u.id, u])), [units]);

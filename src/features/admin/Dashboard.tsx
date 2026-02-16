@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { ApiService } from '../../services/api';
 import { LayoutDashboard, BookOpen, Users, Truck, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
@@ -6,6 +6,7 @@ import { format, differenceInDays, startOfMonth } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SkeletonDashboard } from '../../components/ui/Skeleton';
 import Select from '../../components/ui/Select';
+import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 
 interface DashboardData {
     totalLogbooks: number;
@@ -45,26 +46,34 @@ export default function AdminDashboard() {
     const [error, setError] = useState<string | null>(null);
     const [period, setPeriod] = useState<number>(7);
 
-    useEffect(() => {
-        const fetchData = async () => {
-            setLoading(true);
-            try {
-                const result = await ApiService.getAdminDashboardStats(period);
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const result = await ApiService.getAdminDashboardStats(period);
 
-                if (result) {
-                    setData(result);
-                } else {
-                    setError('Gagal memuat data dashboard. Pastikan RPC function sudah dibuat di Supabase.');
-                }
-            } catch (err) {
-                console.error('Failed to fetch dashboard data:', err);
-                setError('Terjadi kesalahan saat memuat data.');
-            } finally {
-                setLoading(false);
+            if (result) {
+                setData(result);
+            } else {
+                setError('Gagal memuat data dashboard. Pastikan RPC function sudah dibuat di Supabase.');
             }
-        };
-        fetchData();
+        } catch (err) {
+            console.error('Failed to fetch dashboard data:', err);
+            setError('Terjadi kesalahan saat memuat data.');
+        } finally {
+            setLoading(false);
+        }
     }, [period]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    // Real-time: auto-refresh when logbooks change
+    useRealtimeSubscription({
+        table: 'logbooks',
+        events: ['INSERT', 'UPDATE', 'DELETE'],
+        onUpdate: fetchData,
+    });
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);

@@ -1,4 +1,6 @@
-**Terakhir Diperbarui**: 09 Februari 2026
+# Status Proyek Amena Logbook
+
+**Terakhir Diperbarui**: 17 Februari 2026
 
 ---
 
@@ -96,6 +98,7 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | **Admin RLS untuk insert profiles** | ✅ |
 | Email authentication | ✅ |
 | Real-time subscriptions | ✅ |
+| **Realtime Auto-Refresh (Dashboard, Logbook, Budget)** | ✅ |
 | Auto-create profile trigger | ✅ |
 | Soft delete support (status column) | ✅ |
 
@@ -160,15 +163,6 @@ npm run build
 # Preview production build
 npm run preview
 ```
-
-## Login Credentials
-
-| Email | Password | Role |
-|-------|----------|------|
-| admin@amena.com | admin | Admin |
-| driversatu@amena.com | driver1234 | Driver |
-
-> ⚠️ User yang di-nonaktifkan admin tidak bisa login dan akan melihat pesan "Akun Anda telah dinonaktifkan"
 
 ---
 

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { ApiService } from '../../services/api';
 import type { LogbookEntry } from '../../types';
 import { BookOpen, PlusCircle, History, CheckCircle, Clock, XCircle, Wallet } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { SkeletonDriverDashboard } from '../../components/ui/Skeleton';
+import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 
 interface DashboardStats {
     totalLogbooks: number;
@@ -26,31 +27,39 @@ export default function DriverDashboard() {
     const [recentLogbooks, setRecentLogbooks] = useState<LogbookEntry[]>([]);
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
+    const fetchStats = useCallback(async () => {
         if (!user) return;
+        try {
+            const logbooks = await ApiService.getLogbooksByDriverId(user.id);
 
-        const fetchStats = async () => {
-            try {
-                const logbooks = await ApiService.getLogbooksByDriverId(user.id);
+            setStats({
+                totalLogbooks: logbooks.length,
+                pendingLogbooks: logbooks.filter(l => l.status === 'submitted').length,
+                approvedLogbooks: logbooks.filter(l => l.status === 'approved').length,
+                rejectedLogbooks: logbooks.filter(l => l.status === 'rejected').length,
+                totalCost: logbooks.reduce((sum, l) => sum + l.toll_cost + l.operational_cost, 0)
+            });
 
-                setStats({
-                    totalLogbooks: logbooks.length,
-                    pendingLogbooks: logbooks.filter(l => l.status === 'submitted').length,
-                    approvedLogbooks: logbooks.filter(l => l.status === 'approved').length,
-                    rejectedLogbooks: logbooks.filter(l => l.status === 'rejected').length,
-                    totalCost: logbooks.reduce((sum, l) => sum + l.toll_cost + l.operational_cost, 0)
-                });
-
-                setRecentLogbooks(logbooks.slice(0, 5));
-            } catch (err) {
-                console.error('Failed to fetch stats:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchStats();
+            setRecentLogbooks(logbooks.slice(0, 5));
+        } catch (err) {
+            console.error('Failed to fetch stats:', err);
+        } finally {
+            setLoading(false);
+        }
     }, [user]);
+
+    useEffect(() => {
+        fetchStats();
+    }, [fetchStats]);
+
+    // Real-time: auto-refresh when this driver's logbooks change
+    useRealtimeSubscription({
+        table: 'logbooks',
+        events: ['INSERT', 'UPDATE', 'DELETE'],
+        filter: user ? `driver_id=eq.${user.id}` : undefined,
+        onUpdate: fetchStats,
+        enabled: !!user,
+    });
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
