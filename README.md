@@ -39,10 +39,3 @@ Management sistem logbook transportasi untuk PT. Amena Safeeya Sejahtera.
 - `src/services`: Mock services (for development)
 - `docs/`: Project documentation
 
-## Login Credentials (Development)
-
-| Role | Username | Password |
-|------|----------|----------|
-| Admin | admin | (any) |
-| Driver | driver1 | (any) |
-

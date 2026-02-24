@@ -1,12 +1,12 @@
 # Status Proyek Amena Logbook
 
-**Terakhir Diperbarui**: 17 Februari 2026
+**Terakhir Diperbarui**: 24 Februari 2026
 
 ---
 
 ## Ringkasan
 
-Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 3.0 (Advanced Features)** - sudah live di **[andinlaporanharian.vercel.app](https://andinlaporanharian.vercel.app)**.
+Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 3.5 (Advanced Features Complete)** - sudah live di **[andinlaporanharian.vercel.app](https://andinlaporanharian.vercel.app)**.
 
 ## Apa yang Berhasil ✅
 
@@ -18,100 +18,146 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 - [x] Session persistence
 - [x] Token refresh handling
 - [x] Block login untuk inactive users
+- [x] `setCreatingUserFlag` — Admin tidak redirect saat create user baru
 
 ### Admin Module
 | Fitur | Status |
 |-------|--------|
-| Dashboard dengan statistik & charts | ✅ |
-| Manajemen E-Toll (CRUD + Saldo) | ✅ |
-| Lihat semua logbook (Pagination) | ✅ |
-| Approve/Reject logbook | ✅ |
+| Dashboard dengan statistik & charts (RPC-powered) | ✅ |
+| Lihat semua logbook (Server-side Pagination) | ✅ |
+| Approve/Reject logbook + auto-deduct saldo | ✅ |
 | Detail logbook modal | ✅ |
-| Filter logbook (Status, Driver, Unit, Date) | ✅ |
+| Filter logbook (Status, Driver, Unit, Client, Date Range) | ✅ |
 | Sorting logbook (Terbaru/Terlama) | ✅ |
 | Export ke Excel (Unit + Biaya Lain) | ✅ |
 | Export ke PDF (Unit + Biaya Lain) | ✅ |
 | Manajemen User (CRUD + Modal) | ✅ |
+| **Admin Create User** (langsung muncul di list) | ✅ |
 | Soft Delete users (Nonaktifkan) | ✅ |
 | Reactivate users (Aktifkan Kembali) | ✅ |
-| **Hard Delete users (Permanen + Warning)** | ✅ |
+| **Hard Delete users (Permanen + Warning + Cleanup)** | ✅ |
 | Manajemen Unit (CRUD + Modal) | ✅ |
+| Manajemen E-Toll (CRUD + Saldo + Balance Logging) | ✅ |
 | Notifikasi logbook baru | ✅ |
 
 ### Cost Management & Funds
 | Fitur | Status |
 |-------|--------|
 | Saldo Operasional per Driver | ✅ |
-| Top-up Saldo Driver | ✅ |
-| **Edit Saldo Driver** | ✅ |
-| **Reset Saldo Driver ke Rp 0** | ✅ |
+| Top-up Saldo Driver + Balance Log | ✅ |
+| **Edit Saldo Driver** + Balance Log | ✅ |
+| **Reset Saldo Driver ke Rp 0** + Balance Log | ✅ |
 | **Saldo Minus (Hutang Kantor)** | ✅ |
 | **Balance Logs (Riwayat Perubahan Saldo)** | ✅ |
-| Detailed Cost Breakdown (Tol + Biaya Lain) | ✅ |
+| **E-Toll Logs (Riwayat Perubahan Saldo E-Toll)** | ✅ |
+| Detailed Cost Breakdown (Tol + Parkir + Biaya Lain) | ✅ |
 | Deduksi saldo otomatis saat approve | ✅ |
 
-### Dashboard Analytics (NEW)
+### Dashboard Analytics
 | Fitur | Status |
 |-------|--------|
-| Statistik cards (Total, Pending, Approved, Rejected) | ✅ |
-| Bar chart: Logbook 7 hari terakhir | ✅ |
+| Statistik cards (Total, Today, Week, Month + Cost) | ✅ |
+| Bar chart: Logbook N hari terakhir | ✅ |
 | Pie chart: Status distribusi dengan legend | ✅ |
-| Line chart: Trend biaya 7 hari | ✅ |
-| Bar chart: Top drivers by cost | ✅ |
-| Recent logbook entries | ✅ |
+| Line chart: Trend biaya N hari | ✅ |
+| Bar chart: Top 5 drivers by cost | ✅ |
+| Recent logbook entries (5 terakhir) | ✅ |
+| **RPC Function** `get_admin_dashboard_stats()` | ✅ |
+
+### Transaction History (NEW ✨)
+| Fitur | Status |
+|-------|--------|
+| **Halaman Riwayat Transaksi** (`/admin/transactions`) | ✅ |
+| **Tab Uang Operasional**: Balance logs viewer | ✅ |
+| **Tab E-Toll**: E-Toll balance change logs | ✅ |
+| Tampilkan: Tanggal, Driver/Kartu, Aksi (badge), Jumlah, Saldo Awal/Akhir, Admin, Keterangan | ✅ |
+| Warna-coded badges: Top Up (hijau), Edit (biru), Reset (orange), Deduct (merah) | ✅ |
 
 ### Driver Module
 | Fitur | Status |
 |-------|--------|
-| Dashboard dengan statistik | ✅ |
-| Input logbook baru | ✅ |
+| Dashboard dengan statistik + Saldo Hero Card | ✅ |
+| Input logbook baru (dengan pilih E-Toll) | ✅ |
 | Lihat riwayat logbook | ✅ |
 | Edit logbook (semua status) | ✅ |
 | **Hapus logbook yang ditolak** | ✅ |
 | Notifikasi approve/reject | ✅ |
 | **Realtime auto-refresh (Dashboard + Riwayat)** | ✅ |
 
-### UI/UX Enhancements (NEW)
+### Reporting
 | Fitur | Status |
 |-------|--------|
-| Toast notifications (success/error/warning/info) | ✅ |
-| Skeleton loading components (8 Halaman) | ✅ |
+| **Laporan Bulanan** (`/admin/laporan`) | ✅ |
+| Filter: Bulan, Tahun, Driver (opsional), Unit (opsional) | ✅ |
+| Ringkasan Per Driver + Per Unit | ✅ |
+| **Export PDF dengan Dual Logo** (Andin + ASS) + AutoTable | ✅ |
+| **Driver Summary** (`/admin/driver-summary`) | ✅ |
+| **Filter Unit di Driver Summary** | ✅ |
+| **DateRangePicker** untuk filter rentang tanggal | ✅ |
+| Export PDF Driver Summary | ✅ |
+| Hanya menghitung logbook `approved` | ✅ |
+
+### UI/UX Enhancements
+| Fitur | Status |
+|-------|--------|
+| Toast notifications (success/error/warning/info, 5s auto-dismiss) | ✅ |
+| Skeleton loading components (8+ variants) | ✅ |
 | Plus Jakarta Sans font | ✅ |
 | Responsive layout | ✅ |
-| Drawer navigation (slide) | ✅ |
+| Drawer navigation (slide-in, clipped below header) | ✅ |
 | Glassmorphism header | ✅ |
-| Form validation | ✅ |
-| Confirmation modals | ✅ |
+| Form validation (Zod 4 + React Hook Form) | ✅ |
+| Confirmation modals (reusable `DeleteConfirmModal`) | ✅ |
 | Notification bell dropdown | ✅ |
 | Real-time notifications | ✅ |
+| Custom DatePicker (Flowbite style, ID locale) | ✅ |
+| Custom Select (supports upward opening) | ✅ |
+| **DateRangePicker** (start + end date) | ✅ |
 | **Mobile Responsiveness (Card View + Table)** | ✅ |
 | **Mobile-friendly Pagination & Filters** | ✅ |
 | **Responsive Add Button (icon-only mobile)** | ✅ |
 | **Responsive Profile Page (stacked fields)** | ✅ |
 | **Clipped Drawer (below header)** | ✅ |
+| **Consistent card styling** (UserList = UnitList pattern) | ✅ |
+| **Accessibility** (ARIA attributes, htmlFor, tabular-nums for currency) | ✅ |
+| **Glassmorphism modals** dengan spinners | ✅ |
+
+### Testing (NEW ✨)
+| Fitur | Status |
+|-------|--------|
+| Vitest test runner | ✅ |
+| Testing Library (React + User Event) | ✅ |
+| `calculations.test.ts` (formatCurrency, balance functions) | ✅ |
+| `DatePicker.test.tsx` (component tests) | ✅ |
+| `DateRangePicker.test.tsx` (component tests) | ✅ |
+| `DeleteConfirmModal.test.tsx` (component tests) | ✅ |
+| `npm run test`, `npm run test:run`, `npm run test:coverage` | ✅ |
+
+### Code Quality (NEW ✨)
+| Fitur | Status |
+|-------|--------|
+| **Centralized constants** (`constants/index.ts`) | ✅ |
+| **Pure utility functions** (`utils/calculations.ts`) | ✅ |
+| **Dedicated PDF generator** (`utils/reportPdfGenerator.ts`) | ✅ |
+| **Class merging utility** (`utils/cn.ts` — clsx + tailwind-merge) | ✅ |
+| ESLint + TypeScript strict mode | ✅ |
 
 ### Backend (Supabase)
 | Fitur | Status |
 |-------|--------|
-| PostgreSQL database | ✅ |
-| Row Level Security (RLS) | ✅ |
+| PostgreSQL database (7 tabel) | ✅ |
+| Row Level Security (RLS) pada semua tabel | ✅ |
 | Admin RLS untuk update semua profiles | ✅ |
 | **Admin RLS untuk insert profiles** | ✅ |
+| **Drivers can deduct E-Toll balance** | ✅ |
 | Email authentication | ✅ |
 | Real-time subscriptions | ✅ |
-| **Realtime Auto-Refresh (5 halaman: Admin Dashboard, LogbookList, Budget, Driver Dashboard, LogbookHistory)** | ✅ |
+| **Realtime Auto-Refresh (5 halaman)** | ✅ |
 | **REPLICA IDENTITY FULL pada logbooks** | ✅ |
 | Auto-create profile trigger | ✅ |
 | Soft delete support (status column) | ✅ |
-
-### Reporting
-| Fitur | Status |
-|-------|--------|
-| **Laporan Bulanan** | ✅ |
-| **Driver Summary** (Ringkasan Per Driver) | ✅ |
-| **Filter Unit di Driver Summary** | ✅ |
-| Export PDF Laporan Bulanan | ✅ |
-| Export PDF Driver Summary | ✅ |
+| **RPC Function: `get_admin_dashboard_stats()`** | ✅ |
+| **Tabel `etoll_logs`** (riwayat saldo E-Toll) | ✅ |
 
 ## Database Tables
 
@@ -122,28 +168,45 @@ Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional.
 | `logbooks` | Entry logbook | ✅ | ✅ submitted/approved/rejected |
 | `etolls` | Kartu E-Toll | ✅ | ✅ active/inactive |
 | `notifications` | In-app notifications | ✅ | - |
-| `balance_logs` | Riwayat perubahan saldo operasional | ✅ | - |
+| `balance_logs` | Riwayat saldo operasional | ✅ | - |
+| `etoll_logs` | Riwayat saldo E-Toll | ✅ | - |
+
+## TypeScript Types
+
+| Type | Fields |
+|------|--------|
+| `User` | id, email?, username, full_name, role, status, operational_balance, avatar_url? |
+| `Unit` | id, name, plate_number, status |
+| `Etoll` | id, card_name, card_number?, balance, status, created_at |
+| `LogbookEntry` | id, date, driver_id, unit_id, etoll_id?, client_name, rute, keterangan, toll_cost, parking_cost, operational_cost, status, created_at |
+| `BalanceLog` | id, driver_id, admin_id?, action_type, amount, previous_balance, new_balance, description, created_at |
+| `EtollLog` | id, etoll_id, admin_id?, action_type, amount, previous_balance, new_balance, description, created_at |
+| `AuthState` | user, isAuthenticated, isLoading |
 
 ---
 
 ## Langkah Selanjutnya
 
-### Phase 3.0: Advanced Features ✅ (COMPLETED)
-- [x] Laporan Bulanan
-- [x] Driver Summary
-- [x] Edit & Reset Saldo Operasional + Logging
-- [x] Admin User Creation Fix
-- [x] UI/UX Polish (DatePicker, Select, Mobile Cards)
-- [x] Filter Unit di Driver Summary
-- [x] Saldo Operasional Minus (Utang Kantor)
-- [x] Supabase Realtime Auto-Refresh (5 halaman)
-- [x] REPLICA IDENTITY FULL untuk DELETE events
+### Phase 3.5: Advanced Features ✅ (COMPLETED)
+- [x] Semua dari Phase 3.0
+- [x] Halaman Riwayat Transaksi (Balance + E-Toll Logs viewer)
+- [x] E-Toll Logs (tabel `etoll_logs` + API + UI)
+- [x] PDF Report Generator dengan dual logo
+- [x] DateRangePicker component
+- [x] Testing infrastructure (Vitest + Testing Library)
+- [x] Centralized constants
+- [x] Pure utility functions + unit tests
+- [x] UI/UX consistency refactoring (UserList ↔ UnitList alignment)
+- [x] Accessibility improvements (ARIA, htmlFor, tabular-nums)
+- [x] Glassmorphism modal design + spinners
+- [x] OperationalBudgetPage UI refactor
 
 ### Phase 4: Future Enhancements (Planned)
-- [ ] Halaman Riwayat Transaksi (Balance Logs viewer)
-- [ ] Email notifications
-- [ ] PWA support
+- [ ] Email notifications (approval/rejection/welcome)
+- [ ] PWA support + offline mode
 - [ ] Push notifications
+- [ ] Dashboard trends (grafik mingguan/bulanan)
+- [ ] Export laporan otomatis (scheduled)
 
 ---
 
@@ -166,15 +229,23 @@ npm run build
 
 # Preview production build
 npm run preview
+
+# Run tests
+npm test              # Watch mode
+npm run test:run      # Single run
+npm run test:coverage # With coverage report
 ```
 
 ---
 
 ## Teknologi
 
-- **Frontend**: React 19, Vite 7, TypeScript, Tailwind CSS v4
-- **Charts**: Recharts
-- **Export**: xlsx, jspdf, html2canvas
+- **Frontend**: React 19, Vite 7, TypeScript ~5.9, Tailwind CSS v4
+- **UI**: Headless UI, Lucide Icons, clsx + tailwind-merge
+- **Charts**: Recharts 3
+- **Date**: date-fns 4
+- **Export**: xlsx, jsPDF 3 + jsPDF-AutoTable 5
+- **Testing**: Vitest 4, Testing Library 16
 - **Backend**: Supabase (PostgreSQL + Auth + Realtime)
 - **Fonts**: Plus Jakarta Sans
-- **Hosting**: Vercel (planned)
+- **Hosting**: Vercel ✅ (Live at andinlaporanharian.vercel.app)

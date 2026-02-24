@@ -115,7 +115,6 @@ export default function LogbookList() {
     const unitMap = useMemo(() => new Map(units.map(u => [u.id, u])), [units]);
 
     const getDriverName = (driverId: string) => userMap.get(driverId)?.full_name || '-';
-    // const getUnitName = (unitId: string) => unitMap.get(unitId)?.name || '-'; // Unused
     const getUnitName = (unitId: string) => unitMap.get(unitId)?.name || '-';
     const getUnitPlate = (unitId: string) => unitMap.get(unitId)?.plate_number || '-';
 
@@ -210,16 +209,16 @@ export default function LogbookList() {
 
     const getStatusBadge = (status: LogbookEntry['status']) => {
         const config = {
-            draft: { bg: 'bg-gray-100', text: 'text-gray-700', label: 'Draft', icon: Clock },
-            submitted: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Pending', icon: Clock },
-            approved: { bg: 'bg-green-100', text: 'text-green-700', label: 'Disetujui', icon: CheckCircle },
-            rejected: { bg: 'bg-red-100', text: 'text-red-700', label: 'Ditolak', icon: XCircle }
+            draft: { bg: 'bg-gray-50', text: 'text-gray-600', border: 'border-gray-200/60', label: 'Draft', icon: Clock },
+            submitted: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200/60', label: 'Pending', icon: Clock },
+            approved: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200/60', label: 'Disetujui', icon: CheckCircle },
+            rejected: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200/60', label: 'Ditolak', icon: XCircle }
         };
         const statusConfig = config[status] || config.submitted;
-        const { bg, text, label, icon: Icon } = statusConfig;
+        const { bg, text, border, label, icon: Icon } = statusConfig;
         return (
-            <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${bg} ${text}`}>
-                <Icon className="h-3 w-3" />
+            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[9px] uppercase tracking-widest font-bold border ${bg} ${text} ${border}`}>
+                <Icon className="h-3 w-3" aria-hidden="true" />
                 {label}
             </span>
         );
@@ -408,47 +407,59 @@ export default function LogbookList() {
     const totalPages = Math.ceil(totalCount / pageSize);
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-8 max-w-7xl mx-auto pb-12">
             {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3">
-                    <BookOpen className="h-6 w-6 text-blue-600" />
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50/50 to-transparent rounded-bl-full -mr-20 -mt-20 pointer-events-none" />
+                <div className="flex items-center gap-5 relative">
+                    <div className="w-14 h-14 rounded-2xl bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-inner relative overflow-hidden group-hover:shadow-md transition-shadow duration-500">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <BookOpen className="h-7 w-7 text-blue-600 relative z-10" aria-hidden="true" />
+                    </div>
                     <div>
-                        <h1 className="text-2xl font-bold text-gray-900">Manajemen Laporan Harian</h1>
-                        <p className="text-sm text-gray-500">Total {totalCount} laporan</p>
+                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Laporan Harian</h1>
+                        <p className="text-sm font-medium text-gray-500 mt-1">Kelola & pantau <span className="font-bold text-gray-700 tabular-nums">{totalCount}</span> laporan operasional</p>
                     </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 relative">
                     <button
                         onClick={exportToPDF}
                         disabled={exportLoading}
-                        className="flex items-center gap-2 px-3 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 text-rose-600 bg-rose-50/50 hover:bg-rose-50 rounded-xl ring-1 ring-inset ring-rose-200/60 hover:ring-rose-300 transition-all duration-300 text-[10px] font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+                        aria-label="Export ke PDF"
                     >
-                        <FileText className="h-4 w-4" />
-                        {exportLoading ? '...' : 'PDF'}
+                        <FileText className="h-4 w-4" aria-hidden="true" />
+                        {exportLoading ? 'Loading…' : 'PDF'}
                     </button>
                     <button
                         onClick={exportToExcel}
                         disabled={exportLoading}
-                        className="flex items-center gap-2 px-3 py-2 text-green-600 bg-green-50 hover:bg-green-100 rounded-lg transition-colors text-sm font-medium disabled:opacity-50"
+                        className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-emerald-600 to-green-600 text-white rounded-xl font-bold text-[10px] uppercase tracking-wider shadow-md shadow-emerald-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-emerald-500/30 active:translate-y-0 disabled:opacity-70 disabled:hover:translate-y-0 disabled:cursor-not-allowed transition-all duration-300"
+                        aria-label="Export ke Excel"
                     >
-                        <FileSpreadsheet className="h-4 w-4" />
-                        {exportLoading ? '...' : 'Excel'}
+                        <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
+                        {exportLoading ? 'Loading…' : 'Excel'}
                     </button>
                 </div>
             </div>
 
-            {/* Filters Area */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 space-y-4">
-                <div className="flex justify-between items-center">
-                    <h3 className="font-medium text-gray-700">Filter & Pencarian</h3>
-                    <button onClick={clearFilters} className="text-sm text-blue-600 hover:underline">Reset Filter</button>
+            {/* Filters Command Center */}
+            <div className="bg-white/80 backdrop-blur-md rounded-[2rem] shadow-sm border border-gray-100/60 p-6 md:p-8 relative z-20 ring-1 ring-inset ring-blue-50/50">
+                <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-blue-100/20 to-transparent pointer-events-none rounded-t-[2rem]" />
+                <div className="absolute top-0 inset-x-4 h-[1px] bg-gradient-to-r from-transparent via-blue-400/20 to-transparent pointer-events-none" />
+
+                <div className="flex justify-between items-center mb-6 relative">
+                    <div className="flex items-center gap-2">
+                        <Search className="w-4 h-4 text-blue-600" aria-hidden="true" />
+                        <span className="text-[10px] uppercase font-black tracking-widest text-blue-900/70">Filter & Pencarian</span>
+                    </div>
+                    <button onClick={clearFilters} className="text-[10px] uppercase font-bold tracking-wider text-blue-600 hover:text-blue-800 transition-colors duration-200">Reset Filter</button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 relative">
                     {/* Driver Filter */}
-                    <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Driver</label>
+                    <div className="space-y-1.5">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Driver</label>
                         <Select
                             value={filterDriver}
                             onChange={(val) => { setFilterDriver(val); setPage(1); }}
@@ -460,8 +471,8 @@ export default function LogbookList() {
                         />
                     </div>
                     {/* Unit Filter */}
-                    <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Unit</label>
+                    <div className="space-y-1.5">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Unit Kendaraan</label>
                         <Select
                             value={filterUnit}
                             onChange={(val) => { setFilterUnit(val); setPage(1); }}
@@ -473,14 +484,14 @@ export default function LogbookList() {
                         />
                     </div>
                     {/* Client Filter */}
-                    <div>
-                        <label className="block text-xs font-medium text-gray-500 mb-1">User (Tamu/Client)</label>
+                    <div className="space-y-1.5">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">User (Tamu/Client)</label>
                         <div className="relative">
-                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" aria-hidden="true" />
                             <input
                                 type="text"
-                                className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 focus:bg-white transition-colors"
-                                placeholder="Cari nama..."
+                                className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all duration-200"
+                                placeholder="Cari nama…"
                                 value={filterClient}
                                 onChange={(e) => { setFilterClient(e.target.value); setPage(1); }}
                             />
@@ -488,7 +499,7 @@ export default function LogbookList() {
                     </div>
                     {/* Date Filters */}
                     <div className="sm:col-span-2">
-                        <label className="block text-xs font-medium text-gray-500 mb-1">Rentang Tanggal</label>
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1 mb-1.5">Rentang Tanggal</label>
                         <DateRangePicker
                             startDate={filterDateStart}
                             endDate={filterDateEnd}
@@ -503,16 +514,18 @@ export default function LogbookList() {
                 </div>
 
                 {/* Status & Sort Section */}
-                <div className="flex flex-col gap-4 pt-4 border-t border-dashed">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-6 mt-6 border-t border-gray-100 relative">
                     {/* Status Tabs */}
-                    <div className="flex flex-wrap bg-gray-100 p-1 rounded-lg gap-1">
+                    <div className="flex flex-wrap bg-gray-100/80 p-1 rounded-xl gap-1 flex-1" role="tablist" aria-label="Filter status laporan">
                         {(['all', 'submitted', 'approved', 'rejected'] as const).map(f => (
                             <button
                                 key={f}
+                                role="tab"
+                                aria-selected={statusFilter === f}
                                 onClick={() => { setStatusFilter(f); setPage(1); }}
-                                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${statusFilter === f
-                                    ? 'bg-white text-blue-600 shadow-sm'
-                                    : 'text-gray-500 hover:text-gray-700'
+                                className={`px-4 py-2 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all duration-200 ${statusFilter === f
+                                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-inset ring-blue-100/50'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
                                     }`}
                             >
                                 {f === 'all' ? 'Semua' : f === 'submitted' ? 'Pending' : f === 'approved' ? 'Disetujui' : 'Ditolak'}
@@ -521,91 +534,90 @@ export default function LogbookList() {
                     </div>
 
                     {/* SORT TOGGLE */}
-                    <div className="flex items-center gap-3 w-full md:w-auto justify-between md:justify-start">
-                        <span className="text-sm text-gray-500">Urutkan Tanggal:</span>
-                        <button
-                            onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
-                            className="flex items-center gap-2 px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                        >
-                            {sortOrder === 'desc' ? (
-                                <>
-                                    <ArrowDownNarrowWide className="h-4 w-4 text-blue-600" />
-                                    <span>Terbaru Dulu</span>
-                                </>
-                            ) : (
-                                <>
-                                    <ArrowUpNarrowWide className="h-4 w-4 text-orange-600" />
-                                    <span>Terlama Dulu</span>
-                                </>
-                            )}
-                        </button>
-                    </div>
+                    <button
+                        onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl text-[10px] uppercase tracking-wider font-bold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 whitespace-nowrap"
+                    >
+                        {sortOrder === 'desc' ? (
+                            <>
+                                <ArrowDownNarrowWide className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                                <span>Terbaru</span>
+                            </>
+                        ) : (
+                            <>
+                                <ArrowUpNarrowWide className="h-4 w-4 text-amber-600" aria-hidden="true" />
+                                <span>Terlama</span>
+                            </>
+                        )}
+                    </button>
                 </div>
             </div>
 
             {error && <div className="bg-red-50 text-red-600 p-4 rounded-lg">{error}</div>}
 
             {/* Table Area - Hidden on mobile */}
-            <div className="hidden md:block bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="hidden md:block bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto min-h-[400px]">
                     <table className="w-full min-w-[800px]">
-                        <thead className="bg-gray-50 border-b border-gray-100">
+                        <thead>
                             <tr>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Tanggal</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Unit</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Driver</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">User</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Rute</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Biaya</th>
-                                <th className="text-left py-3 px-4 text-sm font-medium text-gray-600">Status</th>
-                                <th className="text-center py-3 px-4 text-sm font-medium text-gray-600">Aksi</th>
+                                <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Tanggal</th>
+                                <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Unit</th>
+                                <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Driver</th>
+                                <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">User</th>
+                                <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Rute</th>
+                                <th className="text-right py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Biaya</th>
+                                <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Status</th>
+                                <th className="text-center py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody className={loading ? 'opacity-50' : ''}>
+                        <tbody className={`divide-y divide-gray-50 ${loading ? 'opacity-50' : ''}`}>
                             {logbooks.length === 0 ? (
                                 <tr>
-                                    <td colSpan={8} className="text-center py-12">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <div className="h-12 w-12 bg-gray-100 rounded-full flex items-center justify-center">
-                                                <Search className="h-6 w-6 text-gray-400" />
+                                    <td colSpan={8} className="text-center py-16 border-none">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <div className="h-14 w-14 bg-gray-50 rounded-2xl flex items-center justify-center border border-gray-100">
+                                                <Search className="h-6 w-6 text-gray-300" aria-hidden="true" />
                                             </div>
-                                            <p className="text-gray-500 font-medium">Tidak ada data ditemukan</p>
-                                            <p className="text-sm text-gray-400">Coba ubah filter pencarian Anda</p>
+                                            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nihil Data</p>
+                                            <p className="text-xs text-gray-400">Coba ubah filter pencarian Anda</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 logbooks.map(log => (
-                                    <tr key={log.id} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                                        <td className="py-3 px-4 text-gray-900 whitespace-nowrap">
-                                            {format(new Date(log.date), 'dd MMM yyyy', { locale: id })}
+                                    <tr key={log.id} className="group hover:bg-slate-50/50 transition-colors duration-200">
+                                        <td className="py-4 px-6 border-none whitespace-nowrap">
+                                            <span className="text-sm font-bold text-gray-900 tabular-nums">{format(new Date(log.date), 'dd MMM yyyy', { locale: id })}</span>
                                         </td>
-                                        <td className="py-3 px-4 text-gray-900 whitespace-nowrap">
-                                            <span className="font-medium">{getUnitName(log.unit_id)}</span>
-                                            <span className="text-xs text-gray-500 block">{getUnitPlate(log.unit_id)}</span>
+                                        <td className="py-4 px-6 border-none whitespace-nowrap">
+                                            <span className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors uppercase">{getUnitName(log.unit_id)}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 block uppercase tracking-widest mt-0.5">{getUnitPlate(log.unit_id)}</span>
                                         </td>
-                                        <td className="py-3 px-4 text-gray-600 whitespace-nowrap">{getDriverName(log.driver_id)}</td>
-                                        <td className="py-3 px-4 text-gray-900">{log.client_name}</td>
-                                        <td className="py-3 px-4 text-gray-600 max-w-[200px] truncate" title={log.rute}>{log.rute}</td>
-                                        <td className="py-3 px-4 text-gray-900 font-medium">{formatCurrency(log.toll_cost + log.operational_cost)}</td>
-                                        <td className="py-3 px-4">{getStatusBadge(log.status)}</td>
-                                        <td className="py-3 px-4">
+                                        <td className="py-4 px-6 border-none whitespace-nowrap text-sm font-medium text-gray-600">{getDriverName(log.driver_id)}</td>
+                                        <td className="py-4 px-6 border-none text-sm text-gray-900">{log.client_name}</td>
+                                        <td className="py-4 px-6 border-none text-sm text-gray-600 max-w-[200px] truncate" title={log.rute}>{log.rute}</td>
+                                        <td className="py-4 px-6 border-none text-right">
+                                            <span className="text-[13px] font-bold text-gray-900 tabular-nums tracking-tight">{formatCurrency(log.toll_cost + log.operational_cost)}</span>
+                                        </td>
+                                        <td className="py-4 px-6 border-none">{getStatusBadge(log.status)}</td>
+                                        <td className="py-4 px-6 border-none">
                                             <div className="flex justify-center gap-1">
-                                                <button onClick={() => setSelectedLogbook(log)} className="p-1.5 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors">
-                                                    <Eye className="h-4 w-4" />
+                                                <button onClick={() => setSelectedLogbook(log)} className="p-2 text-blue-600 hover:bg-blue-50 rounded-xl transition-colors duration-200" aria-label="Lihat detail laporan">
+                                                    <Eye className="h-4 w-4" aria-hidden="true" />
                                                 </button>
                                                 {log.status === 'submitted' && (
                                                     <>
-                                                        <button onClick={() => handleApprove(log.id)} className="p-1.5 text-green-600 hover:bg-green-50 rounded-lg">
-                                                            <CheckCircle className="h-4 w-4" />
+                                                        <button onClick={() => handleApprove(log.id)} className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors duration-200" aria-label="Setujui laporan">
+                                                            <CheckCircle className="h-4 w-4" aria-hidden="true" />
                                                         </button>
-                                                        <button onClick={() => handleReject(log.id)} className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg">
-                                                            <XCircle className="h-4 w-4" />
+                                                        <button onClick={() => handleReject(log.id)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors duration-200" aria-label="Tolak laporan">
+                                                            <XCircle className="h-4 w-4" aria-hidden="true" />
                                                         </button>
                                                     </>
                                                 )}
-                                                <button onClick={() => setDeleteLogbook(log)} className="p-1.5 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 transition-colors">
-                                                    <Trash2 className="h-4 w-4" />
+                                                <button onClick={() => setDeleteLogbook(log)} className="p-2 text-rose-600 hover:bg-rose-50 rounded-xl transition-colors duration-200" aria-label="Hapus laporan">
+                                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
                                                 </button>
                                             </div>
                                         </td>
@@ -617,12 +629,12 @@ export default function LogbookList() {
                 </div>
 
                 {/* PAGINATION */}
-                <div className="border-t border-gray-100 p-4 bg-gray-50 flex items-center justify-between">
-                    <div className="text-sm text-gray-500">
+                <div className="border-t border-gray-50 p-6 bg-gradient-to-r from-gray-50/30 to-white flex items-center justify-between">
+                    <div className="text-[10px] uppercase font-bold tracking-wider text-gray-500">
                         {totalCount === 0 ? (
                             'Tidak ada data'
                         ) : (
-                            <>Menampilkan <span className="font-medium">{(page - 1) * pageSize + 1}</span> - <span className="font-medium">{Math.min(page * pageSize, totalCount)}</span> dari <span className="font-medium">{totalCount}</span> data</>
+                            <>Menampilkan <span className="font-black text-gray-700 tabular-nums">{(page - 1) * pageSize + 1}</span> – <span className="font-black text-gray-700 tabular-nums">{Math.min(page * pageSize, totalCount)}</span> dari <span className="font-black text-gray-700 tabular-nums">{totalCount}</span></>
                         )}
                     </div>
 
@@ -645,9 +657,10 @@ export default function LogbookList() {
                             <button
                                 onClick={() => setPage(p => Math.max(1, p - 1))}
                                 disabled={page === 1}
-                                className="p-2 rounded-lg border bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                                className="p-2 rounded-xl border border-gray-200 bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors duration-200"
+                                aria-label="Halaman sebelumnya"
                             >
-                                <ChevronLeft className="h-4 w-4" />
+                                <ChevronLeft className="h-4 w-4" aria-hidden="true" />
                             </button>
                             {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                                 let p = page;
@@ -661,7 +674,7 @@ export default function LogbookList() {
                                     <button
                                         key={p}
                                         onClick={() => setPage(p)}
-                                        className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${page === p ? 'bg-blue-600 text-white' : 'bg-white border hover:bg-gray-50 text-gray-700'
+                                        className={`w-9 h-9 rounded-xl text-xs font-bold tabular-nums transition-all duration-200 ${page === p ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20' : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700'
                                             }`}
                                     >
                                         {p}
@@ -671,9 +684,10 @@ export default function LogbookList() {
                             <button
                                 onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                                 disabled={page === totalPages || totalPages === 0}
-                                className="p-2 rounded-lg border bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors"
+                                className="p-2 rounded-xl border border-gray-200 bg-white disabled:opacity-50 hover:bg-gray-50 transition-colors duration-200"
+                                aria-label="Halaman selanjutnya"
                             >
-                                <ChevronRight className="h-4 w-4" />
+                                <ChevronRight className="h-4 w-4" aria-hidden="true" />
                             </button>
                         </div>
                     </div>
@@ -683,83 +697,83 @@ export default function LogbookList() {
             {/* Mobile Cards - Show on mobile only */}
             <div className="md:hidden space-y-4">
                 {logbooks.length === 0 ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                        <BookOpen className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                        <p className="text-gray-500">Tidak ada data ditemukan</p>
+                    <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-12 text-center">
+                        <BookOpen className="h-12 w-12 text-gray-200 mx-auto mb-4" aria-hidden="true" />
+                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nihil Data</p>
                     </div>
                 ) : (
                     <>
                         {logbooks.map(log => (
-                            <div key={log.id} className="bg-white rounded-xl shadow-sm border border-gray-100 p-4">
-                                <div className="flex justify-between items-start mb-3">
+                            <div key={log.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow duration-300">
+                                <div className="flex justify-between items-start mb-4">
                                     <div>
-                                        <p className="font-semibold text-gray-900">
+                                        <p className="text-sm font-black text-gray-900 tabular-nums">
                                             {format(new Date(log.date), 'EEEE, dd MMMM yyyy', { locale: id })}
                                         </p>
-                                        <p className="text-sm text-gray-500">{getUnitName(log.unit_id)} ({getUnitPlate(log.unit_id)})</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{getUnitName(log.unit_id)} · {getUnitPlate(log.unit_id)}</p>
                                     </div>
                                     <div className="flex items-center gap-2">
                                         {getStatusBadge(log.status)}
                                     </div>
                                 </div>
 
-                                <div className="space-y-2 mb-3">
+                                <div className="space-y-2 mb-4">
                                     <div className="flex">
-                                        <span className="text-gray-500 w-20">Driver:</span>
-                                        <span className="text-gray-900 font-medium">{getDriverName(log.driver_id)}</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider w-20">Driver</span>
+                                        <span className="text-sm font-medium text-gray-900">{getDriverName(log.driver_id)}</span>
                                     </div>
                                     <div className="flex">
-                                        <span className="text-gray-500 w-20">User:</span>
-                                        <span className="text-gray-900">{log.client_name}</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider w-20">User</span>
+                                        <span className="text-sm text-gray-900">{log.client_name}</span>
                                     </div>
                                     <div className="flex">
-                                        <span className="text-gray-500 w-20">Rute:</span>
-                                        <span className="text-gray-900">{log.rute}</span>
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider w-20">Rute</span>
+                                        <span className="text-sm text-gray-700">{log.rute}</span>
                                     </div>
                                 </div>
 
-                                <div className="bg-blue-50 p-3 rounded-lg space-y-1">
-                                    <div className="flex justify-between items-center text-sm text-blue-800">
-                                        <span>Biaya Tol:</span>
-                                        <span>{formatCurrency(log.toll_cost)}</span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm text-blue-800">
-                                        <span>Biaya Lain:</span>
-                                        <span>{formatCurrency(log.operational_cost)}</span>
-                                    </div>
-                                    <div className="border-t border-blue-200 my-1"></div>
+                                <div className="bg-blue-50/60 p-4 rounded-xl space-y-1.5 border border-blue-100/40">
                                     <div className="flex justify-between items-center">
-                                        <span className="text-blue-700 font-medium">Total:</span>
-                                        <span className="font-bold text-blue-700">{formatCurrency(log.toll_cost + log.operational_cost)}</span>
+                                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Biaya Tol</span>
+                                        <span className="text-sm font-bold text-blue-800 tabular-nums">{formatCurrency(log.toll_cost)}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Biaya Lain</span>
+                                        <span className="text-sm font-bold text-blue-800 tabular-nums">{formatCurrency(log.operational_cost)}</span>
+                                    </div>
+                                    <div className="border-t border-blue-200/50 my-1" />
+                                    <div className="flex justify-between items-center">
+                                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Total</span>
+                                        <span className="text-lg font-black text-blue-700 tabular-nums tracking-tight">{formatCurrency(log.toll_cost + log.operational_cost)}</span>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-end gap-2 mt-3 pt-3 border-t border-gray-100">
-                                    <button onClick={() => setSelectedLogbook(log)} className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-lg text-sm font-medium">
+                                <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
+                                    <button onClick={() => setSelectedLogbook(log)} className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
                                         Detail
                                     </button>
                                     {log.status === 'submitted' && (
                                         <>
-                                            <button onClick={() => handleApprove(log.id)} className="px-3 py-1.5 text-green-600 hover:bg-green-50 rounded-lg text-sm font-medium">
+                                            <button onClick={() => handleApprove(log.id)} className="px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
                                                 Setujui
                                             </button>
-                                            <button onClick={() => handleReject(log.id)} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">
+                                            <button onClick={() => handleReject(log.id)} className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
                                                 Tolak
                                             </button>
                                         </>
                                     )}
-                                    <button onClick={() => setDeleteLogbook(log)} className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-lg text-sm font-medium">
+                                    <button onClick={() => setDeleteLogbook(log)} className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
                                         Hapus
                                     </button>
                                 </div>
                             </div>
                         ))}
                         {/* Mobile Pagination */}
-                        <div className="flex justify-between items-center bg-white rounded-xl p-4 shadow-sm border border-gray-100">
-                            <span className="text-sm text-gray-500">Halaman {page} dari {totalPages}</span>
+                        <div className="flex justify-between items-center bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+                            <span className="text-[10px] font-bold uppercase tracking-wider text-gray-500 tabular-nums">Hal <span className="font-black text-gray-700">{page}</span> / <span className="font-black text-gray-700">{totalPages}</span></span>
                             <div className="flex gap-2">
-                                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 border rounded-lg disabled:opacity-50 text-sm">Sebelumnya</button>
-                                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 border rounded-lg disabled:opacity-50 text-sm">Selanjutnya</button>
+                                <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1} className="px-4 py-2 border border-gray-200 rounded-xl disabled:opacity-50 text-[10px] font-bold uppercase tracking-wider transition-colors duration-200 hover:bg-gray-50">Sebelumnya</button>
+                                <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages} className="px-4 py-2 bg-blue-600 text-white rounded-xl disabled:opacity-50 text-[10px] font-bold uppercase tracking-wider transition-colors duration-200 hover:bg-blue-700 shadow-sm">Selanjutnya</button>
                             </div>
                         </div>
                     </>
@@ -768,93 +782,93 @@ export default function LogbookList() {
 
             {/* Modals */}
             {deleteLogbook && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl w-full max-w-md">
-                        <h2 className="text-xl font-bold text-gray-900 mb-4">Hapus Laporan?</h2>
-                        <p className="text-gray-600 mb-6">
-                            Apakah Anda yakin ingin menghapus laporan tanggal <strong>{format(new Date(deleteLogbook.date), 'dd MMMM yyyy', { locale: id })}</strong> dari <strong>{deleteLogbook.client_name}</strong>?
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
+                        <h2 className="text-xl font-black text-gray-900 tracking-tight mb-4">Hapus Laporan?</h2>
+                        <p className="text-sm text-gray-600 mb-6 leading-relaxed">
+                            Apakah Anda yakin ingin menghapus laporan tanggal <strong className="font-black">{format(new Date(deleteLogbook.date), 'dd MMMM yyyy', { locale: id })}</strong> dari <strong className="font-black">{deleteLogbook.client_name}</strong>?
                         </p>
                         <div className="flex gap-3">
-                            <button onClick={() => setDeleteLogbook(null)} className="flex-1 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50">Batal</button>
-                            <button onClick={handleDelete} className="flex-1 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">Hapus</button>
+                            <button onClick={() => setDeleteLogbook(null)} className="flex-1 py-2.5 border border-gray-200 text-gray-700 rounded-xl hover:bg-gray-50 font-bold text-sm transition-colors duration-200">Batal</button>
+                            <button onClick={handleDelete} className="flex-1 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 font-bold text-sm shadow-md shadow-rose-500/20 transition-all duration-200">Hapus</button>
                         </div>
                     </div>
                 </div>
             )}
 
             {selectedLogbook && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                    <div className="bg-white p-6 rounded-xl w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
-                        <button onClick={() => setSelectedLogbook(null)} className="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
-                            <X className="h-5 w-5" />
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                    <div className="bg-white p-8 rounded-2xl w-full max-w-lg relative max-h-[90vh] overflow-y-auto shadow-2xl" style={{ overscrollBehavior: 'contain' }}>
+                        <button onClick={() => setSelectedLogbook(null)} className="absolute top-6 right-6 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors duration-200" aria-label="Tutup detail">
+                            <X className="h-5 w-5" aria-hidden="true" />
                         </button>
 
-                        <h2 className="text-xl font-bold mb-4">Detail Laporan</h2>
+                        <h2 className="text-xl font-black tracking-tight mb-6">Detail Laporan</h2>
 
-                        <div className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-5">
+                            <div className="grid grid-cols-2 gap-5">
                                 <div>
-                                    <p className="text-sm text-gray-500">Tanggal</p>
-                                    <p className="font-medium">{format(new Date(selectedLogbook.date), 'EEEE, dd MMMM yyyy', { locale: id })}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Tanggal</p>
+                                    <p className="text-sm font-bold text-gray-900 tabular-nums">{format(new Date(selectedLogbook.date), 'EEEE, dd MMMM yyyy', { locale: id })}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Status</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Status</p>
                                     {getStatusBadge(selectedLogbook.status)}
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Driver</p>
-                                    <p className="font-medium">{getDriverName(selectedLogbook.driver_id)}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Driver</p>
+                                    <p className="text-sm font-bold text-gray-900">{getDriverName(selectedLogbook.driver_id)}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Unit</p>
-                                    <p className="font-medium">{getUnitName(selectedLogbook.unit_id)} ({getUnitPlate(selectedLogbook.unit_id)})</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Unit</p>
+                                    <p className="text-sm font-bold text-gray-900">{getUnitName(selectedLogbook.unit_id)} ({getUnitPlate(selectedLogbook.unit_id)})</p>
                                 </div>
                                 <div className="col-span-2">
-                                    <p className="text-sm text-gray-500">E-Toll</p>
-                                    <p className="font-medium">{getEtollInfo(selectedLogbook.etoll_id)}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">E-Toll</p>
+                                    <p className="text-sm font-bold text-gray-900">{getEtollInfo(selectedLogbook.etoll_id)}</p>
                                 </div>
                             </div>
 
-                            <div className="border-t pt-4 space-y-3">
+                            <div className="border-t border-gray-100 pt-5 space-y-4">
                                 <div>
-                                    <p className="text-sm text-gray-500">User (Tamu/Client)</p>
-                                    <p className="font-medium text-gray-900">{selectedLogbook.client_name}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">User (Tamu/Client)</p>
+                                    <p className="text-sm font-bold text-gray-900">{selectedLogbook.client_name}</p>
                                 </div>
                                 <div>
-                                    <p className="text-sm text-gray-500">Rute</p>
-                                    <p className="font-medium text-gray-900">{selectedLogbook.rute}</p>
+                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Rute</p>
+                                    <p className="text-sm font-bold text-gray-900">{selectedLogbook.rute}</p>
                                 </div>
                                 {selectedLogbook.keterangan && (
                                     <div>
-                                        <p className="text-sm text-gray-500">Keterangan</p>
-                                        <p className="text-gray-700 bg-gray-50 p-3 rounded-lg">{selectedLogbook.keterangan}</p>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Keterangan</p>
+                                        <p className="text-sm text-gray-700 bg-gray-50/80 p-4 rounded-xl border border-gray-100">{selectedLogbook.keterangan}</p>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="bg-blue-50 p-4 rounded-lg border-t space-y-2">
-                                <div className="flex justify-between items-center text-sm text-blue-800">
-                                    <span>Biaya Tol:</span>
-                                    <span>{formatCurrency(selectedLogbook.toll_cost)}</span>
-                                </div>
-                                <div className="flex justify-between items-center text-sm text-blue-800">
-                                    <span>Biaya Lain:</span>
-                                    <span>{formatCurrency(selectedLogbook.operational_cost)}</span>
-                                </div>
-                                <div className="border-t border-blue-200 my-2"></div>
+                            <div className="bg-blue-50/60 p-5 rounded-xl border border-blue-100/40 space-y-2">
                                 <div className="flex justify-between items-center">
-                                    <span className="font-medium text-blue-900">Total Biaya:</span>
-                                    <span className="text-2xl font-bold text-blue-600">{formatCurrency(selectedLogbook.toll_cost + selectedLogbook.operational_cost)}</span>
+                                    <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Biaya Tol</span>
+                                    <span className="text-sm font-bold text-blue-800 tabular-nums">{formatCurrency(selectedLogbook.toll_cost)}</span>
+                                </div>
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Biaya Lain</span>
+                                    <span className="text-sm font-bold text-blue-800 tabular-nums">{formatCurrency(selectedLogbook.operational_cost)}</span>
+                                </div>
+                                <div className="border-t border-blue-200/50 my-2" />
+                                <div className="flex justify-between items-center">
+                                    <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Total Biaya</span>
+                                    <span className="text-3xl font-black text-blue-700 tabular-nums tracking-tighter">{formatCurrency(selectedLogbook.toll_cost + selectedLogbook.operational_cost)}</span>
                                 </div>
                             </div>
 
                             {selectedLogbook.status === 'submitted' && (
-                                <div className="flex gap-3 pt-4 border-t">
-                                    <button onClick={() => handleApprove(selectedLogbook.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700">
-                                        <CheckCircle className="h-4 w-4" /> Setujui
+                                <div className="flex gap-3 pt-4 border-t border-gray-100">
+                                    <button onClick={() => handleApprove(selectedLogbook.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 font-bold text-sm shadow-md shadow-emerald-500/20 transition-all duration-200">
+                                        <CheckCircle className="h-4 w-4" aria-hidden="true" /> Setujui
                                     </button>
-                                    <button onClick={() => handleReject(selectedLogbook.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700">
-                                        <XCircle className="h-4 w-4" /> Tolak
+                                    <button onClick={() => handleReject(selectedLogbook.id)} className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-rose-600 text-white rounded-xl hover:bg-rose-700 font-bold text-sm shadow-md shadow-rose-500/20 transition-all duration-200">
+                                        <XCircle className="h-4 w-4" aria-hidden="true" /> Tolak
                                     </button>
                                 </div>
                             )}

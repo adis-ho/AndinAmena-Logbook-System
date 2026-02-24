@@ -37,7 +37,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Backdrop */}
             <div
                 className={cn(
-                    "fixed inset-0 top-16 z-20 bg-black/50 transition-opacity backdrop-blur-sm",
+                    "fixed inset-0 top-16 z-40 bg-black/50 transition-opacity backdrop-blur-sm",
                     isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
                 )}
                 onClick={onClose}
@@ -46,7 +46,7 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
             {/* Sidebar Drawer */}
             <aside
                 className={cn(
-                    "fixed bottom-0 top-16 left-0 z-20 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out flex flex-col border-r border-gray-100",
+                    "fixed bottom-0 top-16 left-0 z-40 w-72 bg-white shadow-xl transition-transform duration-300 ease-in-out flex flex-col border-r border-gray-100",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
