@@ -16,6 +16,7 @@ interface SelectProps {
     placeholder?: string;
     disabled?: boolean;
     className?: string;
+    id?: string;
 }
 
 /**
@@ -41,7 +42,8 @@ export default function Select({
     placeholder = 'Pilih...',
     disabled = false,
     position = 'bottom',
-    className
+    className,
+    id
 }: SelectProps & { position?: 'top' | 'bottom' }) {
     const selectedOption = options.find(opt => opt.value === value);
 
@@ -49,6 +51,7 @@ export default function Select({
         <Listbox value={value} onChange={onChange} disabled={disabled}>
             <div className={cn("relative min-w-0", className)}>
                 <ListboxButton
+                    id={id}
                     className={cn(
                         "relative w-full cursor-pointer rounded-lg bg-gray-50 py-2 pl-3 pr-10 text-left text-sm",
                         "border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-100 focus:bg-white",

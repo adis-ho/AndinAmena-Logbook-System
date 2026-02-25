@@ -12,6 +12,7 @@ interface DatePickerProps {
     className?: string;
     minDate?: string;
     maxDate?: string;
+    id?: string;
 }
 
 const DAYS = ['Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab', 'Min'];
@@ -30,6 +31,7 @@ export default function DatePicker({
     className,
     minDate,
     maxDate,
+    id,
     align = 'left' // default alignment
 }: DatePickerProps & { align?: 'left' | 'right' }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -169,6 +171,7 @@ export default function DatePicker({
                     <CalendarIcon className="w-5 h-5" />
                 </div>
                 <input
+                    id={id}
                     type="text"
                     className={cn(
                         "bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 pl-10",
