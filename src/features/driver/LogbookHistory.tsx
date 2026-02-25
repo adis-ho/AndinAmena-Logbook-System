@@ -231,7 +231,7 @@ export default function LogbookHistory() {
                                     <label htmlFor="editUnit" className="block text-[10px] uppercase tracking-widest font-black text-gray-400 mb-2 flex items-center gap-1">Unit Kendaraan <span className="text-rose-500">*</span></label>
                                     <Select
                                         id="editUnit"
-                                        value={formData.unit_id}
+                                        value={formData.unit_id || ''}
                                         onChange={(val) => setFormData({ ...formData, unit_id: val })}
                                         options={[
                                             { value: '', label: 'Pilih Unit', disabled: true },
@@ -280,7 +280,7 @@ export default function LogbookHistory() {
                                     </div>
                                     <Select
                                         id="editEtoll"
-                                        value={formData.etoll_id}
+                                        value={formData.etoll_id || ''}
                                         onChange={(val) => setFormData({ ...formData, etoll_id: val })}
                                         options={[
                                             { value: '', label: '-- Tidak Menggunakan E-Toll --' },
