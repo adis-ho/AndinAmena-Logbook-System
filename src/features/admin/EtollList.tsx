@@ -28,6 +28,12 @@ export default function EtollList() {
         etollId: ''
     });
 
+    // Top Up State
+    const [showTopUpModal, setShowTopUpModal] = useState(false);
+    const [topUpEtoll, setTopUpEtoll] = useState<Etoll | null>(null);
+    const [topUpAmount, setTopUpAmount] = useState<number>(0);
+    const [topUpLoading, setTopUpLoading] = useState(false);
+
     const fetchEtolls = async () => {
         try {
             const data = await ApiService.getEtolls();
@@ -110,6 +116,35 @@ export default function EtollList() {
             console.error(err);
         } finally {
             setFormLoading(false);
+        }
+    };
+
+    const handleOpenTopUp = (etoll: Etoll) => {
+        setTopUpEtoll(etoll);
+        setTopUpAmount(0);
+        setShowTopUpModal(true);
+    };
+
+    const handleTopUp = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!topUpEtoll || topUpAmount <= 0) {
+            showToast('error', 'Jumlah harus lebih dari 0');
+            return;
+        }
+
+        setTopUpLoading(true);
+        try {
+            await ApiService.topUpEtollBalance(topUpEtoll.id, topUpAmount);
+            showToast('success', `Berhasil top-up ${formatCurrency(topUpAmount)} untuk E-Toll ${topUpEtoll.card_name}`);
+            setShowTopUpModal(false);
+            setTopUpEtoll(null);
+            setTopUpAmount(0);
+            fetchEtolls();
+        } catch (err) {
+            showToast('error', 'Gagal melakukan top-up E-Toll');
+            console.error(err);
+        } finally {
+            setTopUpLoading(false);
         }
     };
 
@@ -258,6 +293,13 @@ export default function EtollList() {
                                             <td className="py-4 px-6 text-right border-none">
                                                 <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                                                     <button
+                                                        onClick={() => handleOpenTopUp(etoll)}
+                                                        className="p-2 text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                                                        aria-label={`Top Up E-Toll ${etoll.card_name}`}
+                                                    >
+                                                        <Wallet className="h-4 w-4" aria-hidden="true" />
+                                                    </button>
+                                                    <button
                                                         onClick={() => handleEdit(etoll)}
                                                         className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
                                                         aria-label={`Edit E-Toll ${etoll.card_name}`}
@@ -321,6 +363,13 @@ export default function EtollList() {
 
                                 <div className="flex gap-2">
                                     <button
+                                        onClick={() => handleOpenTopUp(etoll)}
+                                        className="py-2.5 px-4 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors flex justify-center items-center"
+                                        aria-label={`Top Up kartu ${etoll.card_name}`}
+                                    >
+                                        <Wallet className="h-3.5 w-3.5" aria-hidden="true" />
+                                    </button>
+                                    <button
                                         onClick={() => handleEdit(etoll)}
                                         className="flex-1 py-2.5 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-100 transition-colors flex justify-center items-center gap-2"
                                         aria-label={`Edit kartu ${etoll.card_name}`}
@@ -339,6 +388,115 @@ export default function EtollList() {
                         ))}
                     </div>
                 </>
+            )}
+
+            {/* Top Up Modal */}
+            {showTopUpModal && topUpEtoll && (
+                <div
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity"
+                    style={{ overscrollBehavior: 'contain' }}
+                >
+                    <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-white/20 transform transition flex flex-col max-h-[calc(100vh-2rem)] relative">
+                        {/* Header */}
+                        <div className="bg-gradient-to-r from-emerald-50 to-white px-6 py-5 border-b border-gray-100 shrink-0">
+                            <div className="flex justify-between items-center">
+                                <div>
+                                    <h2 className="text-xl font-black text-gray-900 tracking-tight">Top Up Saldo E-Toll</h2>
+                                    <p className="text-[10px] font-bold text-emerald-600 mt-1 uppercase tracking-wider">
+                                        Isi Ulang Kartu
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowTopUpModal(false)}
+                                    className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors bg-white shadow-sm border border-gray-100"
+                                    aria-label="Tutup form top up"
+                                >
+                                    <X className="h-4 w-4" aria-hidden="true" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Body */}
+                        <form onSubmit={handleTopUp} className="p-6 space-y-5 overflow-y-auto">
+                            {/* E-Toll Info Panel */}
+                            <div className="bg-gray-50/80 rounded-xl p-4 flex gap-4 border border-gray-100">
+                                <div className="w-12 h-12 rounded-xl bg-white border border-gray-200 flex items-center justify-center shrink-0 shadow-sm">
+                                    <CreditCard className="h-6 w-6 text-emerald-600" aria-hidden="true" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold text-gray-900 truncate">
+                                        {topUpEtoll.card_name}
+                                    </p>
+                                    <p className="text-[11px] font-medium text-gray-500 mt-0.5 mb-2 truncate">
+                                        {topUpEtoll.card_number || 'Tanpa nomor seri'}
+                                    </p>
+                                    <div className="flex items-center gap-2">
+                                        <span className="text-[9px] font-black uppercase tracking-widest text-gray-400">Saldo Saat Ini:</span>
+                                        <span className="text-sm font-bold text-gray-900 tabular-nums">
+                                            {formatCurrency(topUpEtoll.balance)}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5 mt-2">
+                                <label htmlFor="top_up_amount" className="block text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                                    Jumlah Top Up (Rp) <span className="text-rose-500">*</span>
+                                </label>
+                                <input
+                                    id="top_up_amount"
+                                    type="number"
+                                    min="1"
+                                    step="1"
+                                    required
+                                    className="w-full px-4 py-4 bg-white border-2 border-emerald-100 rounded-xl focus:ring-4 focus:ring-emerald-500/10 focus:border-emerald-500 outline-none transition-all text-2xl font-black tabular-nums text-emerald-700"
+                                    placeholder="0"
+                                    value={topUpAmount === 0 ? '' : topUpAmount}
+                                    onChange={(e) => setTopUpAmount(Math.round(Number(e.target.value)) || 0)}
+                                    onWheel={(e) => (e.target as HTMLInputElement).blur()}
+                                />
+                                {topUpAmount > 0 && (
+                                    <div className="bg-emerald-50/50 p-3 rounded-xl border border-emerald-100/50 mt-3 flex justify-between items-center">
+                                        <div className="text-[10px] font-bold uppercase tracking-widest text-emerald-600/70">
+                                            Total Saldo Baru
+                                        </div>
+                                        <div className="text-lg font-black text-emerald-600 tabular-nums tracking-tight">
+                                            {formatCurrency(topUpEtoll.balance + topUpAmount)}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Actions */}
+                            <div className="flex gap-3 pt-4 mt-2 border-t border-gray-100">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowTopUpModal(false)}
+                                    className="px-5 py-3 border border-gray-200 bg-white text-gray-600 font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                                >
+                                    Batal
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={topUpLoading || topUpAmount <= 0}
+                                    className="flex-1 py-3 bg-gradient-to-r from-emerald-500 to-emerald-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-emerald-500/25 transition-all disabled:opacity-50 shadow-sm flex items-center justify-center gap-2"
+                                >
+                                    {topUpLoading ? (
+                                        <>
+                                            <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
+                                            Memproses…
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Wallet className="h-4 w-4" aria-hidden="true" />
+                                            Top Up Sekarang
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             )}
 
             {/* Form Modal */}

@@ -1067,6 +1067,55 @@ export const ApiService = {
         }
     },
 
+    topUpEtollBalance: async (id: string, amount: number): Promise<void> => {
+        // Get current user (admin)
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+
+        // Get current balance
+        const { data: etoll, error: fetchError } = await supabase
+            .from('etolls')
+            .select('balance')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !etoll) {
+            throw new Error('E-Toll not found');
+        }
+
+        const previousBalance = etoll.balance || 0;
+        const newBalance = previousBalance + amount;
+
+        // Update balance
+        const { error: updateError } = await supabase
+            .from('etolls')
+            .update({ balance: newBalance })
+            .eq('id', id);
+
+        if (updateError) {
+            console.error('[ApiService] Top up etoll balance error:', updateError.message);
+            throw updateError;
+        }
+
+        // Log transaction
+        const { error: logError } = await supabase
+            .from('etoll_logs')
+            .insert({
+                etoll_id: id,
+                admin_id: user.id,
+                action_type: 'top_up',
+                amount: amount,
+                previous_balance: previousBalance,
+                new_balance: newBalance,
+                description: `Top Up saldo E-Toll sebesar Rp ${amount}`
+            });
+
+        if (logError) {
+            console.error('[ApiService] Failed to log etoll balance change:', logError.message);
+            // Don't throw here, the balance update was successful
+        }
+    },
+
     // ==================== DRIVER OPERATIONAL BALANCE ====================
     getDriversWithBalance: async (): Promise<User[]> => {
         const { data, error } = await supabase
