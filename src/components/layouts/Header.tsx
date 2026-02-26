@@ -17,14 +17,14 @@ export default function Header({ onMenuClick }: HeaderProps) {
             <div className="flex items-center gap-4">
                 <button
                     onClick={onMenuClick}
-                    className="p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 active:scale-95"
-                    aria-label="Open navigation menu"
+                    className="p-2.5 text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-xl transition-all duration-200 active:scale-95 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    aria-label="Buka menu navigasi"
                 >
-                    <Menu className="h-5 w-5" />
+                    <Menu className="h-5 w-5" aria-hidden="true" />
                 </button>
 
                 <div className="hidden sm:block">
-                    <h1 className="text-lg font-semibold text-gray-900">
+                    <h1 className="text-xl font-black tracking-tight text-gray-900">
                         {user?.role === 'admin' ? 'Admin Panel' : 'Laporan Harian'}
                     </h1>
                 </div>
@@ -38,13 +38,13 @@ export default function Header({ onMenuClick }: HeaderProps) {
                 {/* User Profile - Clickable */}
                 <Link
                     to={profilePath}
-                    className="flex items-center gap-3 pl-3 border-l border-gray-200 hover:bg-gray-50 rounded-lg -ml-1 pr-2 py-1 transition-colors"
+                    className="flex items-center gap-3 pl-4 border-l border-gray-200 hover:bg-gray-50 rounded-xl pr-3 py-2 -my-2 transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                 >
                     <div className="text-right hidden sm:block">
-                        <p className="text-sm font-semibold text-gray-900">{user?.full_name}</p>
-                        <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                        <p className="text-sm font-bold text-gray-900">{user?.full_name}</p>
+                        <p className="text-xs font-medium text-gray-500 capitalize">{user?.role}</p>
                     </div>
-                    <div className="h-10 w-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold shadow-md overflow-hidden">
+                    <div className="h-10 w-10 bg-gradient-to-br from-blue-600 to-blue-800 rounded-full flex items-center justify-center text-white font-semibold shadow-md overflow-hidden">
                         {user?.avatar_url ? (
                             <img
                                 src={user.avatar_url}

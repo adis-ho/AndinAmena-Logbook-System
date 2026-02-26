@@ -22,7 +22,7 @@ export default function DashboardLayout() {
                 </main>
 
                 {/* Footer */}
-                <footer className="py-4 px-6 text-center text-sm text-gray-500 border-t border-gray-100 bg-white">
+                <footer className="py-4 px-6 text-center text-sm font-medium text-gray-500 border-t border-gray-100 bg-white tabular-nums">
                     © 2026 Andin-Amena Laporan Harian. All rights reserved.
                 </footer>
             </div>
