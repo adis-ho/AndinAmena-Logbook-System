@@ -4,7 +4,166 @@ Catatan lengkap semua fitur yang sudah dibangun, kapan, dan detail perubahannya.
 
 ---
 
-## [3.5.0] — Februari 2026 (Latest)
+## [4.0.0] — 22–28 Februari 2026 (Latest) 🔥
+
+> **Full-App Premium Redesign + E-Toll Top-Up Feature**
+> Audit & redesign menyeluruh terhadap **13 file** berdasarkan Vercel Web Interface Guidelines + Frontend Design Skill. Setiap halaman di-audit, ditemukan puluhan masalah accessibility/visual, lalu diperbaiki semua.
+
+### ✨ Fitur Baru
+
+- **E-Toll Top-Up** (`EtollList.tsx` + `api.ts`)
+  - Method baru: `ApiService.topUpEtollBalance(etollId, amount)`
+  - Fetch saldo saat ini → hitung `newBalance = prevBalance + amount` → update + log ke `etoll_logs`
+  - Tombol **Isi Saldo** (icon `Plus`/`Wallet`) di desktop table & mobile cards
+  - **Top-Up Modal**: Info kartu + saldo saat ini, input jumlah, preview saldo baru, glassmorphism styling
+  - Otomatis muncul di **Riwayat Transaksi** (Tab E-Toll) karena `getActionBadge()` sudah support `top_up`
+
+- **Reusable Pagination Component** (`components/ui/Pagination.tsx`)
+  - Component terpisah untuk client-side pagination
+  - Digunakan di `LogbookHistory.tsx` — dari infinite scroll ke paginated list
+
+### 🎨 Full-App UI/UX Redesign (13 File)
+
+Setiap file di bawah ini mendapat **audit accessibility lengkap** + **visual redesign ke luxury aesthetic**:
+
+---
+
+#### 1. OperationalBudgetPage.tsx — 11 issue fixed
+> Audit lengkap Web Design Guidelines. 11 masalah ditemukan dan diperbaiki.
+
+**Accessibility:** `aria-hidden` semua dekoratif icons, `aria-label` ganti `title`, `htmlFor`+`id` pairing di modals
+**Visual:** Header boxed icon, KPI `tabular-nums font-black`, **hapus "Cara Kerja" card**, negative balance alert redesign, driver avatar initials, ghost hover actions
+**Modal:** Glassmorphism `backdrop-blur-sm`, X close button, `rounded-2xl`, gradient submit, **visual spinner**, `overscroll-behavior: contain`
+
+---
+
+#### 2. EtollList.tsx — 10 issue fixed
+**Accessibility:** `aria-hidden` semua icons, `aria-label` ganti `title`, `htmlFor`/`id` di modals
+**Visual:** Boxed icon header, KPI `tabular-nums`, luxury pill status badges (`text-[10px] uppercase tracking-wider border`), card avatar initials, pastel saldo box
+**Table:** `text-[10px] uppercase tracking-widest` headers, ghost hover actions, `border-none` cells
+**Modal:** Glassmorphism, X close, gradient submit, spinner
+**Other:** Low balance `⚠` pill badge (menggantikan inline text warning)
+
+---
+
+#### 3. TransactionLogsPage.tsx — 6 issue fixed
+**Accessibility:** `aria-hidden` semua icons, tab accessibility (`role="tablist"`, `role="tab"`, `aria-selected`, `aria-controls`)
+**Visual:** Boxed icon header + subtitle, **pill/segmented control tabs** (ganti underline style), `text-[10px] uppercase tracking-widest` table headers
+**Data:** `tabular-nums tracking-tight` untuk semua tanggal/amounts/balances
+**Badges:** Refined luxury style (`text-[9px] uppercase tracking-wider font-bold border`)
+**Empty State:** Elegant empty state dengan icon + proper copywriting
+
+---
+
+#### 4. MonthlyReport.tsx — Visual + A11y
+**Accessibility:** `aria-hidden` semua decorative icons
+**Visual:** Luxury boxed icon header (`rounded-2xl bg-indigo-50`), filter labels `text-[10px] uppercase tracking-wider`
+**Summary Cards:** `tabular-nums font-black text-4xl tracking-tight`, small uppercase labels
+**Tables:** `border-none` cells, `text-[10px] uppercase tracking-widest` headers, `tabular-nums` angka
+**Buttons:** "Tampilkan Laporan" → gradient midnight blue/indigo + hover lift effect, "Download PDF" → ghost/outline rose (`ring-1 ring-inset`)
+**Animation:** `animate-in fade-in slide-in-from-bottom-4 duration-500` (ganti arbitrary `animate-fadeIn`)
+
+---
+
+#### 5. LogbookList.tsx — 12 issue fixed
+**Accessibility:** `aria-hidden` pada 15+ icons, `aria-label` pada 7 icon buttons, tab accessibility (`role="tablist"`, `aria-selected`)
+**Typography:** `tabular-nums` semua angka/tanggal, label hierarchy kontras (`text-[10px] uppercase tracking-wider`)
+**Header:** Boxed icon + `font-black tracking-tight text-3xl` + subtitle
+**Status Badges:** Luxury pill (`text-[9px] uppercase tracking-widest font-bold border`)
+**Table:** `text-[10px] uppercase tracking-widest` headers, `border-none` cells, ghost hover actions
+**Modal:** Detail + delete modals → glassmorphism + `overscroll-behavior: contain`
+**Export Buttons:** Hierarchy diperjelas (satu primer gradient, satu ghost/outline)
+**Cleanup:** Hapus `getUnitName` duplikat, hapus dashed border sort area
+
+---
+
+#### 6. Driver Dashboard.tsx — 11 issue fixed
+**Accessibility:** `aria-hidden` pada 10+ icons
+**Hero Card:** `rounded-[2rem]`, gradient `from-emerald-500 to-emerald-600`, hapus duplikat `Wallet` icon kecil
+**Stats:** `text-2xl font-black tabular-nums tracking-tight`, labels `text-[10px] uppercase tracking-wider`
+**Quick Actions:** Gradient CTA `from-blue-600 to-indigo-600` + hover lift + `active:scale-[0.98]`, secondary → white card + border hover
+**Recent Logbooks:** `rounded-[2rem]`, heading uppercase, `tabular-nums` tanggal/biaya, `line-clamp-1` nama
+**Layout:** Root `max-w-7xl mx-auto pb-12` untuk ultra-wide
+**Empty State:** Recent logbooks empty → ikon + pesan "Belum ada laporan"
+
+---
+
+#### 7. LogbookForm.tsx — 11 issue fixed
+**Accessibility:** `aria-hidden` icons, **semua label** ada `htmlFor`, **semua input** ada `name` + `autocomplete`
+**Visual:** Labels `text-[10px] font-black uppercase tracking-widest text-gray-400`, saldo info `tabular-nums`
+**Inputs:** `rounded-2xl` + `bg-gray-50/50` + `focus:bg-white` + `transition-all duration-300` + `focus:ring-4 focus:ring-blue-500/10`
+**Submit:** `rounded-2xl` + `shadow-md shadow-blue-500/20` + `active:scale-[0.98]`
+**Total Biaya:** Glassmorphism card `rounded-2xl` border
+**Anti-pattern Fixed:** `alert()` → inline error/toast, `'Menyimpan...'` → `'Menyimpan…'` (proper ellipsis)
+
+---
+
+#### 8. LogbookHistory.tsx — 14 issue fixed + Pagination + Vertical List
+**Accessibility:** `aria-hidden`, `aria-label` ganti `title`, `htmlFor` + `name` di modal edit
+**Visual:** Cards `rounded-[2rem]`, labels `text-[10px] uppercase tracking-wider`, `tabular-nums` biaya/tanggal
+**Modal Edit:** Input styling konsisten dengan LogbookForm (`rounded-2xl`, transitions, focus ring)
+**Modal Delete + Edit:** Glassmorphism `backdrop-blur-sm`, `rounded-2xl`, `overscroll-behavior: contain`, `shadow-2xl`
+**Status Badges:** Luxury pill dengan border
+**Layout:** Vertical list (ganti horizontal cards) + **client-side Pagination** (`Pagination.tsx`)
+**Catatan Section:** Grid layout refined — "Catatan" spans appropriately pada mobile dan desktop
+**Rejected Banner:** `rounded-xl p-4 border border-red-100` (upgrade dari basic `rounded-lg p-2`)
+**Ellipsis:** `'Menyimpan…'` (proper `…`)
+**Layout:** Root `max-w-7xl mx-auto pb-12`
+
+---
+
+#### 9. LoginPage.tsx — Full Redesign
+**Aesthetic Direction:** *Refined Minimalist — Glass Card on Soft Gradient*
+**Background:** Flat `bg-gray-50` → soft blue-to-white gradient backdrop
+**Card:** `rounded-[2rem]` + `shadow-2xl` + `border border-white/60` glassmorphism depth
+**Inputs:** `rounded-2xl` + `bg-gray-50/50` rest → `focus:bg-white` active + `transition-all duration-300`
+**Submit:** `bg-gray-900 hover:bg-gray-800 text-white rounded-2xl` (dark charcoal like reference)
+**Accessibility:**
+  - Inputs: `autoComplete="email"` / `autoComplete="current-password"`, `spellCheck={false}`
+  - Icons: semua `aria-hidden="true"`
+  - Password toggle: `aria-label` (bukan `title`)
+  - Focus: `focus-visible:` ganti `focus:`
+  - Error: `aria-live="polite"` di error container
+**Placeholders:** `"Email…"`, `"Password…"` (proper `…`)
+
+---
+
+#### 10. Sidebar.tsx — 15 issue fixed
+**Accessibility:**
+  - `aria-hidden="true"` semua nav icons + `LogOut` + `X`
+  - Close button: `aria-label` ganti `title`
+  - Drawer: `role="dialog"` + `aria-modal="true"` + `aria-label="Navigation menu"`
+  - `overscroll-behavior: contain` pada scrollable nav
+  - `focus-visible:ring-*` pada semua nav links + logout button
+**Visual:**
+  - Avatar gradient diganti dari `from-blue-500 to-purple-600` → brand blue konsisten
+  - Nav links: `rounded-2xl`, active state refined, hover lebih jelas
+  - Shadow: `shadow-xl` → shadow halus custom
+  - Close button: `rounded-xl` + `transition-all duration-200`
+**UX:** Logout → **browser `confirm()` dialog** sebelum eksekusi (destructive action confirmation)
+**Backdrop:** Tambah explicit `duration-300` pada `transition-opacity`
+
+---
+
+#### 11. Header.tsx — A11y + Visual
+**Accessibility:** `Menu` icon → `aria-hidden="true"` (sudah punya `aria-label` ✅)
+**Visual:** `h1` → `font-black tracking-tight` (konsisten dengan design system)
+**Avatar gradient:** `from-blue-500 to-purple-600` → brand blue konsisten
+**Profile link:** Touch target diperbesar untuk mobile
+
+---
+
+#### 12. DashboardLayout.tsx
+**Typography:** Footer copyright `tabular-nums` untuk tahun
+
+---
+
+#### 13. NotificationPanel.tsx — Full Refactoring
+**UI/UX:** Refactor dengan high-quality design dan accessibility compliance
+
+---
+
+## [3.5.0] — Awal Februari 2026
 
 ### ✨ Fitur Baru
 - **Halaman Riwayat Transaksi** (`/admin/transactions`)
@@ -57,40 +216,6 @@ Catatan lengkap semua fitur yang sudah dibangun, kapan, dan detail perubahannya.
 
 - **Class Merging** (`utils/cn.ts`)
   - Wrapper `clsx` + `tailwind-merge` untuk conditional classnames
-
-### 🎨 UI/UX Refactoring
-
-- **OperationalBudgetPage — Full Redesign** (`src/features/admin/OperationalBudgetPage.tsx`)
-  > Audit lengkap berdasarkan Web Design Guidelines + Frontend Design Skill. 11 masalah ditemukan dan diperbaiki:
-
-  **Accessibility Fixes:**
-  - ❌→✅ Semua decorative icons (`Wallet`, `Users`, `TrendingDown`, `Plus`, `Pencil`, `Trash2`, `RefreshCw`) ditambahkan `aria-hidden="true"`
-  - ❌→✅ Icon buttons (Top-Up, Edit, Reset) diganti dari `title` ke `aria-label` (screen reader compatible)
-  - ❌→✅ Semua `<label>` dipasangkan `htmlFor` + `id` pada input fields di modal
-
-  **Visual Redesign:**
-  - **Header**: Flat icon → boxed icon (`bg-green-50 rounded-xl`), `font-black tracking-tight`, subtitle, themed refresh pill
-  - **KPI Cards**: Green gradient card → dashboard-matching style, `text-[10px] uppercase tracking-wider` labels, `text-3xl font-black tabular-nums` values, gradient/hover accents
-  - **"Cara Kerja" info card**: ❌ **DIHAPUS** — clutters primary data view, bukan data operasional
-  - **Negative Balance Alert**: Basic `bg-red-50` → refined alert dengan icon pad, structured typography, `tabular-nums`
-  - **Desktop Table**: `text-[10px] uppercase tracking-widest` headers, driver avatar initials, ghost hover action buttons, refined badges
-  - **Mobile Cards**: Basic cards → avatar initials, pastel badges, refined button group, elegant separators
-
-  **Modal Improvements:**
-  - Modal overlay: `bg-black/50` → `backdrop-blur-sm` glassmorphism + `overscrollBehavior: contain`
-  - Ditambahkan **X close button** di Top-Up & Edit modals (sebelumnya hanya "Batal" text)
-  - Modal shape: `rounded-xl` → `rounded-2xl` dengan split header
-  - Submit button: plain → gradient submit button
-  - Loading state: "Memproses..." text → **visual spinner** animation
-
-  **Other Fixes:**
-  - `tabular-nums` diterapkan ke semua currency values (monospace alignment)
-  - Error state: plain text → icon + structured layout matching other pages
-  - Buttons: ditambahkan `transition-*` classes untuk smooth hover states
-
-- **UserList & UnitList** — unified card/table view, consistent styling
-- **Glassmorphism modals** — consistent backdrop blur di semua modal
-- **Admin Dashboard** — realtime data audit, performance compliance
 
 ---
 
@@ -252,9 +377,11 @@ Catatan lengkap semua fitur yang sudah dibangun, kapan, dan detail perubahannya.
 
 ---
 
-> **Total Fitur yang Sudah Dibangun**: 100+ fitur dan improvements
-> **Total API Methods**: 58+
+> **Total Fitur yang Sudah Dibangun**: 130+ fitur dan improvements
+> **Total API Methods**: 59+ (termasuk `topUpEtollBalance`)
 > **Total Database Tables**: 7
 > **Total Admin Routes**: 10
 > **Total Driver Routes**: 4
 > **Total Test Files**: 4
+> **Total File Redesigned (v4.0)**: 13
+
