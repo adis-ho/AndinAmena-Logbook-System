@@ -4,6 +4,16 @@
 
 ---
 
+## Performance Audit Plan (28 Feb 2026)
+
+- Dokumen implementasi audit performa: `docs/performance-audit-plan.md`
+- Audit dibagi 3 sesi:
+  - Sesi 1: Critical (bundle + async waterfall)
+  - Sesi 2: Data fetching & cache integration
+  - Sesi 3: Quick wins runtime
+
+---
+
 ## Phase 0: Initial Setup ✅
 - [x] Inisialisasi Git Repository
 - [x] Setup `.gitignore`

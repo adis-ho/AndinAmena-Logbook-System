@@ -61,6 +61,8 @@ export default function DatePicker({
 
     // Handle click outside
     useEffect(() => {
+        if (!isOpen) return;
+
         const handleClickOutside = (event: MouseEvent) => {
             if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
                 setIsOpen(false);
@@ -69,7 +71,7 @@ export default function DatePicker({
 
         document.addEventListener('mousedown', handleClickOutside);
         return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, []);
+    }, [isOpen]);
 
     const prevMonth = () => {
         if (currentMonth === 0) {

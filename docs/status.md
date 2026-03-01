@@ -8,6 +8,14 @@
 
 Amena Logbook adalah aplikasi web untuk manajemen logbook kendaraan operasional. Saat ini dalam **Phase 4.0 (Premium Redesign Complete)** - sudah live di **[andinlaporanharian.vercel.app](https://andinlaporanharian.vercel.app)**.
 
+## Performance Audit (Baru)
+
+- Rencana implementasi audit performa terstruktur sudah dibuat di `docs/performance-audit-plan.md`.
+- Eksekusi dilakukan bertahap per sesi untuk menjaga stabilitas:
+  - Sesi 1: Critical optimizations
+  - Sesi 2: Query/cache integration
+  - Sesi 3: Runtime quick wins
+
 ## Apa yang Berhasil ✅
 
 ### Authentication & Authorization

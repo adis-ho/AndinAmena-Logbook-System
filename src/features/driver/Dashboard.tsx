@@ -31,13 +31,24 @@ export default function DriverDashboard() {
         if (!user) return;
         try {
             const logbooks = await ApiService.getLogbooksByDriverId(user.id);
+            let pendingLogbooks = 0;
+            let approvedLogbooks = 0;
+            let rejectedLogbooks = 0;
+            let totalCost = 0;
+
+            for (const logbook of logbooks) {
+                if (logbook.status === 'submitted') pendingLogbooks += 1;
+                if (logbook.status === 'approved') approvedLogbooks += 1;
+                if (logbook.status === 'rejected') rejectedLogbooks += 1;
+                totalCost += logbook.toll_cost + logbook.operational_cost;
+            }
 
             setStats({
                 totalLogbooks: logbooks.length,
-                pendingLogbooks: logbooks.filter(l => l.status === 'submitted').length,
-                approvedLogbooks: logbooks.filter(l => l.status === 'approved').length,
-                rejectedLogbooks: logbooks.filter(l => l.status === 'rejected').length,
-                totalCost: logbooks.reduce((sum, l) => sum + l.toll_cost + l.operational_cost, 0)
+                pendingLogbooks,
+                approvedLogbooks,
+                rejectedLogbooks,
+                totalCost
             });
 
             setRecentLogbooks(logbooks.slice(0, 5));

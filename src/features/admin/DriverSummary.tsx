@@ -1,18 +1,16 @@
 import { useEffect, useState, useMemo } from 'react';
 import { ApiService } from '../../services/api';
 import DateRangePicker from '../../components/ui/DateRangePicker';
-import type { LogbookEntry, User, Unit } from '../../types';
+import type { LogbookEntry } from '../../types';
 import { BarChart3, TrendingUp, Users, Wallet, BookOpen, ArrowUpNarrowWide, ArrowDownNarrowWide, FileSpreadsheet, FileText, FileSearch } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 // import { id } from 'date-fns/locale'; // Unused
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/calculations';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
 
 import Select from '../../components/ui/Select';
+import { useUnitsQuery, useUsersQuery } from '../../hooks/useReferenceDataQueries';
 
 // PDF Layout Constants
 const PDF_MARGIN_LEFT = 14;
@@ -33,9 +31,15 @@ interface DriverStats {
 
 export default function DriverSummary() {
     const { showToast } = useToast();
+    const { data: usersData = [], isLoading: usersLoading } = useUsersQuery();
+    const { data: unitsData = [], isLoading: unitsLoading } = useUnitsQuery();
+    const driverOptions = useMemo(
+        () => usersData
+            .filter(user => user.role === 'driver' && user.status === 'active')
+            .map(user => ({ value: user.id, label: user.full_name })),
+        [usersData]
+    );
     const [loading, setLoading] = useState(true);
-    const [users, setUsers] = useState<User[]>([]);
-    const [units, setUnits] = useState<Unit[]>([]);
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
 
     // Filters
@@ -55,17 +59,7 @@ export default function DriverSummary() {
         const fetchData = async () => {
             setLoading(true);
             try {
-                // Fetch all drivers and logbooks for the period
-                // Note: We need all logbooks to aggregate client-side for now
-                // In a real large-scale app, this should be an aggregation endpoint
-                const [usersData, unitsData, logbooksData] = await Promise.all([
-                    ApiService.getUsers(),
-                    ApiService.getUnits(),
-                    ApiService.getAllLogbooks(dateStart, dateEnd)
-                ]);
-
-                setUsers(usersData.filter(u => u.role === 'driver' && u.status === 'active'));
-                setUnits(unitsData);
+                const logbooksData = await ApiService.getAllLogbooks(dateStart, dateEnd);
                 setLogbooks(logbooksData);
             } catch (err) {
                 console.error('Failed to fetch summary data:', err);
@@ -81,9 +75,10 @@ export default function DriverSummary() {
     // Aggregate Data
     const driverStats = useMemo(() => {
         const statsMap = new Map<string, DriverStats>();
+        const activeDrivers = usersData.filter(u => u.role === 'driver' && u.status === 'active');
 
         // Initialize with all active drivers
-        users.forEach(user => {
+        activeDrivers.forEach(user => {
             // Apply driver filter if selected
             if (filterDriver && user.id !== filterDriver) return;
 
@@ -134,7 +129,7 @@ export default function DriverSummary() {
         }
 
         return result;
-    }, [users, logbooks, sortConfig, filterDriver, filterUnit]);
+    }, [usersData, logbooks, sortConfig, filterDriver, filterUnit]);
 
 
     // Overall Totals
@@ -167,7 +162,8 @@ export default function DriverSummary() {
         return `Ringkasan_Driver_${sanitizeFilename(dateStart)}_${sanitizeFilename(dateEnd)}.${ext}`;
     };
 
-    const exportToExcel = () => {
+    const exportToExcel = async () => {
+        const XLSX = await import('xlsx');
         const dataToExport = driverStats.map((stat, index) => ({
             'No': index + 1,
             'Nama Driver': stat.driverName,
@@ -184,7 +180,11 @@ export default function DriverSummary() {
         XLSX.writeFile(wb, buildExportFilename('xlsx'));
     };
 
-    const exportToPDF = () => {
+    const exportToPDF = async () => {
+        const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+            import('jspdf'),
+            import('jspdf-autotable')
+        ]);
         const doc = new jsPDF({ orientation: 'landscape' });
         doc.setFontSize(18);
         doc.text('Ringkasan Performa Driver', PDF_MARGIN_LEFT, PDF_TITLE_Y);
@@ -227,7 +227,7 @@ export default function DriverSummary() {
         doc.save(buildExportFilename('pdf'));
     };
 
-    if (loading && users.length === 0) {
+    if ((loading && logbooks.length === 0) || usersLoading || unitsLoading) {
         return <SkeletonLogbookList />;
     }
 
@@ -277,7 +277,7 @@ export default function DriverSummary() {
                             onChange={setFilterDriver}
                             options={[
                                 { value: '', label: 'Semua Driver' },
-                                ...users.map(u => ({ value: u.id, label: u.full_name }))
+                                ...driverOptions
                             ]}
                             placeholder="Pilih Driver"
                         />
@@ -291,7 +291,7 @@ export default function DriverSummary() {
                             onChange={setFilterUnit}
                             options={[
                                 { value: '', label: 'Semua Unit' },
-                                ...units.map(u => ({ value: u.id, label: `${u.name} (${u.plate_number})` }))
+                                ...unitsData.map(u => ({ value: u.id, label: `${u.name} (${u.plate_number})` }))
                             ]}
                             placeholder="Pilih Unit"
                         />

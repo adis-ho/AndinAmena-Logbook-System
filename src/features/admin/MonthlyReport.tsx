@@ -1,9 +1,9 @@
-import { useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { FileText, Loader2, Filter } from 'lucide-react';
 import Select from '../../components/ui/Select';
 import { ApiService } from '../../services/api';
-import { generateMonthlyReportPDF } from '../../utils/reportPdfGenerator';
 import { useToast } from '../../context/ToastContext';
+import { useUnitsQuery, useUsersQuery } from '../../hooks/useReferenceDataQueries';
 
 // Component constants
 const MONTHS = [
@@ -40,9 +40,10 @@ export default function MonthlyReport() {
     const [selectedDriver, setSelectedDriver] = useState('');
     const [selectedUnit, setSelectedUnit] = useState('');
 
-    // State for lists
-    const [drivers, setDrivers] = useState<Array<{ value: string, label: string }>>([]);
-    const [units, setUnits] = useState<Array<{ value: string, label: string }>>([]);
+    const { data: usersData = [] } = useUsersQuery();
+    const { data: unitsData = [] } = useUnitsQuery();
+    const drivers = useMemo(() => usersData.map(u => ({ value: u.id, label: u.full_name })), [usersData]);
+    const units = useMemo(() => unitsData.map(u => ({ value: u.id, label: `${u.name} - ${u.plate_number}` })), [unitsData]);
 
     // State for report data
     const [reportData, setReportData] = useState<any>(null);
@@ -54,30 +55,6 @@ export default function MonthlyReport() {
         const y = currentYear - i;
         return { value: y.toString(), label: y.toString() };
     });
-
-    // Fetch drivers and units on mount
-    useEffect(() => {
-        const fetchFilters = async () => {
-            try {
-                const [users, unitsData] = await Promise.all([
-                    ApiService.getUsers(),
-                    ApiService.getUnits()
-                ]);
-
-                // Filter only drivers for the dropdown? Or all users?
-                // Usually report is for driving activities, mostly drivers. 
-                // But admin can also drive. Let's show all for flexibility or filter by role 'driver'.
-                // Given the context used in other lists, we usually map all users.
-                setDrivers(users.map(u => ({ value: u.id, label: u.full_name })));
-
-                setUnits(unitsData.map(u => ({ value: u.id, label: `${u.name} - ${u.plate_number}` })));
-            } catch (error) {
-                console.error('Error fetching filters:', error);
-                toast.error('Gagal memuat data filter');
-            }
-        };
-        fetchFilters();
-    }, []);
 
     const handleGeneratePreview = async () => {
         setIsGenerating(true);
@@ -114,12 +91,18 @@ export default function MonthlyReport() {
         setIsLoading(true);
         try {
             const monthName = MONTHS.find(m => m.value === selectedMonth)?.label || '';
-            generateMonthlyReportPDF(reportData, monthName, parseInt(selectedYear));
-            toast.success('Laporan berhasil didownload');
+            import('../../utils/reportPdfGenerator').then(({ generateMonthlyReportPDF }) => {
+                generateMonthlyReportPDF(reportData, monthName, parseInt(selectedYear));
+                toast.success('Laporan berhasil didownload');
+            }).catch((error) => {
+                console.error('PDF Generation Error:', error);
+                toast.error('Gagal membuat PDF');
+            }).finally(() => {
+                setIsLoading(false);
+            });
         } catch (error) {
             console.error('PDF Generation Error:', error);
             toast.error('Gagal membuat PDF');
-        } finally {
             setIsLoading(false);
         }
     };

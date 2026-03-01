@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import type { LogbookEntry, Unit, Etoll } from '../../types';
+import type { LogbookEntry } from '../../types';
 import { History, CheckCircle, XCircle, Clock, Pencil, X, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
@@ -10,12 +10,13 @@ import DatePicker from '../../components/ui/DatePicker';
 import Select from '../../components/ui/Select';
 import Pagination from '../../components/ui/Pagination';
 import { SkeletonLogbookHistory } from '../../components/ui/Skeleton';
+import { useActiveEtollsQuery, useUnitsQuery } from '../../hooks/useReferenceDataQueries';
 
 export default function LogbookHistory() {
     const { user } = useAuth();
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
-    const [units, setUnits] = useState<Unit[]>([]);
-    const [etolls, setEtolls] = useState<Etoll[]>([]);
+    const { data: units = [] } = useUnitsQuery(!!user);
+    const { data: etolls = [] } = useActiveEtollsQuery(!!user);
     const [loading, setLoading] = useState(true);
     const [editingLogbook, setEditingLogbook] = useState<LogbookEntry | null>(null);
     const [formData, setFormData] = useState<Partial<LogbookEntry> | null>(null);
@@ -30,14 +31,8 @@ export default function LogbookHistory() {
     const fetchData = async () => {
         if (!user) return;
         try {
-            const [logsData, unitsData, etollsData] = await Promise.all([
-                ApiService.getLogbooksByDriverId(user.id),
-                ApiService.getUnits(),
-                ApiService.getActiveEtolls()
-            ]);
+            const logsData = await ApiService.getLogbooksByDriverId(user.id);
             setLogbooks(logsData);
-            setUnits(unitsData);
-            setEtolls(etollsData);
         } catch (err) {
             console.error('Gagal mengambil laporan:', err);
         } finally {

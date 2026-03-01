@@ -2,17 +2,15 @@ import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import { ApiService } from '../../services/api';
 import DateRangePicker from '../../components/ui/DateRangePicker';
-import type { LogbookEntry, User, Unit, Etoll } from '../../types';
+import type { LogbookEntry } from '../../types';
 import { BookOpen, CheckCircle, XCircle, Clock, Eye, Trash2, FileSpreadsheet, FileText, X, ChevronLeft, ChevronRight, ArrowUpNarrowWide, ArrowDownNarrowWide, Search } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import Select from '../../components/ui/Select';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonLogbookList } from '../../components/ui/Skeleton';
 import { PAGE_SIZE } from '../../constants';
+import { useActiveEtollsQuery, useUnitsQuery, useUsersQuery } from '../../hooks/useReferenceDataQueries';
 
 // PDF Layout Constants
 const PDF_MARGIN_LEFT = 14;
@@ -23,10 +21,10 @@ const PDF_GRAND_TOTAL_OFFSET = 10;
 
 export default function LogbookList() {
     const { showToast } = useToast();
+    const { data: users = [] } = useUsersQuery();
+    const { data: units = [] } = useUnitsQuery();
+    const { data: etolls = [] } = useActiveEtollsQuery();
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
-    const [units, setUnits] = useState<Unit[]>([]);
-    const [etolls, setEtolls] = useState<Etoll[]>([]);
     const [loading, setLoading] = useState(true);
     const [exportLoading, setExportLoading] = useState(false);
     const [error, setError] = useState('');
@@ -57,25 +55,6 @@ export default function LogbookList() {
         events: ['INSERT', 'UPDATE', 'DELETE'],
         onUpdate: handleRealtimeUpdate,
     });
-
-    // Initial Load (Users & Units)
-    useEffect(() => {
-        const fetchMetadata = async () => {
-            try {
-                const [usersData, unitsData, etollsData] = await Promise.all([
-                    ApiService.getUsers(),
-                    ApiService.getUnits(),
-                    ApiService.getActiveEtolls()
-                ]);
-                setUsers(usersData);
-                setUnits(unitsData);
-                setEtolls(etollsData);
-            } catch (err) {
-                console.error('Failed to fetch metadata:', err);
-            }
-        };
-        fetchMetadata();
-    }, []);
 
     // Fetch Logbooks (Server-side Filter & Pagination)
     useEffect(() => {
@@ -287,6 +266,7 @@ export default function LogbookList() {
     };
 
     const exportToExcel = async () => {
+        const XLSX = await import('xlsx');
         const data = await fetchAllForExport();
         if (data.length === 0) return;
 
@@ -323,6 +303,10 @@ export default function LogbookList() {
     };
 
     const exportToPDF = async () => {
+        const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+            import('jspdf'),
+            import('jspdf-autotable')
+        ]);
         const data = await fetchAllForExport();
         if (data.length === 0) return;
 

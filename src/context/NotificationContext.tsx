@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, useCallback, type React
 import { useAuth } from './AuthContext';
 import { ApiService } from '../services/api';
 import { supabase } from '../lib/supabase';
+import { debugLog } from '../utils/logger';
 
 export interface Notification {
     id: string;
@@ -74,7 +75,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
                     filter: `user_id=eq.${user.id}`
                 },
                 (payload) => {
-                    console.log('[Notifications] New notification:', payload);
+                    debugLog('[Notifications] New notification:', payload);
                     const newNotif = payload.new as {
                         id: string;
                         type: string;

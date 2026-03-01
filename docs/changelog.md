@@ -4,6 +4,54 @@ Catatan lengkap semua fitur yang sudah dibangun, kapan, dan detail perubahannya.
 
 ---
 
+## [4.1.0] — 28 Februari 2026 (Latest)
+
+> **Performance Optimization Rollout (Session 1–3)**
+> Implementasi audit efisiensi berbasis Vercel React Best Practices + referensi React/TanStack Query.
+
+### 🚀 Perubahan Utama
+
+- **Route-level code splitting** di `src/App.tsx` menggunakan `lazy` + `Suspense`.
+- **Lazy-load export libraries**:
+  - `xlsx`, `jspdf`, `jspdf-autotable` baru di-load saat aksi export.
+  - Affected: `LogbookList.tsx`, `DriverSummary.tsx`, `MonthlyReport.tsx`.
+- **Async waterfall reduction** di `ApiService`:
+  - `notifyAdmins()` jadi batch insert (single request).
+  - `updateLogbookStatus()` paralelisasi fetch/update saldo terkait approve.
+  - `getMonthlyReportData()` start metadata fetch lebih awal.
+
+### 🧠 Data Fetching & Cache
+
+- Aktivasi nyata **TanStack Query defaults** via `src/lib/queryClient.ts`.
+- Standarisasi key query di `src/lib/queryKeys.ts`.
+- Reusable query hooks reference data di `src/hooks/useReferenceDataQueries.ts`.
+- Migrasi metadata fetch berulang ke query hooks pada halaman:
+  - `LogbookForm.tsx`
+  - `LogbookHistory.tsx`
+  - `MonthlyReport.tsx`
+  - `DriverSummary.tsx`
+  - `LogbookList.tsx`
+  - `TransactionLogsPage.tsx`
+- Invalidasi query pasca mutasi di halaman manajemen:
+  - `UserList.tsx`
+  - `UnitList.tsx`
+  - `EtollList.tsx`
+
+### ⚡ Quick Wins Runtime
+
+- Lookup map (`Map`) untuk resolve nama user/E-Toll pada transaction logs.
+- Single-pass aggregation statistik pada driver dashboard.
+- Event listener DatePicker aktif hanya saat popover terbuka.
+- Logging debug diguard dev-only via `src/utils/logger.ts`.
+
+### ✅ Validasi
+
+- `npm run build` sukses.
+- `npm run test:run` sukses (4 files, 58 tests passed).
+- Baseline plan terdokumentasi di `docs/performance-audit-plan.md`.
+
+---
+
 ## [4.0.0] — 22–28 Februari 2026 (Latest) 🔥
 
 > **Full-App Premium Redesign + E-Toll Top-Up Feature**

@@ -2,6 +2,7 @@ import { supabase } from '../lib/supabase';
 import type { User, Unit, LogbookEntry, Etoll, BalanceLog, EtollLog } from '../types';
 import { USER_STATUS } from '../constants';
 import { setCreatingUserFlag } from '../context/AuthContext';
+import { debugLog } from '../utils/logger';
 
 // =============================================
 // API SERVICE - Supabase Implementation
@@ -36,7 +37,7 @@ async function fetchUserProfile(userId: string): Promise<User | null> {
 
     // Block inactive users
     if (profile.status === USER_STATUS.INACTIVE) {
-        console.log('[ApiService] User is inactive');
+        debugLog('[ApiService] User is inactive');
         throw new Error('INACTIVE_USER');
     }
 
@@ -52,7 +53,7 @@ async function signOutAndFail(): Promise<null> {
 export const ApiService = {
     // ==================== AUTH ====================
     login: async (email: string, password: string): Promise<User | null> => {
-        console.log('[ApiService] Attempting login for:', email);
+        debugLog('[ApiService] Attempting login for:', email);
 
         try {
             // Step 1: Authenticate with Supabase Auth
@@ -63,7 +64,7 @@ export const ApiService = {
                 return null;
             }
 
-            console.log('[ApiService] Auth successful for:', data.user.id);
+            debugLog('[ApiService] Auth successful for:', data.user.id);
 
             // Step 2: Fetch and validate profile
             try {
@@ -99,7 +100,7 @@ export const ApiService = {
         username: string;
         full_name: string;
     }): Promise<User | null> => {
-        console.log('[ApiService] Attempting registration for:', userData.email);
+        debugLog('[ApiService] Attempting registration for:', userData.email);
 
         try {
             const { data, error } = await supabase.auth.signUp({
@@ -114,7 +115,7 @@ export const ApiService = {
                 }
             });
 
-            console.log('[ApiService] SignUp response:', { data, error });
+            debugLog('[ApiService] SignUp response:', { data, error });
 
             if (error) {
                 console.error('[ApiService] Registration error:', error.message);
@@ -126,7 +127,7 @@ export const ApiService = {
                 return null;
             }
 
-            console.log('[ApiService] Registration successful:', data.user.id);
+            debugLog('[ApiService] Registration successful:', data.user.id);
 
             return {
                 id: data.user.id,
@@ -143,16 +144,16 @@ export const ApiService = {
     },
 
     getCurrentUser: async (): Promise<User | null> => {
-        console.log('[ApiService] Getting current user...');
+        debugLog('[ApiService] Getting current user...');
 
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                console.log('[ApiService] No auth user found');
+                debugLog('[ApiService] No auth user found');
                 return null;
             }
 
-            console.log('[ApiService] Auth user found:', user.id);
+            debugLog('[ApiService] Auth user found:', user.id);
 
             // Try to fetch profile
             try {
@@ -163,7 +164,7 @@ export const ApiService = {
                     .single();
 
                 if (profile && !profileError) {
-                    console.log('[ApiService] Profile found');
+                    debugLog('[ApiService] Profile found');
                     return {
                         id: profile.id,
                         username: profile.username,
@@ -178,7 +179,7 @@ export const ApiService = {
             }
 
             // Fallback to auth metadata
-            console.log('[ApiService] Using metadata fallback for getCurrentUser');
+            debugLog('[ApiService] Using metadata fallback for getCurrentUser');
             const metadata = user.user_metadata || {};
             return {
                 id: user.id,
@@ -859,39 +860,61 @@ export const ApiService = {
         // Deduct balances ONLY when status changes to 'approved'
         // and only if it wasn't already approved before
         if (status === 'approved' && logbook && logbook.status !== 'approved') {
-            // Deduct E-Toll balance
-            if (logbook.etoll_id && logbook.toll_cost > 0) {
-                const { data: etollData } = await supabase
+            const etollBalancePromise = logbook.etoll_id && logbook.toll_cost > 0
+                ? supabase
                     .from('etolls')
                     .select('balance')
                     .eq('id', logbook.etoll_id)
-                    .single();
+                    .single()
+                : Promise.resolve({ data: null, error: null });
 
-                if (etollData) {
-                    const newBalance = Math.max(0, etollData.balance - logbook.toll_cost);
-                    await supabase
-                        .from('etolls')
-                        .update({ balance: newBalance })
-                        .eq('id', logbook.etoll_id);
-                    console.log(`[ApiService] E-Toll balance deducted: ${logbook.toll_cost} from card ${logbook.etoll_id}`);
-                }
-            }
-
-            // Deduct Driver's Operational Balance
-            if (logbook.operational_cost > 0 && logbook.driver_id) {
-                const { data: driverData } = await supabase
+            const driverBalancePromise = logbook.operational_cost > 0 && logbook.driver_id
+                ? supabase
                     .from('profiles')
                     .select('operational_balance')
                     .eq('id', logbook.driver_id)
-                    .single();
+                    .single()
+                : Promise.resolve({ data: null, error: null });
 
-                if (driverData) {
-                    const newBalance = (driverData.operational_balance || 0) - logbook.operational_cost;
-                    await supabase
+            const [{ data: etollData }, { data: driverData }] = await Promise.all([
+                etollBalancePromise,
+                driverBalancePromise
+            ]);
+
+            const updatePromises = [];
+
+            // Deduct E-Toll balance
+            if (etollData && logbook.etoll_id && logbook.toll_cost > 0) {
+                const newBalance = Math.max(0, etollData.balance - logbook.toll_cost);
+                updatePromises.push(
+                    supabase
+                        .from('etolls')
+                        .update({ balance: newBalance })
+                        .eq('id', logbook.etoll_id)
+                        .then(result => result)
+                );
+                debugLog(`[ApiService] E-Toll balance deducted: ${logbook.toll_cost} from card ${logbook.etoll_id}`);
+            }
+
+            // Deduct Driver's Operational Balance
+            if (driverData && logbook.operational_cost > 0 && logbook.driver_id) {
+                const newBalance = (driverData.operational_balance || 0) - logbook.operational_cost;
+                updatePromises.push(
+                    supabase
                         .from('profiles')
                         .update({ operational_balance: newBalance })
-                        .eq('id', logbook.driver_id);
-                    console.log(`[ApiService] Driver operational balance deducted: ${logbook.operational_cost} from driver ${logbook.driver_id}`);
+                        .eq('id', logbook.driver_id)
+                        .then(result => result)
+                );
+                debugLog(`[ApiService] Driver operational balance deducted: ${logbook.operational_cost} from driver ${logbook.driver_id}`);
+            }
+
+            if (updatePromises.length > 0) {
+                const updateResults = await Promise.all(updatePromises);
+                for (const updateResult of updateResults) {
+                    if (updateResult.error) {
+                        console.error('[ApiService] Balance deduction update error:', updateResult.error.message);
+                    }
                 }
             }
         }
@@ -1396,15 +1419,25 @@ export const ApiService = {
             return;
         }
 
-        // Create notification for each admin
-        for (const admin of admins) {
-            await ApiService.createNotification({
-                user_id: admin.id,
-                type: notification.type,
-                title: notification.title,
-                message: notification.message,
-                link: notification.link
-            });
+        if (admins.length === 0) {
+            return;
+        }
+
+        // Batch insert notifications for all admins in one request
+        const payload = admins.map(admin => ({
+            user_id: admin.id,
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            link: notification.link
+        }));
+
+        const { error: insertError } = await supabase
+            .from('notifications')
+            .insert(payload);
+
+        if (insertError) {
+            console.error('[ApiService] Batch notify admins error:', insertError.message);
         }
     },
 
@@ -1457,6 +1490,10 @@ export const ApiService = {
         const lastDay = new Date(year, month, 0).getDate();
         const endDate = `${year}-${month.toString().padStart(2, '0')}-${lastDay}`;
 
+        // Start metadata fetches early to avoid waterfall
+        const usersPromise = ApiService.getUsers();
+        const unitsPromise = ApiService.getUnits();
+
         // Fetch Approved Logbooks only
         let query = supabase
             .from('logbooks')
@@ -1476,12 +1513,7 @@ export const ApiService = {
         }
 
         // Fetch drivers and units for mapping names
-        // Note: In a larger app, we might want to optimize this or join in DB, 
-        // but for now fetching lists is fine given the scale.
-        const [usersResult, unitsResult] = await Promise.all([
-            ApiService.getUsers(),
-            ApiService.getUnits()
-        ]);
+        const [usersResult, unitsResult] = await Promise.all([usersPromise, unitsPromise]);
 
         const driversMap = new Map(usersResult.map(u => [u.id, u.full_name]));
         const unitsMap = new Map(unitsResult.map(u => [u.id, u]));

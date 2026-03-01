@@ -1,51 +1,38 @@
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
-import type { BalanceLog, EtollLog, User, Etoll } from '../../types';
+import type { BalanceLog, EtollLog } from '../../types';
 import { FileText, Wallet, TrendingUp, TrendingDown, RotateCcw, Edit, CreditCard } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
+import { queryKeys } from '../../lib/queryKeys';
+import { useEtollsQuery, useUsersQuery } from '../../hooks/useReferenceDataQueries';
 
 export default function TransactionLogsPage() {
     const [activeTab, setActiveTab] = useState<'operational' | 'etoll'>('operational');
-    const [balanceLogs, setBalanceLogs] = useState<BalanceLog[]>([]);
-    const [etollLogs, setEtollLogs] = useState<EtollLog[]>([]);
-    const [users, setUsers] = useState<User[]>([]);
-    const [etolls, setEtolls] = useState<Etoll[]>([]); // To resolve E-Toll names
-    const [loading, setLoading] = useState(true);
+    const { data: users = [] } = useUsersQuery();
+    const { data: etolls = [] } = useEtollsQuery();
+    const { data: balanceLogs = [], isPending: isBalanceLogsPending } = useQuery<BalanceLog[]>({
+        queryKey: queryKeys.balanceLogs,
+        queryFn: ApiService.getBalanceLogs
+    });
+    const { data: etollLogs = [], isPending: isEtollLogsPending } = useQuery<EtollLog[]>({
+        queryKey: queryKeys.etollLogs,
+        queryFn: ApiService.getEtollLogs
+    });
+    const loading = isBalanceLogsPending || isEtollLogsPending;
 
-    useEffect(() => {
-        const fetchAllData = async () => {
-            setLoading(true);
-            try {
-                const [balanceData, etollData, usersData, etollsData] = await Promise.all([
-                    ApiService.getBalanceLogs(),
-                    ApiService.getEtollLogs(),
-                    ApiService.getUsers(),
-                    ApiService.getEtolls() // Assuming this exists or returns active + inactive
-                ]);
-                setBalanceLogs(balanceData);
-                setEtollLogs(etollData);
-                setUsers(usersData);
-                setEtolls(etollsData);
-            } catch (err) {
-                console.error('Failed to fetch transaction logs:', err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchAllData();
-    }, []);
+    const userMap = useMemo(() => new Map(users.map(user => [user.id, user.full_name])), [users]);
+    const etollMap = useMemo(() => new Map(etolls.map(etoll => [etoll.id, etoll.card_name])), [etolls]);
 
     const getUserName = (userId?: string) => {
         if (!userId) return 'System';
-        const user = users.find(u => u.id === userId);
-        return user ? user.full_name : 'Unknown User';
+        return userMap.get(userId) || 'Unknown User';
     };
 
     const getEtollName = (etollId: string) => {
-        const etoll = etolls.find(e => e.id === etollId);
-        return etoll ? `${etoll.card_name}` : 'Unknown E-Toll';
+        return etollMap.get(etollId) || 'Unknown E-Toll';
     };
 
     const formatCurrency = (value: number) => {

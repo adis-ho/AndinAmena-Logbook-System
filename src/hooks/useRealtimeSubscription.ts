@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { supabase } from '../lib/supabase';
+import { debugLog } from '../utils/logger';
 
 type RealtimeEvent = 'INSERT' | 'UPDATE' | 'DELETE';
 
@@ -59,7 +60,7 @@ export function useRealtimeSubscription({
                 'postgres_changes' as any,
                 config,
                 () => {
-                    console.log(`[Realtime] ${event} on ${table}`, filter || '');
+                    debugLog(`[Realtime] ${event} on ${table}`, filter || '');
                     callbackRef.current();
                 }
             );

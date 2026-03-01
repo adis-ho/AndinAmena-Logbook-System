@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, type ReactNode } from '
 import type { AuthState, User } from '../types';
 import { supabase } from '../lib/supabase';
 import { ApiService } from '../services/api';
+import { debugLog } from '../utils/logger';
 
 // Global flag to prevent auth state changes during admin user creation
 // This is set by api.ts createUser function
@@ -9,7 +10,7 @@ let isCreatingUser = false;
 
 export function setCreatingUserFlag(value: boolean) {
     isCreatingUser = value;
-    console.log('[AuthContext] isCreatingUser flag set to:', value);
+    debugLog('[AuthContext] isCreatingUser flag set to:', value);
 }
 
 interface AuthContextType extends AuthState {
@@ -36,7 +37,7 @@ async function fetchUserWithProfile(sessionUser: { id: string; email?: string; u
         if (profile) {
             // CHECK: Block inactive users
             if (profile.status === 'inactive') {
-                console.log('[AuthContext] User is inactive, blocking access');
+                debugLog('[AuthContext] User is inactive, blocking access');
                 return null;
             }
 
@@ -78,18 +79,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Check for existing session on mount
         const initSession = async () => {
-            console.log('[AuthContext] Checking existing session...');
+            debugLog('[AuthContext] Checking existing session...');
 
             try {
                 const { data: { session } } = await supabase.auth.getSession();
 
                 if (session?.user && isMounted) {
-                    console.log('[AuthContext] Session found for:', session.user.id);
+                    debugLog('[AuthContext] Session found for:', session.user.id);
                     const user = await fetchUserWithProfile(session.user);
 
                     // If user is null (inactive), sign them out
                     if (!user) {
-                        console.log('[AuthContext] User inactive, signing out...');
+                        debugLog('[AuthContext] User inactive, signing out...');
                         await supabase.auth.signOut();
                         if (isMounted) {
                             setState({ user: null, isAuthenticated: false, isLoading: false });
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         });
                     }
                 } else if (isMounted) {
-                    console.log('[AuthContext] No session found');
+                    debugLog('[AuthContext] No session found');
                     setState(s => ({ ...s, isLoading: false }));
                 }
             } catch (err) {
@@ -120,7 +121,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Listen for auth state changes (excluding INITIAL_SESSION to avoid race condition)
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-            console.log('[AuthContext] Auth state changed:', event);
+            debugLog('[AuthContext] Auth state changed:', event);
 
             // Skip INITIAL_SESSION as initSession handles it
             if (event === 'INITIAL_SESSION') {
@@ -130,17 +131,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if ((event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') && session?.user) {
                 // SKIP if admin is creating a new user (prevents redirect to /unauthorized)
                 if (isCreatingUser) {
-                    console.log('[AuthContext] Skipping auth state change - admin is creating user');
+                    debugLog('[AuthContext] Skipping auth state change - admin is creating user');
                     return;
                 }
 
-                console.log('[AuthContext] User session updated:', session.user.id);
+                debugLog('[AuthContext] User session updated:', session.user.id);
                 // Use non-async approach to avoid race issues
                 fetchUserWithProfile(session.user).then(user => {
                     if (isMounted) {
                         // If user is null (inactive), sign them out
                         if (!user) {
-                            console.log('[AuthContext] User inactive on refresh, signing out...');
+                            debugLog('[AuthContext] User inactive on refresh, signing out...');
                             supabase.auth.signOut();
                             setState({ user: null, isAuthenticated: false, isLoading: false });
                             return;
@@ -154,7 +155,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 });
             } else if (event === 'SIGNED_OUT') {
-                console.log('[AuthContext] User signed out');
+                debugLog('[AuthContext] User signed out');
                 if (isMounted) {
                     setState({
                         user: null,
@@ -172,11 +173,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }, []);
 
     const login = async (email: string, password: string): Promise<boolean> => {
-        console.log('[AuthContext] Login attempt for:', email);
+        debugLog('[AuthContext] Login attempt for:', email);
         try {
             const user = await ApiService.login(email, password);
             if (user) {
-                console.log('[AuthContext] Login successful for:', user.id);
+                debugLog('[AuthContext] Login successful for:', user.id);
                 setState({
                     user,
                     isAuthenticated: true,
@@ -184,12 +185,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 });
                 return true;
             }
-            console.log('[AuthContext] Login failed');
+            debugLog('[AuthContext] Login failed');
             return false;
         } catch (err) {
             // Propagate INACTIVE_USER error to LoginPage
             if (err instanceof Error && err.message === 'INACTIVE_USER') {
-                console.log('[AuthContext] User is inactive');
+                debugLog('[AuthContext] User is inactive');
                 throw err;
             }
             console.error('[AuthContext] Login error:', err);
@@ -198,7 +199,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = async () => {
-        console.log('[AuthContext] Logging out...');
+        debugLog('[AuthContext] Logging out...');
         await ApiService.logout();
         setState({
             user: null,
@@ -208,7 +209,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const refreshUser = async () => {
-        console.log('[AuthContext] Refreshing user data...');
+        debugLog('[AuthContext] Refreshing user data...');
         try {
             const { data: { session } } = await supabase.auth.getSession();
             if (session?.user) {

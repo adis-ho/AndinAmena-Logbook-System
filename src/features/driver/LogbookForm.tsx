@@ -1,17 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
-import type { Unit, Etoll } from '../../types';
 import { Wallet, Activity, CreditCard, ChevronRight } from 'lucide-react';
 import DatePicker from '../../components/ui/DatePicker';
 import Select from '../../components/ui/Select';
+import { useActiveEtollsQuery, useUnitsQuery } from '../../hooks/useReferenceDataQueries';
 
 export default function LogbookForm() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [units, setUnits] = useState<Unit[]>([]);
-    const [etolls, setEtolls] = useState<Etoll[]>([]);
+    const { data: units = [] } = useUnitsQuery();
+    const { data: etolls = [] } = useActiveEtollsQuery();
     const [loading, setLoading] = useState(false);
     const [formData, setFormData] = useState({
         date: new Date().toISOString().split('T')[0],
@@ -24,16 +24,6 @@ export default function LogbookForm() {
         parking_cost: 0,
         operational_cost: 0
     });
-
-    useEffect(() => {
-        Promise.all([
-            ApiService.getUnits(),
-            ApiService.getActiveEtolls()
-        ]).then(([unitsData, etollsData]) => {
-            setUnits(unitsData);
-            setEtolls(etollsData);
-        });
-    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

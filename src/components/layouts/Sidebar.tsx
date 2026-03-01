@@ -120,10 +120,8 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
                 <div className="p-4 border-t border-gray-100">
                     <button
                         onClick={() => {
-                            if (window.confirm('Apakah Anda yakin ingin keluar?')) {
-                                logout();
-                                onClose();
-                            }
+                            logout();
+                            onClose();
                         }}
                         className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 rounded-2xl transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
                     >

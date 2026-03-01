@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
 import type { Etoll } from '../../types';
 import { Plus, Pencil, Trash2, CreditCard, X, Wallet } from 'lucide-react';
@@ -6,11 +7,13 @@ import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import Select from '../../components/ui/Select';
+import { queryKeys } from '../../lib/queryKeys';
 
 type FormMode = 'add' | 'edit' | null;
 
 export default function EtollList() {
     const { showToast } = useToast();
+    const queryClient = useQueryClient();
     const [etolls, setEtolls] = useState<Etoll[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -90,6 +93,8 @@ export default function EtollList() {
             }
             resetForm();
             fetchEtolls();
+            await queryClient.invalidateQueries({ queryKey: queryKeys.etolls });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.activeEtolls });
         } catch (err) {
             showToast('error', formMode === 'add' ? 'Gagal menambah E-Toll' : 'Gagal mengupdate E-Toll');
             console.error(err);
@@ -109,6 +114,8 @@ export default function EtollList() {
         try {
             await ApiService.deleteEtoll(deleteModal.etollId);
             setEtolls(etolls.filter(e => e.id !== deleteModal.etollId));
+            await queryClient.invalidateQueries({ queryKey: queryKeys.etolls });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.activeEtolls });
             showToast('success', 'Kartu E-Toll berhasil dihapus');
             setDeleteModal({ ...deleteModal, isOpen: false });
         } catch (err) {
@@ -140,6 +147,8 @@ export default function EtollList() {
             setTopUpEtoll(null);
             setTopUpAmount(0);
             fetchEtolls();
+            await queryClient.invalidateQueries({ queryKey: queryKeys.etolls });
+            await queryClient.invalidateQueries({ queryKey: queryKeys.activeEtolls });
         } catch (err) {
             showToast('error', 'Gagal melakukan top-up E-Toll');
             console.error(err);

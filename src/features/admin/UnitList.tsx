@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
 import type { Unit } from '../../types';
 import { Plus, Pencil, Trash2, Truck, X } from 'lucide-react';
@@ -6,11 +7,13 @@ import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import Select from '../../components/ui/Select';
+import { queryKeys } from '../../lib/queryKeys';
 
 type FormMode = 'add' | 'edit' | null;
 
 export default function UnitList() {
     const { showToast } = useToast();
+    const queryClient = useQueryClient();
     const [units, setUnits] = useState<Unit[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -77,6 +80,7 @@ export default function UnitList() {
             showToast('success', formMode === 'add' ? 'Unit berhasil ditambahkan' : 'Unit berhasil diupdate');
             resetForm();
             fetchUnits();
+            await queryClient.invalidateQueries({ queryKey: queryKeys.units });
         } catch (err) {
             showToast('error', formMode === 'add' ? 'Gagal menambah unit' : 'Gagal mengupdate unit');
             console.error(err);
@@ -96,6 +100,7 @@ export default function UnitList() {
         try {
             await ApiService.deleteUnit(deleteModal.unitId);
             setUnits(units.filter(u => u.id !== deleteModal.unitId));
+            await queryClient.invalidateQueries({ queryKey: queryKeys.units });
             showToast('success', 'Unit berhasil dihapus');
             setDeleteModal({ ...deleteModal, isOpen: false });
         } catch (err: any) {

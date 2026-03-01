@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
 import type { User, UserRole } from '../../types';
 import { Plus, Pencil, Trash2, Users, X, RotateCcw, Ban } from 'lucide-react';
@@ -7,6 +8,7 @@ import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import Select from '../../components/ui/Select';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import { MIN_PASSWORD_LENGTH } from '../../constants';
+import { queryKeys } from '../../lib/queryKeys';
 
 type FormMode = 'add' | 'edit' | null;
 
@@ -20,6 +22,7 @@ interface UserFormData {
 
 export default function UserList() {
     const { showToast } = useToast();
+    const queryClient = useQueryClient();
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -108,6 +111,7 @@ export default function UserList() {
             showToast('success', formMode === 'add' ? 'Pengguna berhasil ditambahkan' : 'Pengguna berhasil diupdate');
             resetForm();
             fetchUsers();
+            await queryClient.invalidateQueries({ queryKey: queryKeys.users });
         } catch (err) {
             showToast('error', formMode === 'add' ? 'Gagal menambah pengguna' : 'Gagal mengupdate pengguna');
             console.error(err);
@@ -122,6 +126,7 @@ export default function UserList() {
         try {
             await ApiService.deleteUser(id);
             setUsers(users.map(u => u.id === id ? { ...u, status: 'inactive' } : u));
+            await queryClient.invalidateQueries({ queryKey: queryKeys.users });
             showToast('success', 'Pengguna berhasil dinonaktifkan');
         } catch (err) {
             showToast('error', 'Gagal menonaktifkan pengguna');
@@ -133,6 +138,7 @@ export default function UserList() {
         try {
             await ApiService.reactivateUser(id);
             setUsers(users.map(u => u.id === id ? { ...u, status: 'active' } : u));
+            await queryClient.invalidateQueries({ queryKey: queryKeys.users });
             showToast('success', 'Pengguna berhasil diaktifkan kembali');
         } catch (err) {
             showToast('error', 'Gagal mengaktifkan pengguna');
@@ -151,6 +157,7 @@ export default function UserList() {
         try {
             await ApiService.deleteUserPermanently(deleteModal.userId);
             setUsers(users.filter(u => u.id !== deleteModal.userId));
+            await queryClient.invalidateQueries({ queryKey: queryKeys.users });
             showToast('success', 'Pengguna berhasil dihapus permanen');
             setDeleteModal({ ...deleteModal, isOpen: false });
         } catch (err: any) {
