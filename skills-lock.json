@@ -1,6 +1,16 @@
 {
   "version": 1,
   "skills": {
+    "breakdown-feature-prd": {
+      "source": "C:\\Users\\nadief\\.agents\\skills\\breakdown-feature-prd",
+      "sourceType": "local",
+      "computedHash": "e0a851ff26f6ddc213c390556ede39ac8fa43b76076b4a187c8c759128fe9fce"
+    },
+    "find-skills": {
+      "source": "C:\\Users\\nadief\\.agents\\skills\\find-skills",
+      "sourceType": "local",
+      "computedHash": "25872a21881a950edc3db1f3329664d60405d539660ce05b3265db2de06a7dfd"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",
