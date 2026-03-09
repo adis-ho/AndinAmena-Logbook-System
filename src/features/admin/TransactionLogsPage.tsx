@@ -86,7 +86,7 @@ export default function TransactionLogsPage() {
                         aria-selected={activeTab === 'operational'}
                         aria-controls="operational-panel"
                         onClick={() => setActiveTab('operational')}
-                        className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'operational'
+                        className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${activeTab === 'operational'
                             ? 'bg-white text-indigo-600 shadow-sm border border-gray-100/50 scale-100'
                             : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50 scale-95 hover:scale-100'
                             }`}
@@ -99,7 +99,7 @@ export default function TransactionLogsPage() {
                         aria-selected={activeTab === 'etoll'}
                         aria-controls="etoll-panel"
                         onClick={() => setActiveTab('etoll')}
-                        className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${activeTab === 'etoll'
+                        className={`flex items-center gap-2.5 px-6 py-3 rounded-xl text-sm font-bold transition-all duration-300 outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 ${activeTab === 'etoll'
                             ? 'bg-white text-indigo-600 shadow-sm border border-gray-100/50 scale-100'
                             : 'text-gray-500 hover:text-gray-900 hover:bg-gray-100/50 scale-95 hover:scale-100'
                             }`}
@@ -112,14 +112,16 @@ export default function TransactionLogsPage() {
 
             {/* Operational Logs Panel */}
             {activeTab === 'operational' && (
-                <div id="operational-panel" role="tabpanel" className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="px-8 py-6 border-b border-gray-50/80 bg-gradient-to-r from-gray-50/30 to-white flex justify-between items-center">
-                        <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Buku Kas Operasional</h2>
-                        <div className="px-3 py-1 bg-gray-50 rounded-lg border border-gray-100">
+                <div id="operational-panel" role="tabpanel" className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[100vw]">
+                    <div className="px-5 md:px-8 py-4 md:py-6 border-b border-gray-50/80 bg-gradient-to-r from-gray-50/30 to-white flex justify-between items-center">
+                        <h2 className="text-[11px] md:text-xs font-black text-gray-400 uppercase tracking-widest">Buku Kas Operasional</h2>
+                        <div className="px-2.5 py-1 bg-gray-50 rounded-lg border border-gray-100">
                             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{balanceLogs.length} Entri</span>
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
+
+                    {/* Desktop Table */}
+                    <div className="overflow-x-auto hidden md:block">
                         <table className="w-full min-w-[1000px]">
                             <thead>
                                 <tr className="bg-gray-50/30 border-b border-gray-100">
@@ -196,19 +198,87 @@ export default function TransactionLogsPage() {
                             </tbody>
                         </table>
                     </div>
+
+                    {/* Mobile Card List (Operational) */}
+                    <div className="md:hidden flex flex-col divide-y divide-gray-50/80">
+                        {balanceLogs.length === 0 ? (
+                            <div className="py-16 px-6 flex flex-col items-center justify-center text-center">
+                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100 shadow-inner">
+                                    <Wallet className="h-6 w-6 text-gray-300" aria-hidden="true" />
+                                </div>
+                                <p className="text-sm font-bold text-gray-900 mb-1">Buku Kas Kosong</p>
+                                <p className="text-xs text-gray-500">Belum ada aktivitas mutasi dana.</p>
+                            </div>
+                        ) : (
+                            balanceLogs.map(log => (
+                                <div key={log.id} className="flex flex-col p-5 gap-3.5 bg-white hover:bg-gray-50/50 active:bg-gray-50 transition-colors">
+                                    {/* Header: Date + Action */}
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-900">{format(new Date(log.created_at), 'dd MMM yyyy', { locale: id })}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 tabular-nums uppercase tracking-widest mt-0.5">{format(new Date(log.created_at), 'HH:mm:ss', { locale: id })}</span>
+                                        </div>
+                                        {getActionBadge(log.action_type)}
+                                    </div>
+
+                                    {/* Main Content: Subject + Nominal */}
+                                    <div className="flex justify-between items-center bg-[#F8FAFF] p-4 rounded-2xl border border-blue-100/30 mt-1">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Subjek / Driver</span>
+                                            <span className="text-sm font-black text-gray-900 truncate max-w-[130px]">{getUserName(log.driver_id)}</span>
+                                        </div>
+                                        <div className="flex flex-col items-end text-right">
+                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Nominal Mutasi</span>
+                                            <span className={`text-[15px] tabular-nums tracking-tight font-black ${log.amount > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                {log.amount > 0 ? '+' : ''}{formatCurrency(log.amount)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Balance Flow */}
+                                    <div className="flex items-center justify-between px-1.5 mt-0.5">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo Awal ➔ Akhir</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[11px] text-gray-400 font-medium tabular-nums line-through decoration-gray-300">{formatCurrency(log.previous_balance)}</span>
+                                            <span className="text-gray-300 text-[10px]">&rarr;</span>
+                                            <span className="text-[11px] font-bold text-gray-900 tabular-nums">{formatCurrency(log.new_balance)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="w-full h-px bg-gray-50 my-1"></div>
+
+                                    {/* Footer: Keterangan + Admin */}
+                                    <div className="flex flex-col gap-3 px-1.5">
+                                        <p className="text-[11px] font-medium text-gray-600 leading-relaxed line-clamp-3">
+                                            <span className="font-bold text-gray-900 mr-1.5 opacity-70">Ket:</span>
+                                            {log.description}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-[9px] font-black text-gray-500">
+                                                {getUserName(log.admin_id).charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Oleh: {getUserName(log.admin_id)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
+                    </div>
                 </div>
             )}
 
             {/* E-Toll Logs Panel */}
             {activeTab === 'etoll' && (
-                <div id="etoll-panel" role="tabpanel" className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
-                    <div className="px-8 py-6 border-b border-gray-50/80 bg-gradient-to-r from-gray-50/30 to-white flex justify-between items-center">
-                        <h2 className="text-xs font-black text-gray-400 uppercase tracking-widest">Daftar Mutasi E-Toll</h2>
-                        <div className="px-3 py-1 bg-gray-50 rounded-lg border border-gray-100">
+                <div id="etoll-panel" role="tabpanel" className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-[100vw]">
+                    <div className="px-5 md:px-8 py-4 md:py-6 border-b border-gray-50/80 bg-gradient-to-r from-gray-50/30 to-white flex justify-between items-center">
+                        <h2 className="text-[11px] md:text-xs font-black text-gray-400 uppercase tracking-widest">Daftar Mutasi E-Toll</h2>
+                        <div className="px-2.5 py-1 bg-gray-50 rounded-lg border border-gray-100">
                             <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">{etollLogs.length} Entri</span>
                         </div>
                     </div>
-                    <div className="overflow-x-auto">
+
+                    {/* Desktop Table (E-Toll) */}
+                    <div className="overflow-x-auto hidden md:block">
                         <table className="w-full min-w-[1000px]">
                             <thead>
                                 <tr className="bg-gray-50/30 border-b border-gray-100">
@@ -284,6 +354,72 @@ export default function TransactionLogsPage() {
                                 )}
                             </tbody>
                         </table>
+                    </div>
+
+                    {/* Mobile Card List (E-Toll) */}
+                    <div className="md:hidden flex flex-col divide-y divide-gray-50/80">
+                        {etollLogs.length === 0 ? (
+                            <div className="py-16 px-6 flex flex-col items-center justify-center text-center">
+                                <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4 border border-gray-100 shadow-inner">
+                                    <CreditCard className="h-6 w-6 text-gray-300" aria-hidden="true" />
+                                </div>
+                                <p className="text-sm font-bold text-gray-900 mb-1">Riwayat E-Toll Kosong</p>
+                                <p className="text-xs text-gray-500">Belum ada aktivitas mutasi atau penggunaan saldo E-Toll yang tercatat.</p>
+                            </div>
+                        ) : (
+                            etollLogs.map(log => (
+                                <div key={log.id} className="flex flex-col p-5 gap-3.5 bg-white hover:bg-gray-50/50 active:bg-gray-50 transition-colors">
+                                    {/* Header: Date + Action */}
+                                    <div className="flex justify-between items-start">
+                                        <div className="flex flex-col">
+                                            <span className="text-xs font-bold text-gray-900">{format(new Date(log.created_at), 'dd MMM yyyy', { locale: id })}</span>
+                                            <span className="text-[10px] font-bold text-gray-400 tabular-nums uppercase tracking-widest mt-0.5">{format(new Date(log.created_at), 'HH:mm:ss', { locale: id })}</span>
+                                        </div>
+                                        {getActionBadge(log.action_type)}
+                                    </div>
+
+                                    {/* Main Content: Subject + Nominal */}
+                                    <div className="flex justify-between items-center bg-[#F8FAFF] p-4 rounded-2xl border border-blue-100/30 mt-1">
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Identitas Kartu</span>
+                                            <span className="text-sm font-black text-gray-900 truncate max-w-[130px]">{getEtollName(log.etoll_id)}</span>
+                                        </div>
+                                        <div className="flex flex-col items-end text-right">
+                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Nominal Mutasi</span>
+                                            <span className={`text-[15px] tabular-nums tracking-tight font-black ${log.amount > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                                {log.amount > 0 ? '+' : ''}{formatCurrency(log.amount)}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    {/* Balance Flow */}
+                                    <div className="flex items-center justify-between px-1.5 mt-0.5">
+                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo Awal ➔ Akhir</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-[11px] text-gray-400 font-medium tabular-nums line-through decoration-gray-300">{formatCurrency(log.previous_balance)}</span>
+                                            <span className="text-gray-300 text-[10px]">&rarr;</span>
+                                            <span className="text-[11px] font-bold text-gray-900 tabular-nums">{formatCurrency(log.new_balance)}</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="w-full h-px bg-gray-50 my-1"></div>
+
+                                    {/* Footer: Keterangan + Admin */}
+                                    <div className="flex flex-col gap-3 px-1.5">
+                                        <p className="text-[11px] font-medium text-gray-600 leading-relaxed line-clamp-3">
+                                            <span className="font-bold text-gray-900 mr-1.5 opacity-70">Ket:</span>
+                                            {log.description}
+                                        </p>
+                                        <div className="flex items-center gap-2 mt-0.5">
+                                            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-[9px] font-black text-gray-500">
+                                                {getUserName(log.admin_id).charAt(0).toUpperCase()}
+                                            </div>
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Oleh: {getUserName(log.admin_id)}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        )}
                     </div>
                 </div>
             )}
