@@ -31,7 +31,7 @@ export interface BalanceLog {
     id: string;
     driver_id: string;
     admin_id?: string;
-    action_type: 'top_up' | 'edit' | 'reset';
+    action_type: 'top_up' | 'edit' | 'reset' | 'refund';
     amount: number;
     previous_balance: number;
     new_balance: number;
@@ -43,7 +43,7 @@ export interface EtollLog {
     id: string;
     etoll_id: string;
     admin_id?: string;
-    action_type: 'top_up' | 'deduct' | 'edit' | 'reset';
+    action_type: 'top_up' | 'deduct' | 'edit' | 'reset' | 'refund';
     amount: number;
     previous_balance: number;
     new_balance: number;

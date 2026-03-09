@@ -816,6 +816,110 @@ export const ApiService = {
     },
 
     updateLogbook: async (id: string, updates: Partial<LogbookEntry>): Promise<void> => {
+        // 1. Fetch current logbook state BEFORE updating
+        const { data: currentLogbook, error: fetchError } = await supabase
+            .from('logbooks')
+            .select('driver_id, etoll_id, toll_cost, operational_cost, status')
+            .eq('id', id)
+            .single();
+
+        if (fetchError || !currentLogbook) {
+            console.error('[ApiService] Fetch logbook for refund check error:', fetchError?.message);
+            throw fetchError || new Error('Logbook not found');
+        }
+
+        // 2. If logbook was previously APPROVED, refund old balances before updating
+        if (currentLogbook.status === 'approved') {
+            debugLog(`[ApiService] Logbook ${id} was approved — initiating refund before edit`);
+
+            const refundPromises: PromiseLike<unknown>[] = [];
+
+            // Refund E-Toll balance
+            if (currentLogbook.etoll_id && currentLogbook.toll_cost > 0) {
+                const { data: etollData } = await supabase
+                    .from('etolls')
+                    .select('balance')
+                    .eq('id', currentLogbook.etoll_id)
+                    .single();
+
+                if (etollData) {
+                    const previousBalance = etollData.balance;
+                    const newBalance = previousBalance + currentLogbook.toll_cost;
+
+                    refundPromises.push(
+                        supabase
+                            .from('etolls')
+                            .update({ balance: newBalance })
+                            .eq('id', currentLogbook.etoll_id)
+                            .then(r => r)
+                    );
+
+                    // Log the refund
+                    refundPromises.push(
+                        supabase
+                            .from('etoll_logs')
+                            .insert({
+                                etoll_id: currentLogbook.etoll_id,
+                                action_type: 'refund',
+                                amount: currentLogbook.toll_cost,
+                                previous_balance: previousBalance,
+                                new_balance: newBalance,
+                                description: `Refund biaya tol Rp ${currentLogbook.toll_cost.toLocaleString('id-ID')} karena driver mengedit logbook`
+                            })
+                            .then(r => r)
+                    );
+
+                    debugLog(`[ApiService] Refund E-Toll: +${currentLogbook.toll_cost} to card ${currentLogbook.etoll_id}`);
+                }
+            }
+
+            // Refund Driver's Operational Balance
+            if (currentLogbook.operational_cost > 0 && currentLogbook.driver_id) {
+                const { data: driverData } = await supabase
+                    .from('profiles')
+                    .select('operational_balance')
+                    .eq('id', currentLogbook.driver_id)
+                    .single();
+
+                if (driverData) {
+                    const previousBalance = driverData.operational_balance || 0;
+                    const newBalance = previousBalance + currentLogbook.operational_cost;
+
+                    refundPromises.push(
+                        supabase
+                            .from('profiles')
+                            .update({ operational_balance: newBalance })
+                            .eq('id', currentLogbook.driver_id)
+                            .then(r => r)
+                    );
+
+                    // Log the refund
+                    refundPromises.push(
+                        supabase
+                            .from('balance_logs')
+                            .insert({
+                                driver_id: currentLogbook.driver_id,
+                                action_type: 'refund',
+                                amount: currentLogbook.operational_cost,
+                                previous_balance: previousBalance,
+                                new_balance: newBalance,
+                                description: `Refund biaya operasional Rp ${currentLogbook.operational_cost.toLocaleString('id-ID')} karena driver mengedit logbook`
+                            })
+                            .then(r => r)
+                    );
+
+                    debugLog(`[ApiService] Refund Operational: +${currentLogbook.operational_cost} to driver ${currentLogbook.driver_id}`);
+                }
+            }
+
+            // Execute all refunds in parallel
+            if (refundPromises.length > 0) {
+                await Promise.all(refundPromises);
+                debugLog(`[ApiService] All refunds completed for logbook ${id}`);
+            }
+        }
+
+        // 3. Now update the logbook with new data
         const { error } = await supabase
             .from('logbooks')
             .update({
