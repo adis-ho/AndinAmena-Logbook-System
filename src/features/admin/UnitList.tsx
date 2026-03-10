@@ -344,32 +344,42 @@ export default function UnitList() {
                     </div>
                 ) : (
                     units.map(unit => (
-                        <div key={unit.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden group">
-                            <div className="flex justify-between items-start mb-4">
+                        <div key={unit.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300">
+                            {/* Header Area */}
+                            <div className="flex justify-between items-start mb-6">
                                 <div className={`flex items-start gap-4 transition-opacity ${unit.status === 'maintenance' ? 'opacity-50' : ''}`}>
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-white flex items-center justify-center shadow-sm shrink-0 ring-1 ring-slate-900/5">
-                                        <Truck className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white flex items-center justify-center shadow-sm shrink-0 ring-1 ring-slate-900/5">
+                                        <Truck className="h-5 w-5 text-slate-500" aria-hidden="true" />
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 text-sm mb-0.5">{unit.name}</p>
-                                        <p className="text-xs font-medium text-gray-500 tabular-nums tracking-wide mb-2">{unit.plate_number}</p>
-                                        {getStatusBadge(unit.status)}
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">Mobil</span>
+                                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1.5">{unit.name}</h3>
+                                        <span className="block text-[13px] font-bold text-gray-500 tabular-nums">{unit.plate_number}</span>
                                     </div>
+                                </div>
+                                <div className="scale-[0.85] origin-top-right shrink-0">
+                                    {getStatusBadge(unit.status)}
                                 </div>
                             </div>
 
-                            <div className="flex justify-end gap-2 pt-4 border-t border-gray-50">
+                            {/* Divider */}
+                            <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
+
+                            {/* Action Area */}
+                            <div className="mt-auto flex justify-end gap-2">
                                 <button
                                     onClick={() => handleEdit(unit)}
-                                    className="px-4 py-2 text-blue-600 bg-blue-50/50 hover:bg-blue-50 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                    className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
                                 >
-                                    Edit
+                                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                    <span>Edit</span>
                                 </button>
                                 <button
                                     onClick={() => handleDeleteClick(unit.id)}
-                                    className="px-4 py-2 text-rose-600 bg-rose-50/50 hover:bg-rose-50 rounded-xl text-[11px] font-bold uppercase tracking-wider transition-colors"
+                                    className="px-4 py-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
                                 >
-                                    Hapus
+                                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                    <span>Hapus</span>
                                 </button>
                             </div>
                         </div>

@@ -440,26 +440,37 @@ export default function UserList() {
                     </div>
                 ) : (
                     users.map(user => (
-                        <div key={user.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 relative overflow-hidden">
-                            <div className={`flex justify-between items-start mb-5 relative z-10 transition-opacity ${user.status === 'inactive' ? 'opacity-60' : ''}`}>
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-white flex items-center justify-center border border-white shadow-sm ring-1 ring-slate-900/5">
-                                        <span className="text-xs font-bold uppercase text-slate-600">
+                        <div key={user.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300">
+                            {/* Header Area */}
+                            <div className="flex justify-between items-start mb-5">
+                                <div className="flex items-center gap-4">
+                                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border shadow-sm ring-1 ring-inset shrink-0 transition ${user.status === 'inactive' ? 'bg-gray-50 border-gray-200 ring-gray-900/5 grayscale opacity-60' : 'bg-gradient-to-br from-slate-100 to-white border-white ring-slate-900/5'}`}>
+                                        <span className={`text-sm font-black uppercase ${user.status === 'inactive' ? 'text-gray-400' : 'text-slate-700'}`}>
                                             {user.full_name ? user.full_name.substring(0, 2) : user.username.substring(0, 2)}
                                         </span>
                                     </div>
                                     <div>
-                                        <p className="font-bold text-gray-900 text-sm">{user.full_name || 'Tanpa Nama'}</p>
-                                        <p className="text-[11px] font-medium text-gray-500 tracking-wide">@{user.username}</p>
+                                        <h3 className={`text-lg font-black tracking-tight leading-none mb-1.5 ${user.status === 'inactive' ? 'text-gray-400 line-through decoration-gray-300' : 'text-gray-900'}`}>
+                                            {user.full_name || 'Tanpa Nama'}
+                                        </h3>
+                                        <span className="block text-[13px] font-bold text-gray-500">
+                                            @{user.username}
+                                        </span>
                                     </div>
                                 </div>
-                                <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user.status === 'active' ? 'bg-emerald-50 text-emerald-600 border-emerald-200/50' : 'bg-rose-50 text-rose-600 border-rose-200/50'
-                                    }`}>
-                                    {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
-                                </span>
+                                <div className="scale-[0.85] origin-top-right shrink-0">
+                                    <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${user.status === 'active'
+                                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200/60'
+                                            : 'bg-rose-50 text-rose-600 border-rose-200/60 opacity-80'
+                                            }`}>
+                                            {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                                    </span>
+                                </div>
                             </div>
 
-                            <div className={`flex items-center gap-2 mb-4 transition-opacity ${user.status === 'inactive' ? 'opacity-50' : ''}`}>
+                            {/* Metadata */}
+                            <div className="mb-6">
+                                <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">Peran Akses</span>
                                 <span className={`inline-flex px-2.5 py-1 rounded-md border text-[10px] font-bold uppercase tracking-wider ${user.role === 'admin'
                                     ? 'bg-purple-50 text-purple-600 border-purple-200/60'
                                     : 'bg-blue-50 text-blue-600 border-blue-200/60'
@@ -467,15 +478,43 @@ export default function UserList() {
                                     {user.role}
                                 </span>
                             </div>
+                            
+                            {/* Divider */}
+                            <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
 
-                            <div className="flex justify-end gap-2 pt-4 border-t border-gray-100/80">
-                                <button onClick={() => handleEdit(user)} className="px-4 py-2 text-blue-600 bg-blue-50 hover:bg-blue-100 rounded-xl text-xs font-bold transition-colors">Edit</button>
+                            {/* Action Area */}
+                            <div className="mt-auto flex justify-end gap-2">
+                                <button
+                                    onClick={() => handleEdit(user)}
+                                    className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
+                                >
+                                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                    <span>Edit</span>
+                                </button>
                                 {user.status === 'active' ? (
-                                    <button onClick={() => handleDelete(user.id)} className="px-4 py-2 text-rose-600 bg-rose-50 hover:bg-rose-100 rounded-xl text-xs font-bold transition-colors">Nonaktifkan</button>
+                                    <button
+                                        onClick={() => handleDelete(user.id)}
+                                        className="px-4 py-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
+                                    >
+                                        <Ban className="h-3.5 w-3.5" aria-hidden="true" />
+                                        <span>Nonaktifkan</span>
+                                    </button>
                                 ) : (
                                     <>
-                                        <button onClick={() => handleReactivate(user.id)} className="px-3 py-2 text-emerald-600 bg-emerald-50 hover:bg-emerald-100 rounded-xl text-xs font-bold transition-colors truncate">Aktifkan Ht.</button>
-                                        <button onClick={() => handleHardDeleteClick(user.id, user.full_name)} className="px-4 py-2 text-white bg-rose-500 hover:bg-rose-600 rounded-xl text-xs font-bold transition-colors shadow-sm focus:ring-2 focus:ring-rose-500/20">Hapus</button>
+                                        <button
+                                            onClick={() => handleReactivate(user.id)}
+                                            className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
+                                        >
+                                            <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+                                            <span>Aktifkan</span>
+                                        </button>
+                                        <button
+                                            onClick={() => handleHardDeleteClick(user.id, user.full_name)}
+                                            className="px-4 py-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                            <span>Hapus</span>
+                                        </button>
                                     </>
                                 )}
                             </div>

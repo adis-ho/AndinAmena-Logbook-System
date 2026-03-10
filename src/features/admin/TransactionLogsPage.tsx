@@ -211,24 +211,31 @@ export default function TransactionLogsPage() {
                             </div>
                         ) : (
                             balanceLogs.map(log => (
-                                <div key={log.id} className="flex flex-col p-5 gap-3.5 bg-white hover:bg-gray-50/50 active:bg-gray-50 transition-colors">
+                                <div key={log.id} className="bg-white p-5 m-2 rounded-2xl shadow-sm border border-gray-100/80 hover:border-indigo-100 transition-all duration-300 group flex flex-col gap-4">
                                     {/* Header: Date + Action */}
                                     <div className="flex justify-between items-start">
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-gray-900">{format(new Date(log.created_at), 'dd MMM yyyy', { locale: id })}</span>
-                                            <span className="text-[10px] font-bold text-gray-400 tabular-nums uppercase tracking-widest mt-0.5">{format(new Date(log.created_at), 'HH:mm:ss', { locale: id })}</span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 flex items-center justify-center border border-white ring-1 ring-indigo-900/5 shrink-0">
+                                                <Wallet className="h-4 w-4 text-indigo-600" aria-hidden="true" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900">{format(new Date(log.created_at), 'dd MMM yyyy', { locale: id })}</p>
+                                                <p className="text-[10px] font-bold text-gray-400 tabular-nums uppercase tracking-widest mt-0.5">{format(new Date(log.created_at), 'HH:mm:ss', { locale: id })}</p>
+                                            </div>
                                         </div>
-                                        {getActionBadge(log.action_type)}
+                                        <div className="scale-90 origin-top-right">
+                                            {getActionBadge(log.action_type)}
+                                        </div>
                                     </div>
 
-                                    {/* Main Content: Subject + Nominal */}
-                                    <div className="flex justify-between items-center bg-[#F8FAFF] p-4 rounded-2xl border border-blue-100/30 mt-1">
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Subjek / Driver</span>
-                                            <span className="text-sm font-black text-gray-900 truncate max-w-[130px]">{getUserName(log.driver_id)}</span>
+                                    {/* Subject + Nominal */}
+                                    <div className="bg-slate-50/50 p-4 rounded-xl border border-gray-100/50 flex justify-between items-center group-hover:bg-slate-50 transition-colors">
+                                        <div>
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Driver</p>
+                                            <p className="text-[13px] font-black text-gray-900 truncate max-w-[120px]">{getUserName(log.driver_id)}</p>
                                         </div>
-                                        <div className="flex flex-col items-end text-right">
-                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Nominal Mutasi</span>
+                                        <div className="flex flex-col items-end">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Nominal Mutasi</p>
                                             <span className={`text-[15px] tabular-nums tracking-tight font-black ${log.amount > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                                 {log.amount > 0 ? '+' : ''}{formatCurrency(log.amount)}
                                             </span>
@@ -236,28 +243,31 @@ export default function TransactionLogsPage() {
                                     </div>
 
                                     {/* Balance Flow */}
-                                    <div className="flex items-center justify-between px-1.5 mt-0.5">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo Awal ➔ Akhir</span>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[11px] text-gray-400 font-medium tabular-nums line-through decoration-gray-300">{formatCurrency(log.previous_balance)}</span>
-                                            <span className="text-gray-300 text-[10px]">&rarr;</span>
-                                            <span className="text-[11px] font-bold text-gray-900 tabular-nums">{formatCurrency(log.new_balance)}</span>
+                                    <div className="flex flex-col gap-1.5 py-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.1em]">Saldo Awal</span>
+                                            <span className="text-[11px] font-black text-gray-500 tabular-nums">{formatCurrency(log.previous_balance)}</span>
+                                        </div>
+                                        <div className="h-px w-full border-t border-dashed border-gray-200"></div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-extrabold text-gray-800 uppercase tracking-[0.1em]">Saldo Akhir</span>
+                                            <span className="text-[12px] font-black text-indigo-600 tabular-nums">{formatCurrency(log.new_balance)}</span>
                                         </div>
                                     </div>
 
-                                    <div className="w-full h-px bg-gray-50 my-1"></div>
+                                    <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent my-1"></div>
 
                                     {/* Footer: Keterangan + Admin */}
-                                    <div className="flex flex-col gap-3 px-1.5">
-                                        <p className="text-[11px] font-medium text-gray-600 leading-relaxed line-clamp-3">
-                                            <span className="font-bold text-gray-900 mr-1.5 opacity-70">Ket:</span>
+                                    <div className="flex flex-col gap-3">
+                                        <p className="text-[11px] font-medium text-gray-500 leading-relaxed bg-gray-50/80 p-3 rounded-xl border border-gray-100/50">
+                                            <span className="font-extrabold text-gray-700 block mb-1">Keterangan</span>
                                             {log.description}
                                         </p>
-                                        <div className="flex items-center gap-2 mt-0.5">
-                                            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-[9px] font-black text-gray-500">
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center border border-white ring-1 ring-gray-200 shadow-sm text-[10px] font-black text-gray-600">
                                                 {getUserName(log.admin_id).charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Oleh: {getUserName(log.admin_id)}</span>
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Otorisator: <span className="text-gray-900">{getUserName(log.admin_id)}</span></span>
                                         </div>
                                     </div>
                                 </div>
@@ -368,24 +378,31 @@ export default function TransactionLogsPage() {
                             </div>
                         ) : (
                             etollLogs.map(log => (
-                                <div key={log.id} className="flex flex-col p-5 gap-3.5 bg-white hover:bg-gray-50/50 active:bg-gray-50 transition-colors">
+                                <div key={log.id} className="bg-white p-5 m-2 rounded-2xl shadow-sm border border-gray-100/80 hover:border-indigo-100 transition-all duration-300 group flex flex-col gap-4">
                                     {/* Header: Date + Action */}
                                     <div className="flex justify-between items-start">
-                                        <div className="flex flex-col">
-                                            <span className="text-xs font-bold text-gray-900">{format(new Date(log.created_at), 'dd MMM yyyy', { locale: id })}</span>
-                                            <span className="text-[10px] font-bold text-gray-400 tabular-nums uppercase tracking-widest mt-0.5">{format(new Date(log.created_at), 'HH:mm:ss', { locale: id })}</span>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-50 to-indigo-100/50 flex items-center justify-center border border-white ring-1 ring-indigo-900/5 shrink-0">
+                                                <CreditCard className="h-4 w-4 text-indigo-600" aria-hidden="true" />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900">{format(new Date(log.created_at), 'dd MMM yyyy', { locale: id })}</p>
+                                                <p className="text-[10px] font-bold text-gray-400 tabular-nums uppercase tracking-widest mt-0.5">{format(new Date(log.created_at), 'HH:mm:ss', { locale: id })}</p>
+                                            </div>
                                         </div>
-                                        {getActionBadge(log.action_type)}
+                                        <div className="scale-90 origin-top-right">
+                                            {getActionBadge(log.action_type)}
+                                        </div>
                                     </div>
 
-                                    {/* Main Content: Subject + Nominal */}
-                                    <div className="flex justify-between items-center bg-[#F8FAFF] p-4 rounded-2xl border border-blue-100/30 mt-1">
-                                        <div className="flex flex-col">
-                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Identitas Kartu</span>
-                                            <span className="text-sm font-black text-gray-900 truncate max-w-[130px]">{getEtollName(log.etoll_id)}</span>
+                                    {/* Subject + Nominal */}
+                                    <div className="bg-slate-50/50 p-4 rounded-xl border border-gray-100/50 flex justify-between items-center group-hover:bg-slate-50 transition-colors">
+                                        <div>
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Identitas Kartu</p>
+                                            <p className="text-[13px] font-black text-gray-900 truncate max-w-[120px]">{getEtollName(log.etoll_id)}</p>
                                         </div>
-                                        <div className="flex flex-col items-end text-right">
-                                            <span className="text-[9px] font-bold text-blue-400 uppercase tracking-widest mb-1">Nominal Mutasi</span>
+                                        <div className="flex flex-col items-end">
+                                            <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Nominal Mutasi</p>
                                             <span className={`text-[15px] tabular-nums tracking-tight font-black ${log.amount > 0 ? 'text-emerald-600' : 'text-rose-600'}`}>
                                                 {log.amount > 0 ? '+' : ''}{formatCurrency(log.amount)}
                                             </span>
@@ -393,28 +410,31 @@ export default function TransactionLogsPage() {
                                     </div>
 
                                     {/* Balance Flow */}
-                                    <div className="flex items-center justify-between px-1.5 mt-0.5">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Saldo Awal ➔ Akhir</span>
-                                        <div className="flex items-center gap-1.5">
-                                            <span className="text-[11px] text-gray-400 font-medium tabular-nums line-through decoration-gray-300">{formatCurrency(log.previous_balance)}</span>
-                                            <span className="text-gray-300 text-[10px]">&rarr;</span>
-                                            <span className="text-[11px] font-bold text-gray-900 tabular-nums">{formatCurrency(log.new_balance)}</span>
+                                    <div className="flex flex-col gap-1.5 py-1">
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-[0.1em]">Saldo Awal</span>
+                                            <span className="text-[11px] font-black text-gray-500 tabular-nums">{formatCurrency(log.previous_balance)}</span>
+                                        </div>
+                                        <div className="h-px w-full border-t border-dashed border-gray-200"></div>
+                                        <div className="flex items-center justify-between">
+                                            <span className="text-[10px] font-extrabold text-gray-800 uppercase tracking-[0.1em]">Saldo Akhir</span>
+                                            <span className="text-[12px] font-black text-indigo-600 tabular-nums">{formatCurrency(log.new_balance)}</span>
                                         </div>
                                     </div>
 
-                                    <div className="w-full h-px bg-gray-50 my-1"></div>
+                                    <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent my-1"></div>
 
                                     {/* Footer: Keterangan + Admin */}
-                                    <div className="flex flex-col gap-3 px-1.5">
-                                        <p className="text-[11px] font-medium text-gray-600 leading-relaxed line-clamp-3">
-                                            <span className="font-bold text-gray-900 mr-1.5 opacity-70">Ket:</span>
+                                    <div className="flex flex-col gap-3">
+                                        <p className="text-[11px] font-medium text-gray-500 leading-relaxed bg-gray-50/80 p-3 rounded-xl border border-gray-100/50">
+                                            <span className="font-extrabold text-gray-700 block mb-1">Keterangan</span>
                                             {log.description}
                                         </p>
-                                        <div className="flex items-center gap-2 mt-0.5">
-                                            <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center border border-gray-200 text-[9px] font-black text-gray-500">
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <div className="w-6 h-6 rounded-full bg-gray-100 flex items-center justify-center border border-white ring-1 ring-gray-200 shadow-sm text-[10px] font-black text-gray-600">
                                                 {getUserName(log.admin_id).charAt(0).toUpperCase()}
                                             </div>
-                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Oleh: {getUserName(log.admin_id)}</span>
+                                            <span className="text-[10px] font-bold text-gray-500 uppercase tracking-wider">Otorisator: <span className="text-gray-900">{getUserName(log.admin_id)}</span></span>
                                         </div>
                                     </div>
                                 </div>

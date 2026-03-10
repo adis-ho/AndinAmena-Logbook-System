@@ -370,11 +370,12 @@ export default function DriverSummary() {
                     </div>
                 ) : (
                     driverStats.map((stat, index) => (
-                        <div key={stat.driverId} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:border-blue-100 transition-all duration-300 group">
-                            <div className="flex justify-between items-start mb-5">
-                                <div className="flex items-center gap-3">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-white flex items-center justify-center shadow-sm shrink-0 ring-1 ring-slate-900/5 relative">
-                                        <span className="text-xs font-bold text-slate-600 uppercase">
+                        <div key={stat.driverId} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300 group">
+                            {/* Header Area */}
+                            <div className="flex justify-between items-start mb-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white ring-1 ring-slate-900/5 flex items-center justify-center shrink-0 shadow-sm relative">
+                                        <span className="text-sm font-black text-slate-600 uppercase">
                                             {stat.driverName.substring(0, 2)}
                                         </span>
                                         <div className="absolute -bottom-1 -right-1 bg-slate-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-white">
@@ -382,32 +383,38 @@ export default function DriverSummary() {
                                         </div>
                                     </div>
                                     <div>
-                                        <h3 className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">{stat.driverName}</h3>
-                                        <p className="text-[11px] font-medium text-gray-400 uppercase tracking-wider mt-0.5">ID: {stat.driverId.substring(0, 8)}</p>
+                                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-1">{stat.driverName}</h3>
+                                        <span className="block text-[13px] font-bold text-gray-500 uppercase tracking-[0.05em] mt-0.5">ID: {stat.driverId.substring(0, 8)}</span>
                                     </div>
                                 </div>
-                                <div className="text-right">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Trip</p>
+                                <div className="text-right shrink-0">
+                                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">Total Trip</span>
                                     <span className="inline-flex bg-violet-50 text-violet-700 text-xs font-black px-2.5 py-1 rounded-lg border border-violet-100/50 tabular-nums">
                                         {stat.totalTrips}x
                                     </span>
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3 mb-4">
-                                <div className="bg-slate-50/50 p-3 rounded-xl border border-gray-100/50 transition-colors group-hover:bg-slate-50">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Tol / Parkir</p>
-                                    <p className="font-bold text-gray-700 tabular-nums text-sm truncate">{formatCurrency(stat.totalToll)}</p>
+                            {/* Grid Metadata */}
+                            <div className="grid grid-cols-2 gap-3 mb-6">
+                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-gray-100/50 transition-colors group-hover:bg-slate-50 flex flex-col justify-center">
+                                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Tol / Parkir</p>
+                                    <p className="font-black text-gray-900 tabular-nums text-[15px] truncate">{formatCurrency(stat.totalToll)}</p>
                                 </div>
-                                <div className="bg-slate-50/50 p-3 rounded-xl border border-gray-100/50 transition-colors group-hover:bg-slate-50">
-                                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Biaya Lain</p>
-                                    <p className="font-bold text-gray-700 tabular-nums text-sm truncate">{formatCurrency(stat.totalOperational)}</p>
+                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-gray-100/50 transition-colors group-hover:bg-slate-50 flex flex-col justify-center">
+                                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Biaya Lain</p>
+                                    <p className="font-black text-gray-900 tabular-nums text-[15px] truncate">{formatCurrency(stat.totalOperational)}</p>
                                 </div>
                             </div>
+                            
+                            {/* Divider */}
+                            <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
 
-                            <div className="pt-4 border-t border-dashed border-gray-200 flex justify-between items-center">
-                                <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest">Total Pengeluaran</p>
-                                <p className="font-black text-lg text-emerald-600 tabular-nums tracking-tight">{formatCurrency(stat.totalCost)}</p>
+                            {/* Total Cost Area */}
+                            <div className="flex justify-between items-center mt-auto pb-1 relative">
+                                <div className="absolute top-0 -left-6 bottom-0 w-1 bg-emerald-500 rounded-r-md hidden sm:block" />
+                                <p className="text-[11px] font-extrabold text-gray-400 uppercase tracking-[0.15em]">Total Pengeluaran</p>
+                                <p className="font-black text-xl text-emerald-600 tabular-nums tracking-tight">{formatCurrency(stat.totalCost)}</p>
                             </div>
                         </div>
                     ))

@@ -335,62 +335,71 @@ export default function EtollList() {
                     <div className="md:hidden space-y-4">
                         <div className="px-1"><h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider">Daftar E-Toll</h2></div>
                         {etolls.map(etoll => (
-                            <div key={etoll.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 group hover:border-blue-100 transition-colors">
-                                <div className="flex justify-between items-start mb-5">
-                                    <div className="flex gap-3">
-                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-white ring-1 ring-slate-900/5 flex items-center justify-center shrink-0">
-                                            <CreditCard className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                            <div key={etoll.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300 group">
+                                {/* Header Area */}
+                                <div className="flex justify-between items-start mb-6">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white ring-1 ring-slate-900/5 flex items-center justify-center shrink-0 shadow-sm">
+                                            <CreditCard className="h-5 w-5 text-slate-500" aria-hidden="true" />
                                         </div>
                                         <div>
-                                            <p className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-1">{etoll.card_name}</p>
-                                            <p className="text-[11px] font-medium text-gray-400 mt-0.5">{etoll.card_number || 'Tanpa nomor seri'}</p>
+                                            <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">E-Toll</span>
+                                            <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-1">{etoll.card_name}</h3>
+                                            <span className="block text-[13px] font-bold text-gray-500 tabular-nums">{etoll.card_number || 'Tanpa nomor seri'}</span>
                                         </div>
                                     </div>
-                                    <span className={`inline-flex px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border ${etoll.status === 'active'
-                                        ? 'bg-emerald-50 text-emerald-600 border-emerald-200/60'
-                                        : 'bg-gray-50 text-gray-500 border-gray-200/60'
-                                        }`}>
-                                        {etoll.status === 'active' ? 'Aktif' : 'Nonaktif'}
-                                    </span>
+                                    <div className="scale-[0.85] origin-top-right shrink-0">
+                                        <span className={`inline-flex px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${etoll.status === 'active'
+                                                ? 'bg-emerald-50 text-emerald-600 border-emerald-200/60'
+                                                : 'bg-gray-50 text-gray-500 border-gray-200/60'
+                                                }`}>
+                                                {etoll.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                                        </span>
+                                    </div>
                                 </div>
 
-                                <div className={`p-4 rounded-xl mb-5 border ${etoll.balance >= 50000 ? 'bg-emerald-50/50 border-emerald-100/50' : 'bg-rose-50/50 border-rose-100/50'}`}>
-                                    <div className="flex justify-between items-center mb-1">
-                                        <p className={`text-[10px] font-bold uppercase tracking-widest ${etoll.balance >= 50000 ? 'text-emerald-700/70' : 'text-rose-700/70'}`}>
+                                {/* Divider */}
+                                <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
+
+                                {/* Cost Area */}
+                                <div className={`p-5 rounded-[16px] mb-6 flex flex-col justify-between ${etoll.balance >= 50000 ? 'bg-gradient-to-br from-emerald-50/80 to-emerald-50/30 border border-emerald-100/50' : 'bg-gradient-to-br from-rose-50/80 to-rose-50/30 border border-rose-100/50'}`}>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <p className={`text-[10px] font-extrabold tracking-[0.15em] uppercase ${etoll.balance >= 50000 ? 'text-emerald-600/70' : 'text-rose-600/70'}`}>
                                             Saldo Berjalan
                                         </p>
                                         {etoll.balance < 50000 && (
-                                            <span className="px-1.5 py-0.5 bg-rose-100 text-rose-700 rounded text-[8px] font-bold uppercase tracking-wider">
+                                            <span className="px-2 py-0.5 bg-rose-100 text-rose-700 rounded-md text-[9px] font-bold uppercase tracking-wider">
                                                 Rendah
                                             </span>
                                         )}
                                     </div>
-                                    <p className={`font-black text-xl tabular-nums tracking-tight ${etoll.balance >= 50000 ? 'text-emerald-600' : 'text-rose-600'}`}>
+                                    <p className={`text-[22px] font-black tracking-tight leading-none ${etoll.balance >= 50000 ? 'text-emerald-700' : 'text-rose-700'}`}>
                                         {formatCurrency(etoll.balance)}
                                     </p>
                                 </div>
 
-                                <div className="flex gap-2">
+                                {/* Action Area */}
+                                <div className="mt-auto flex justify-end gap-2 flex-wrap sm:flex-nowrap">
                                     <button
                                         onClick={() => handleOpenTopUp(etoll)}
-                                        className="py-2.5 px-4 bg-emerald-50 text-emerald-600 rounded-xl font-bold text-xs hover:bg-emerald-100 transition-colors flex justify-center items-center"
+                                        className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2"
                                         aria-label={`Top Up kartu ${etoll.card_name}`}
                                     >
-                                        <Wallet className="h-3.5 w-3.5" aria-hidden="true" />
+                                        <Wallet className="h-3.5 w-3.5" aria-hidden="true" /> Top Up
                                     </button>
                                     <button
                                         onClick={() => handleEdit(etoll)}
-                                        className="flex-1 py-2.5 bg-blue-50 text-blue-600 rounded-xl font-bold text-xs hover:bg-blue-100 transition-colors flex justify-center items-center gap-2"
+                                        className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2"
                                         aria-label={`Edit kartu ${etoll.card_name}`}
                                     >
                                         <Pencil className="h-3.5 w-3.5" aria-hidden="true" /> Edit
                                     </button>
                                     <button
                                         onClick={() => handleDeleteClick(etoll.id)}
-                                        className="py-2.5 px-4 bg-rose-50 text-rose-600 rounded-xl font-bold text-xs hover:bg-rose-100 transition-colors flex items-center"
+                                        className="px-4 py-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2"
                                         aria-label={`Hapus kartu ${etoll.card_name}`}
                                     >
-                                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                        <Trash2 className="h-3.5 w-3.5" aria-hidden="true" /> Hapus
                                     </button>
                                 </div>
                             </div>

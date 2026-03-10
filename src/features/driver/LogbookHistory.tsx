@@ -372,84 +372,94 @@ export default function LogbookHistory() {
                 <div className="space-y-6">
                     <div className="space-y-4">
                         {paginatedLogbooks.map((log: LogbookEntry) => (
-                            <div key={log.id} className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-6 md:p-8 flex flex-col hover:shadow-md transition-shadow duration-300 relative overflow-hidden group">
-                                <div className="absolute top-0 right-0 w-32 h-32 bg-gray-50/50 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-blue-50/50 transition-colors duration-500 pointer-events-none"></div>
-                                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start mb-6 gap-4 relative z-10">
+                            <div key={log.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300">
+                                {/* Header Area */}
+                                <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <div className="flex items-center gap-3 flex-wrap mb-1.5">
-                                            <p className="font-black text-gray-900 tabular-nums tracking-tight text-lg">
-                                                {format(new Date(log.date), 'EEEE, dd MMM yyyy', { locale: id })}
-                                            </p>
-                                            {getStatusBadge(log.status)}
-                                        </div>
-                                        <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">{getUnitInfo(log.unit_id)}</p>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">
+                                            {format(new Date(log.date), 'EEEE, dd MMM', { locale: id })}
+                                        </span>
+                                        <h3 className="text-[22px] font-black text-gray-900 tracking-tight leading-none mb-2">
+                                            {getUnitInfo(log.unit_id).split(' - ')[0] || getUnitInfo(log.unit_id)}
+                                        </h3>
+                                        <span className="block text-[13px] font-bold text-gray-500">
+                                            {log.client_name}
+                                        </span>
                                     </div>
-                                    <div className="flex items-center gap-1.5 shrink-0 self-end sm:self-auto">
-                                        {canEdit(log.status) && (
-                                            <button
-                                                onClick={() => handleEdit(log)}
-                                                className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl hover:bg-blue-100/80 transition-colors duration-200 font-bold text-xs flex items-center gap-1.5"
-                                                aria-label="Edit Laporan"
-                                            >
-                                                <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
-                                                <span className="hidden sm:inline">Edit</span>
-                                            </button>
-                                        )}
-                                        {log.status === 'rejected' && (
-                                            <button
-                                                onClick={() => setDeleteLogbook(log)}
-                                                className="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl hover:bg-rose-100/80 transition-colors duration-200 font-bold text-xs flex items-center gap-1.5"
-                                                aria-label="Hapus Laporan Ditolak"
-                                            >
-                                                <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
-                                                <span className="hidden sm:inline">Hapus</span>
-                                            </button>
-                                        )}
+                                    <div className="scale-[0.85] origin-top-right shrink-0">
+                                        {getStatusBadge(log.status)}
                                     </div>
                                 </div>
 
-                                <div className="space-y-4 mb-6 relative z-10">
-                                    <div className="grid grid-cols-[80px_1fr] gap-3 items-start">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 pt-0.5 mt-px">Penyewa</span>
-                                        <span className="text-sm font-bold text-gray-900 leading-snug">{log.client_name}</span>
+                                {/* Metadata Grid */}
+                                <div className="grid grid-cols-2 gap-y-5 gap-x-4 mb-6">
+                                    <div>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Rute</span>
+                                        <span className="block text-sm font-bold text-gray-900 line-clamp-2 leading-snug">{log.rute}</span>
                                     </div>
-                                    <div className="grid grid-cols-[80px_1fr] gap-3 items-start">
-                                        <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 pt-0.5 mt-px">Rute</span>
-                                        <span className="text-sm font-bold text-gray-900 leading-snug">{log.rute}</span>
-                                    </div>
-                                    {log.keterangan && (
-                                        <div className="grid grid-cols-[80px_1fr] gap-3 items-start">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 pt-0.5 mt-px">Catatan</span>
-                                            <span className="text-sm font-bold text-gray-900 leading-snug">{log.keterangan}</span>
+                                    {log.keterangan ? (
+                                        <div>
+                                            <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Catatan</span>
+                                            <span className="block text-sm font-bold text-gray-900 line-clamp-2 leading-snug">{log.keterangan}</span>
                                         </div>
+                                    ) : (
+                                        <div></div>
                                     )}
                                 </div>
 
-                                <div className="bg-slate-50/80 p-5 md:p-6 rounded-2xl border border-slate-100 relative z-10">
-                                    <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 mb-4">
-                                        <div className="flex-1">
-                                            <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Biaya Tol & Parkir</span>
-                                            <span className="font-bold text-gray-800 tabular-nums">{formatCurrency(log.toll_cost)}</span>
-                                        </div>
-                                        <div className="hidden sm:block w-px bg-gray-200/60"></div>
-                                        <div className="flex-1">
-                                            <span className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider mb-1">Biaya Opr. Lain</span>
-                                            <span className="font-bold text-gray-800 tabular-nums">{formatCurrency(log.operational_cost)}</span>
-                                        </div>
-                                        <div className="hidden sm:block w-px bg-gray-200/60"></div>
-                                        <div className="flex-1 sm:text-right">
-                                            <span className="block text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Total Biaya</span>
-                                            <span className="text-xl font-black text-blue-700 tabular-nums tracking-tighter leading-none block">{formatCurrency(log.toll_cost + log.operational_cost)}</span>
+                                {/* Divider */}
+                                <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
+
+                                {/* Cost Section (Clean, no background) */}
+                                <div className="grid grid-cols-3 gap-2 items-end mb-6">
+                                    <div>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Tol & Parkir</span>
+                                        <span className="block text-[13px] font-bold text-gray-700 tabular-nums">{formatCurrency(log.toll_cost)}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Opr. Lain</span>
+                                        <span className="block text-[13px] font-bold text-gray-700 tabular-nums">{formatCurrency(log.operational_cost)}</span>
+                                    </div>
+                                    <div className="text-right">
+                                        <span className="block text-[10px] font-black uppercase tracking-[0.1em] text-blue-600 mb-1">Total Biaya</span>
+                                        <span className="block text-[15px] font-black text-blue-700 tabular-nums leading-none tracking-tight">
+                                            {formatCurrency(log.toll_cost + log.operational_cost)}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {/* Rejection Note if applicable */}
+                                {log.status === 'rejected' && (
+                                    <div className="mb-6 p-3 rounded-xl bg-rose-50/50 border border-rose-100/50 flex gap-2.5 items-start">
+                                        <XCircle className="h-4 w-4 text-rose-500 shrink-0 mt-0.5" aria-hidden="true" />
+                                        <div>
+                                            <p className="text-[10px] font-black text-rose-800 uppercase tracking-widest mb-0.5">Ditolak</p>
+                                            <p className="text-xs font-semibold text-rose-700/80 leading-snug">Edit dan submit ulang, atau hapus jika batal.</p>
                                         </div>
                                     </div>
+                                )}
+
+                                {/* Action Area */}
+                                <div className="mt-auto flex justify-end gap-2 pt-2 border-t border-gray-50/80">
+                                    {canEdit(log.status) && (
+                                        <button
+                                            onClick={() => handleEdit(log)}
+                                            className="px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2 group"
+                                            aria-label="Edit Laporan"
+                                        >
+                                            <Pencil className="h-3.5 w-3.5 text-gray-400 group-hover:text-blue-500 transition-colors" aria-hidden="true" />
+                                            <span>Edit</span>
+                                        </button>
+                                    )}
                                     {log.status === 'rejected' && (
-                                        <div className="mt-5 border border-rose-100 bg-rose-50/80 px-4 py-3 rounded-xl flex items-start gap-3">
-                                            <XCircle className="h-5 w-5 text-rose-500 shrink-0 mt-0.5" aria-hidden="true" />
-                                            <div>
-                                                <p className="text-xs font-black text-rose-800 uppercase tracking-widest mb-1">Laporan Ditolak</p>
-                                                <p className="text-xs font-medium text-rose-700/90 leading-relaxed">Admin menolak laporan ini. Harap edit dan submit ulang, atau hapus jika batal.</p>
-                                            </div>
-                                        </div>
+                                        <button
+                                            onClick={() => setDeleteLogbook(log)}
+                                            className="px-4 py-2.5 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center justify-center gap-2"
+                                            aria-label="Hapus Laporan Ditolak"
+                                        >
+                                            <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                            <span>Hapus</span>
+                                        </button>
                                     )}
                                 </div>
                             </div>

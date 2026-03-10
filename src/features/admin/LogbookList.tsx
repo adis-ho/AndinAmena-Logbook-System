@@ -688,65 +688,74 @@ export default function LogbookList() {
                 ) : (
                     <>
                         {logbooks.map(log => (
-                            <div key={log.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 hover:shadow-md transition-shadow duration-300">
-                                <div className="flex justify-between items-start mb-4">
+                            <div key={log.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300">
+                                {/* Header Area */}
+                                <div className="flex justify-between items-start mb-6">
                                     <div>
-                                        <p className="text-sm font-black text-gray-900 tabular-nums">
-                                            {format(new Date(log.date), 'EEEE, dd MMMM yyyy', { locale: id })}
-                                        </p>
-                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-1">{getUnitName(log.unit_id)} · {getUnitPlate(log.unit_id)}</p>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">
+                                            {format(new Date(log.date), 'EEEE, dd MMM', { locale: id })}
+                                        </span>
+                                        <h3 className="text-[20px] font-black text-gray-900 tracking-tight leading-none mb-2">
+                                            {getDriverName(log.driver_id)}
+                                        </h3>
+                                        <span className="block text-[13px] font-bold text-gray-500">
+                                            {getUnitName(log.unit_id)} · {getUnitPlate(log.unit_id)}
+                                        </span>
                                     </div>
-                                    <div className="flex items-center gap-2">
+                                    <div className="scale-[0.85] origin-top-right shrink-0">
                                         {getStatusBadge(log.status)}
                                     </div>
                                 </div>
 
-                                <div className="space-y-2 mb-4">
-                                    <div className="flex">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider w-20">Driver</span>
-                                        <span className="text-sm font-medium text-gray-900">{getDriverName(log.driver_id)}</span>
+                                {/* Metadata Grid */}
+                                <div className="grid grid-cols-2 gap-y-5 gap-x-4 mb-6">
+                                    <div>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Penyewa</span>
+                                        <span className="block text-sm font-bold text-gray-900 line-clamp-1 leading-snug">{log.client_name}</span>
                                     </div>
-                                    <div className="flex">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider w-20">User</span>
-                                        <span className="text-sm text-gray-900">{log.client_name}</span>
-                                    </div>
-                                    <div className="flex">
-                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wider w-20">Rute</span>
-                                        <span className="text-sm text-gray-700">{log.rute}</span>
+                                    <div>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Rute</span>
+                                        <span className="block text-sm font-bold text-gray-900 line-clamp-1 leading-snug">{log.rute}</span>
                                     </div>
                                 </div>
 
-                                <div className="bg-blue-50/60 p-4 rounded-xl space-y-1.5 border border-blue-100/40">
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Biaya Tol</span>
-                                        <span className="text-sm font-bold text-blue-800 tabular-nums">{formatCurrency(log.toll_cost)}</span>
+                                {/* Divider */}
+                                <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
+
+                                {/* Cost Section (Clean, no background) */}
+                                <div className="grid grid-cols-3 gap-2 items-end mb-6">
+                                    <div>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Tol & Parkir</span>
+                                        <span className="block text-[13px] font-bold text-gray-700 tabular-nums">{formatCurrency(log.toll_cost)}</span>
                                     </div>
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-bold text-blue-500 uppercase tracking-wider">Biaya Lain</span>
-                                        <span className="text-sm font-bold text-blue-800 tabular-nums">{formatCurrency(log.operational_cost)}</span>
+                                    <div>
+                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">Opr. Lain</span>
+                                        <span className="block text-[13px] font-bold text-gray-700 tabular-nums">{formatCurrency(log.operational_cost)}</span>
                                     </div>
-                                    <div className="border-t border-blue-200/50 my-1" />
-                                    <div className="flex justify-between items-center">
-                                        <span className="text-[10px] font-black text-blue-600 uppercase tracking-widest">Total</span>
-                                        <span className="text-lg font-black text-blue-700 tabular-nums tracking-tight">{formatCurrency(log.toll_cost + log.operational_cost)}</span>
+                                    <div className="text-right">
+                                        <span className="block text-[10px] font-black uppercase tracking-[0.1em] text-blue-600 mb-1">Total Biaya</span>
+                                        <span className="block text-[15px] font-black text-blue-700 tabular-nums leading-none tracking-tight">
+                                            {formatCurrency(log.toll_cost + log.operational_cost)}
+                                        </span>
                                     </div>
                                 </div>
 
-                                <div className="flex justify-end gap-2 mt-4 pt-4 border-t border-gray-100">
-                                    <button onClick={() => setSelectedLogbook(log)} className="px-3 py-1.5 text-blue-600 hover:bg-blue-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
+                                {/* Action Area */}
+                                <div className="mt-auto flex flex-wrap justify-end gap-2 pt-2 border-t border-gray-50/80">
+                                    <button onClick={() => setSelectedLogbook(log)} className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider">
                                         Detail
                                     </button>
                                     {log.status === 'submitted' && (
                                         <>
-                                            <button onClick={() => handleApprove(log.id)} className="px-3 py-1.5 text-emerald-600 hover:bg-emerald-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
+                                            <button onClick={() => handleApprove(log.id)} className="px-4 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider">
                                                 Setujui
                                             </button>
-                                            <button onClick={() => handleReject(log.id)} className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
+                                            <button onClick={() => handleReject(log.id)} className="px-4 py-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider">
                                                 Tolak
                                             </button>
                                         </>
                                     )}
-                                    <button onClick={() => setDeleteLogbook(log)} className="px-3 py-1.5 text-rose-600 hover:bg-rose-50 rounded-xl text-[10px] font-bold uppercase tracking-wider transition-colors duration-200">
+                                    <button onClick={() => setDeleteLogbook(log)} className="px-4 py-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider">
                                         Hapus
                                     </button>
                                 </div>
