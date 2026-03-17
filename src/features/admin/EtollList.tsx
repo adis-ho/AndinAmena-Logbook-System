@@ -342,10 +342,10 @@ export default function EtollList() {
                                         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white ring-1 ring-slate-900/5 flex items-center justify-center shrink-0 shadow-sm">
                                             <CreditCard className="h-5 w-5 text-slate-500" aria-hidden="true" />
                                         </div>
-                                        <div>
+                                        <div className="flex-1 min-w-0">
                                             <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">E-Toll</span>
-                                            <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-1">{etoll.card_name}</h3>
-                                            <span className="block text-[13px] font-bold text-gray-500 tabular-nums">{etoll.card_number || 'Tanpa nomor seri'}</span>
+                                            <h3 className="text-lg sm:text-xl font-black text-gray-900 tracking-tight leading-tight sm:leading-none mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-2">{etoll.card_name}</h3>
+                                            <span className="block text-[13px] font-bold text-gray-500 tabular-nums truncate">{etoll.card_number || 'Tanpa nomor seri'}</span>
                                         </div>
                                     </div>
                                     <div className="scale-[0.85] origin-top-right shrink-0">
