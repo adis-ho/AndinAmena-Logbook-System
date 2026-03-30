@@ -12,6 +12,18 @@ dist
 dist-ssr
 *.local
 
+# Environment variables
+.env
+.env.local
+.env.production
+.env.development
+.env*.local
+
+# Audit files
+squirrel.toml
+audit-report.txt
+.squirrel/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

@@ -4,6 +4,7 @@ import DashboardLayout from './components/layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const LoginPage = lazy(() => import('./features/auth/LoginPage'));
+const PrivacyPolicyPage = lazy(() => import('./features/legal/PrivacyPolicyPage'));
 
 // Admin components
 const AdminDashboard = lazy(() => import('./features/admin/Dashboard'));
@@ -28,6 +29,7 @@ function App() {
             <Routes>
                 {/* Public Routes */}
                 <Route path="/login" element={<LoginPage />} />
+                <Route path="/privacy" element={<PrivacyPolicyPage />} />
                 <Route path="/unauthorized" element={<div className="min-h-screen flex items-center justify-center">Unauthorized Access</div>} />
 
                 {/* Admin Routes */}

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Lock, Mail } from 'lucide-react';
 import { ApiService } from '../../services/api';
 import logoAndin from '../../assets/images/logo-andin.png';
@@ -49,7 +49,7 @@ export default function LoginPage() {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-white px-4 sm:px-6">
+        <main className="min-h-screen flex items-center justify-center bg-white px-4 sm:px-6">
             <div className="max-w-md w-full">
                 {/* Form Card */}
                 <div className="bg-white p-8 sm:p-10 rounded-[2rem] shadow-[0_8px_40px_-12px_rgba(0,0,0,0.08)] border border-gray-100">
@@ -63,7 +63,7 @@ export default function LoginPage() {
 
                     {/* Title */}
                     <div className="text-center mb-8">
-                        <h2 className="text-2xl sm:text-[1.75rem] font-black text-gray-900 tracking-tight leading-tight">Laporan Harian</h2>
+                        <h1 className="text-2xl sm:text-[1.75rem] font-black text-gray-900 tracking-tight leading-tight">Laporan Harian</h1>
                         <p className="mt-2 text-sm font-medium text-gray-500">Masuk untuk melanjutkan</p>
                     </div>
 
@@ -158,7 +158,15 @@ export default function LoginPage() {
                         </button>
                     </form>
                 </div>
+
+                    {/* Privacy Policy Link */}
+                    <p className="mt-6 text-center text-xs text-gray-400">
+                        Dengan masuk, Anda menyetujui{' '}
+                        <Link to="/privacy" className="text-blue-500 hover:text-blue-600 underline underline-offset-2 transition-colors">
+                            Kebijakan Privasi
+                        </Link>
+                    </p>
             </div>
-        </div>
+        </main>
     );
 }

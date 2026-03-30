@@ -1,6 +1,11 @@
 {
   "version": 1,
   "skills": {
+    "audit-website": {
+      "source": "C:\\Users\\nadief\\.agents\\skills\\audit-website",
+      "sourceType": "local",
+      "computedHash": "82588484b29316f3106185374cc6aedf409c38a0698d49f7034c9b5ec07a1aa7"
+    },
     "breakdown-feature-prd": {
       "source": "C:\\Users\\nadief\\.agents\\skills\\breakdown-feature-prd",
       "sourceType": "local",
