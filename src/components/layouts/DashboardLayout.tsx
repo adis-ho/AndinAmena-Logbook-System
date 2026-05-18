@@ -7,12 +7,12 @@ export default function DashboardLayout() {
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex">
+        <div className="min-h-screen bg-gray-50 flex overflow-x-hidden">
             {/* Sidebar (hidden by default, shown on hamburger click) */}
             <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
             {/* Main Content */}
-            <div className="flex-1 flex flex-col min-h-screen">
+            <div className="flex-1 flex flex-col min-h-screen min-w-0">
                 {/* Header */}
                 <Header onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)} />
 

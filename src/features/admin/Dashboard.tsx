@@ -3,8 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ApiService } from '../../services/api';
 import { LayoutDashboard, BookOpen, Users, Truck, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Line, Label } from 'recharts';
-import { format, differenceInDays, startOfMonth } from 'date-fns';
-import { id } from 'date-fns/locale';
+import { differenceInDays, startOfMonth } from 'date-fns';
 import { SkeletonDashboard } from '../../components/ui/Skeleton';
 import Select from '../../components/ui/Select';
 import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
@@ -103,13 +102,12 @@ export default function AdminDashboard() {
     };
 
     const formatCurrencyCompact = (value: number) => {
-        if (value >= 1000000) {
-            return `Rp ${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1).replace('.', ',')}jt`;
-        }
-        if (value >= 1000) {
-            return `Rp ${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1).replace('.', ',')}rb`;
-        }
-        return formatCurrency(value);
+        return new Intl.NumberFormat('id-ID', { 
+            style: 'currency', 
+            currency: 'IDR', 
+            notation: 'compact', 
+            maximumFractionDigits: 1 
+        }).format(value);
     };
 
     if (loading) {
@@ -138,7 +136,7 @@ export default function AdminDashboard() {
         <div className="space-y-6">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
-                    <LayoutDashboard className="h-6 w-6 text-blue-600" />
+                    <LayoutDashboard className="h-6 w-6 text-blue-600" aria-hidden="true" />
                     <h1 className="text-2xl font-bold text-gray-900">Dashboard Admin</h1>
                 </div>
 
@@ -163,7 +161,7 @@ export default function AdminDashboard() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
                     <div className="flex items-center gap-3 mb-3 relative">
                         <div className="bg-blue-50 p-2 rounded-lg border border-blue-100/50">
-                            <BookOpen className="h-4 w-4 text-blue-600" />
+                            <BookOpen className="h-4 w-4 text-blue-600" aria-hidden="true" />
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Total Laporan</p>
                     </div>
@@ -186,7 +184,7 @@ export default function AdminDashboard() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-purple-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
                     <div className="flex items-center gap-3 mb-3 relative">
                         <div className="bg-purple-50 p-2 rounded-lg border border-purple-100/50">
-                            <Users className="h-4 w-4 text-purple-600" />
+                            <Users className="h-4 w-4 text-purple-600" aria-hidden="true" />
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Jml Driver</p>
                     </div>
@@ -197,7 +195,7 @@ export default function AdminDashboard() {
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
                     <div className="flex items-center gap-3 mb-3 relative">
                         <div className="bg-amber-50 p-2 rounded-lg border border-amber-100/50">
-                            <Truck className="h-4 w-4 text-amber-600" />
+                            <Truck className="h-4 w-4 text-amber-600" aria-hidden="true" />
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-gray-500">Unit Aktif</p>
                     </div>
@@ -205,9 +203,10 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Cost Summary (Accentuated) */}
-                <div
+                <button
+                    type="button"
                     onClick={() => toggleTooltip('total-cost')}
-                    className="bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-700 p-5 rounded-xl border border-blue-400/30 relative overflow-visible group md:col-span-2 lg:col-span-1 shadow-lg shadow-blue-500/10 cursor-pointer"
+                    className="w-full text-left bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-700 p-5 rounded-xl border border-blue-400/30 relative overflow-visible group md:col-span-2 lg:col-span-1 shadow-lg shadow-blue-500/10 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50"
                 >
                     {/* Tooltip */}
                     {activeTooltip === 'total-cost' && (
@@ -230,11 +229,13 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     )}
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay rounded-xl pointer-events-none"></div>
+                    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none">
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay rounded-xl pointer-events-none"></div>
+                    </div>
                     <div className="flex items-center gap-3 mb-3 relative">
                         <div className="bg-white/10 p-2 rounded-lg border border-white/10 backdrop-blur-md">
-                            <TrendingUp className="h-4 w-4 text-blue-50" />
+                            <TrendingUp className="h-4 w-4 text-blue-50" aria-hidden="true" />
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-blue-100/80">Total Biaya (Semua)</p>
                     </div>
@@ -243,11 +244,12 @@ export default function AdminDashboard() {
                             {formatCurrencyCompact(data.totalCost)}
                         </p>
                     </div>
-                </div>
+                </button>
 
-                <div
+                <button
+                    type="button"
                     onClick={() => toggleTooltip('today-cost')}
-                    className="bg-gradient-to-br from-teal-500 via-emerald-500 to-emerald-600 p-5 rounded-xl border border-emerald-400/30 relative overflow-visible group md:col-span-1 lg:col-span-1 shadow-lg shadow-emerald-500/10 cursor-pointer"
+                    className="w-full text-left bg-gradient-to-br from-teal-500 via-emerald-500 to-emerald-600 p-5 rounded-xl border border-emerald-400/30 relative overflow-visible group md:col-span-1 lg:col-span-1 shadow-lg shadow-emerald-500/10 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-gray-50"
                 >
                     {/* Tooltip */}
                     {activeTooltip === 'today-cost' && (
@@ -270,11 +272,13 @@ export default function AdminDashboard() {
                             </div>
                         </div>
                     )}
-                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mb-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay rounded-xl pointer-events-none"></div>
+                    <div className="absolute inset-0 overflow-hidden rounded-xl pointer-events-none">
+                        <div className="absolute bottom-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mb-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
+                        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay rounded-xl pointer-events-none"></div>
+                    </div>
                     <div className="flex items-center gap-3 mb-3 relative">
                         <div className="bg-white/10 p-2 rounded-lg border border-white/10 backdrop-blur-md">
-                            <Calendar className="h-4 w-4 text-emerald-50" />
+                            <Calendar className="h-4 w-4 text-emerald-50" aria-hidden="true" />
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100/80">Biaya Hari Ini</p>
                     </div>
@@ -283,7 +287,7 @@ export default function AdminDashboard() {
                             {formatCurrencyCompact(data.todayCost)}
                         </p>
                     </div>
-                </div>
+                </button>
             </div>
 
             {/* Charts */}
@@ -573,7 +577,7 @@ export default function AdminDashboard() {
                     {recentLogbooks.length === 0 ? (
                         <div className="text-center py-10">
                             <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gray-50 mb-3">
-                                <BookOpen className="h-5 w-5 text-gray-400" />
+                                <BookOpen className="h-5 w-5 text-gray-400" aria-hidden="true" />
                             </div>
                             <p className="text-sm font-medium text-gray-500">Belum ada laporan terbaru</p>
                         </div>
@@ -597,7 +601,7 @@ export default function AdminDashboard() {
                                         <div className="flex items-center gap-2 text-[11px] font-medium text-gray-400 tracking-wide">
                                             <span className="text-gray-500">{log.driver_name}</span>
                                             <span className="text-gray-300">•</span>
-                                            <span>{format(new Date(log.date), 'dd MMM yyyy', { locale: id })}</span>
+                                            <span>{new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(log.date))}</span>
                                         </div>
                                     </div>
                                 </div>
