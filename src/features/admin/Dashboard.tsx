@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiService } from '../../services/api';
 import { LayoutDashboard, BookOpen, Users, Truck, TrendingUp, Calendar, AlertCircle } from 'lucide-react';
@@ -47,6 +47,27 @@ export default function AdminDashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [period, setPeriod] = useState<number>(7);
+    const [activeTooltip, setActiveTooltip] = useState<string | null>(null);
+    const tooltipContainerRef = useRef<HTMLDivElement>(null);
+
+    const toggleTooltip = (cardId: string) => {
+        setActiveTooltip(prev => prev === cardId ? null : cardId);
+    };
+
+    useEffect(() => {
+        if (!activeTooltip) return;
+        const handleClickOutside = (e: MouseEvent | TouchEvent) => {
+            if (tooltipContainerRef.current && !tooltipContainerRef.current.contains(e.target as Node)) {
+                setActiveTooltip(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        document.addEventListener('touchstart', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            document.removeEventListener('touchstart', handleClickOutside);
+        };
+    }, [activeTooltip]);
 
     const fetchData = useCallback(async () => {
         setLoading(true);
@@ -79,6 +100,16 @@ export default function AdminDashboard() {
 
     const formatCurrency = (value: number) => {
         return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(value);
+    };
+
+    const formatCurrencyCompact = (value: number) => {
+        if (value >= 1000000) {
+            return `Rp ${(value / 1000000).toFixed(value % 1000000 === 0 ? 0 : 1).replace('.', ',')}jt`;
+        }
+        if (value >= 1000) {
+            return `Rp ${(value / 1000).toFixed(value % 1000 === 0 ? 0 : 1).replace('.', ',')}rb`;
+        }
+        return formatCurrency(value);
     };
 
     if (loading) {
@@ -126,7 +157,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Unified KPI Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div ref={tooltipContainerRef} className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {/* Laporan Stats */}
                 <div className="bg-white p-5 rounded-xl border border-gray-100 relative overflow-hidden group hover:border-blue-200 transition-colors">
                     <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110" />
@@ -174,28 +205,84 @@ export default function AdminDashboard() {
                 </div>
 
                 {/* Cost Summary (Accentuated) */}
-                <div className="bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-700 p-5 rounded-xl border border-blue-400/30 relative overflow-hidden group md:col-span-2 lg:col-span-1 shadow-lg shadow-blue-500/10">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700"></div>
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay"></div>
+                <div
+                    onClick={() => toggleTooltip('total-cost')}
+                    className="bg-gradient-to-br from-indigo-500 via-blue-600 to-blue-700 p-5 rounded-xl border border-blue-400/30 relative overflow-visible group md:col-span-2 lg:col-span-1 shadow-lg shadow-blue-500/10 cursor-pointer"
+                >
+                    {/* Tooltip */}
+                    {activeTooltip === 'total-cost' && (
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 z-50 animate-in fade-in zoom-in-95 duration-200 origin-bottom"
+                        >
+                            <div className="bg-white/95 backdrop-blur-md border border-gray-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl p-4 min-w-[200px] whitespace-nowrap">
+                                <p className="text-xs font-semibold text-gray-500 mb-2 border-b border-gray-100 pb-2">Total Biaya (Semua)</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full shadow-sm bg-blue-500" />
+                                    <p className="text-base font-bold text-gray-900 tabular-nums">
+                                        {formatCurrency(data.totalCost)}
+                                    </p>
+                                </div>
+                            </div>
+                            {/* Arrow */}
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full -mt-px">
+                                <div className="w-3 h-3 bg-white/95 backdrop-blur-md border-r border-b border-gray-200/60 rotate-45 -translate-y-1/2 shadow-[2px_2px_4px_rgba(0,0,0,0.04)]" />
+                            </div>
+                        </div>
+                    )}
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mt-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay rounded-xl pointer-events-none"></div>
                     <div className="flex items-center gap-3 mb-3 relative">
                         <div className="bg-white/10 p-2 rounded-lg border border-white/10 backdrop-blur-md">
                             <TrendingUp className="h-4 w-4 text-blue-50" />
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-blue-100/80">Total Biaya (Semua)</p>
                     </div>
-                    <p className="text-xl sm:text-2xl font-black text-white tabular-nums relative truncate drop-shadow-sm">{formatCurrency(data.totalCost)}</p>
+                    <div className="relative">
+                        <p className="text-xl sm:text-2xl font-black text-white tabular-nums truncate drop-shadow-sm">
+                            {formatCurrencyCompact(data.totalCost)}
+                        </p>
+                    </div>
                 </div>
 
-                <div className="bg-gradient-to-br from-teal-500 via-emerald-500 to-emerald-600 p-5 rounded-xl border border-emerald-400/30 relative overflow-hidden group md:col-span-1 lg:col-span-1 shadow-lg shadow-emerald-500/10">
-                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mb-10 group-hover:scale-110 transition-transform duration-700"></div>
-                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay"></div>
+                <div
+                    onClick={() => toggleTooltip('today-cost')}
+                    className="bg-gradient-to-br from-teal-500 via-emerald-500 to-emerald-600 p-5 rounded-xl border border-emerald-400/30 relative overflow-visible group md:col-span-1 lg:col-span-1 shadow-lg shadow-emerald-500/10 cursor-pointer"
+                >
+                    {/* Tooltip */}
+                    {activeTooltip === 'today-cost' && (
+                        <div
+                            onClick={(e) => e.stopPropagation()}
+                            className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 z-50 animate-in fade-in zoom-in-95 duration-200 origin-bottom"
+                        >
+                            <div className="bg-white/95 backdrop-blur-md border border-gray-200/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-xl p-4 min-w-[200px] whitespace-nowrap">
+                                <p className="text-xs font-semibold text-gray-500 mb-2 border-b border-gray-100 pb-2">Biaya Hari Ini</p>
+                                <div className="flex items-center gap-2">
+                                    <div className="w-2.5 h-2.5 rounded-full shadow-sm bg-emerald-500" />
+                                    <p className="text-base font-bold text-gray-900 tabular-nums">
+                                        {formatCurrency(data.todayCost)}
+                                    </p>
+                                </div>
+                            </div>
+                            {/* Arrow */}
+                            <div className="absolute left-1/2 -translate-x-1/2 top-full -mt-px">
+                                <div className="w-3 h-3 bg-white/95 backdrop-blur-md border-r border-b border-gray-200/60 rotate-45 -translate-y-1/2 shadow-[2px_2px_4px_rgba(0,0,0,0.04)]" />
+                            </div>
+                        </div>
+                    )}
+                    <div className="absolute bottom-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mr-10 -mb-10 group-hover:scale-110 transition-transform duration-700 pointer-events-none"></div>
+                    <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDUiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay rounded-xl pointer-events-none"></div>
                     <div className="flex items-center gap-3 mb-3 relative">
                         <div className="bg-white/10 p-2 rounded-lg border border-white/10 backdrop-blur-md">
                             <Calendar className="h-4 w-4 text-emerald-50" />
                         </div>
                         <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-100/80">Biaya Hari Ini</p>
                     </div>
-                    <p className="text-xl sm:text-2xl font-black text-white tabular-nums relative truncate drop-shadow-sm">{formatCurrency(data.todayCost)}</p>
+                    <div className="relative">
+                        <p className="text-xl sm:text-2xl font-black text-white tabular-nums truncate drop-shadow-sm">
+                            {formatCurrencyCompact(data.todayCost)}
+                        </p>
+                    </div>
                 </div>
             </div>
 
