@@ -3,10 +3,11 @@ import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import type { LogbookEntry } from '../../types';
-import { History, CheckCircle, XCircle, Clock, Pencil, X, Trash2 } from 'lucide-react';
+import { History, CheckCircle, XCircle, Clock, Pencil, X, Trash2, Search, ArrowUpNarrowWide, ArrowDownNarrowWide } from 'lucide-react';
 import { format } from 'date-fns';
 import { id } from 'date-fns/locale';
 import DatePicker from '../../components/ui/DatePicker';
+import DateRangePicker from '../../components/ui/DateRangePicker';
 import Select from '../../components/ui/Select';
 import Pagination from '../../components/ui/Pagination';
 import { SkeletonLogbookHistory } from '../../components/ui/Skeleton';
@@ -23,9 +24,16 @@ export default function LogbookHistory() {
     const [formLoading, setFormLoading] = useState(false);
     const [deleteLogbook, setDeleteLogbook] = useState<LogbookEntry | null>(null);
 
-    // Pagination State
+    // Pagination & Filter States
     const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
+
+    const [statusFilter, setStatusFilter] = useState<'all' | 'submitted' | 'approved' | 'rejected'>('all');
+    const [filterUnit, setFilterUnit] = useState('');
+    const [filterClient, setFilterClient] = useState('');
+    const [filterDateStart, setFilterDateStart] = useState('');
+    const [filterDateEnd, setFilterDateEnd] = useState('');
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
 
     // Initial Fetch
     const fetchData = async () => {
@@ -80,19 +88,63 @@ export default function LogbookHistory() {
         );
     };
 
+    // Filter and Sort Logbooks
+    const filteredLogbooks = useMemo(() => {
+        return logbooks
+            .filter(log => {
+                if (statusFilter !== 'all' && log.status !== statusFilter) {
+                    return false;
+                }
+                if (filterUnit && log.unit_id !== filterUnit) {
+                    return false;
+                }
+                if (filterClient && !log.client_name.toLowerCase().includes(filterClient.toLowerCase())) {
+                    return false;
+                }
+                const logDateStr = log.date.split('T')[0];
+                if (filterDateStart && logDateStr < filterDateStart) {
+                    return false;
+                }
+                if (filterDateEnd && logDateStr > filterDateEnd) {
+                    return false;
+                }
+                return true;
+            })
+            .sort((a, b) => {
+                const dateA = new Date(a.date).getTime();
+                const dateB = new Date(b.date).getTime();
+                return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+            });
+    }, [logbooks, statusFilter, filterUnit, filterClient, filterDateStart, filterDateEnd, sortOrder]);
+
+    const clearFilters = () => {
+        setFilterUnit('');
+        setFilterClient('');
+        setFilterDateStart('');
+        setFilterDateEnd('');
+        setStatusFilter('all');
+        setSortOrder('desc');
+        setCurrentPage(1);
+    };
+
+    // Reset page to 1 whenever any filter state changes
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [statusFilter, filterUnit, filterClient, filterDateStart, filterDateEnd, sortOrder]);
+
     // Calculate Paginated Data
     const paginatedLogbooks = useMemo(() => {
         const startIndex = (currentPage - 1) * pageSize;
-        return logbooks.slice(startIndex, startIndex + pageSize);
-    }, [logbooks, currentPage, pageSize]);
+        return filteredLogbooks.slice(startIndex, startIndex + pageSize);
+    }, [filteredLogbooks, currentPage, pageSize]);
 
-    // Reset page when data changes or deleted
+    // Reset page when filtered data length changes
     useEffect(() => {
-        const totalPages = Math.ceil(logbooks.length / pageSize) || 1;
+        const totalPages = Math.ceil(filteredLogbooks.length / pageSize) || 1;
         if (currentPage > totalPages) {
             setCurrentPage(totalPages);
         }
-    }, [logbooks.length, pageSize, currentPage]);
+    }, [filteredLogbooks.length, pageSize, currentPage]);
 
     const canEdit = (_status: LogbookEntry['status']) => {
         return true;
@@ -169,9 +221,14 @@ export default function LogbookHistory() {
     }
 
     return (
-        <div className="max-w-3xl mx-auto space-y-8 pb-12">
-            <div className="pt-2 sm:pt-4">
-                <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Riwayat Laporan Harian</h1>
+        <div className="max-w-4xl mx-auto space-y-6 pb-12">
+            <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight">Riwayat Laporan Harian</h1>
+                    <p className="text-xs sm:text-sm font-medium text-gray-500 mt-1">
+                        Menampilkan <span className="font-bold text-gray-700 tabular-nums">{filteredLogbooks.length}</span> dari <span className="font-bold text-gray-700 tabular-nums">{logbooks.length}</span> laporan
+                    </p>
+                </div>
             </div>
 
             {/* Modal Delete Confirmation */}
@@ -363,10 +420,124 @@ export default function LogbookHistory() {
                 </div>
             )}
 
-            {logbooks.length === 0 ? (
+            {/* Filters Command Center */}
+            <div className="bg-white/80 backdrop-blur-md rounded-2xl shadow-sm border border-gray-100/60 p-5 md:p-6 relative ring-1 ring-inset ring-blue-50/50">
+                <div className="flex justify-between items-center mb-4">
+                    <div className="flex items-center gap-2">
+                        <Search className="w-4 h-4 text-blue-600" aria-hidden="true" />
+                        <span className="text-[10px] uppercase font-black tracking-widest text-blue-900/70">Filter & Pencarian</span>
+                    </div>
+                    {(filterUnit || filterClient || filterDateStart || filterDateEnd || statusFilter !== 'all' || sortOrder !== 'desc') && (
+                        <button
+                            onClick={clearFilters}
+                            className="text-[10px] uppercase font-bold tracking-wider text-blue-600 hover:text-blue-800 transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded"
+                        >
+                            Reset Filter
+                        </button>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Unit Filter */}
+                    <div className="space-y-1">
+                        <label htmlFor="filterUnit" className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Unit Kendaraan</label>
+                        <Select
+                            id="filterUnit"
+                            value={filterUnit}
+                            onChange={(val) => setFilterUnit(val)}
+                            options={[
+                                { value: '', label: 'Semua Unit' },
+                                ...units.map(u => ({ value: u.id, label: `${u.name} - ${u.plate_number}` }))
+                            ]}
+                            placeholder="Semua Unit"
+                        />
+                    </div>
+
+                    {/* Client Search Filter */}
+                    <div className="space-y-1">
+                        <label htmlFor="filterClient" className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">User (Tamu/Client)</label>
+                        <div className="relative">
+                            <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" aria-hidden="true" />
+                            <input
+                                id="filterClient"
+                                type="text"
+                                className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-300 transition-all duration-200 font-medium"
+                                placeholder="Cari nama user/client…"
+                                value={filterClient}
+                                onChange={(e) => setFilterClient(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    {/* Date Range Filter */}
+                    <div className="sm:col-span-2 space-y-1">
+                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Rentang Tanggal</label>
+                        <DateRangePicker
+                            startDate={filterDateStart}
+                            endDate={filterDateEnd}
+                            onChange={(start, end) => {
+                                setFilterDateStart(start);
+                                setFilterDateEnd(end);
+                            }}
+                            className="w-full"
+                        />
+                    </div>
+                </div>
+
+                {/* Status & Sort Section */}
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 pt-4 mt-4 border-t border-gray-100">
+                    {/* Status Tabs */}
+                    <div className="flex flex-wrap bg-gray-100/80 p-1 rounded-xl gap-1 flex-1" role="tablist" aria-label="Filter status laporan">
+                        {(['all', 'submitted', 'approved', 'rejected'] as const).map(f => (
+                            <button
+                                key={f}
+                                role="tab"
+                                aria-selected={statusFilter === f}
+                                onClick={() => setStatusFilter(f)}
+                                className={`px-3 py-1.5 rounded-lg text-[10px] uppercase tracking-wider font-bold transition-all duration-200 ${statusFilter === f
+                                    ? 'bg-white text-blue-600 shadow-sm ring-1 ring-inset ring-blue-100/50'
+                                    : 'text-gray-500 hover:text-gray-700 hover:bg-white/50'
+                                    }`}
+                            >
+                                {f === 'all' ? 'Semua' : f === 'submitted' ? 'Pending' : f === 'approved' ? 'Disetujui' : 'Ditolak'}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Sort Order Toggle */}
+                    <button
+                        onClick={() => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc')}
+                        className="inline-flex items-center justify-center gap-2 px-3.5 py-1.5 border border-gray-200 rounded-xl text-[10px] uppercase tracking-wider font-bold text-gray-600 hover:bg-gray-50 hover:border-gray-300 transition-all duration-200 whitespace-nowrap focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                    >
+                        {sortOrder === 'desc' ? (
+                            <>
+                                <ArrowDownNarrowWide className="h-4 w-4 text-blue-600" aria-hidden="true" />
+                                <span>Terbaru</span>
+                            </>
+                        ) : (
+                            <>
+                                <ArrowUpNarrowWide className="h-4 w-4 text-amber-600" aria-hidden="true" />
+                                <span>Terlama</span>
+                            </>
+                        )}
+                    </button>
+                </div>
+            </div>
+
+            {filteredLogbooks.length === 0 ? (
                 <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 p-12 text-center">
                     <History className="h-12 w-12 text-gray-300 mx-auto mb-4" aria-hidden="true" />
-                    <p className="text-gray-500 font-medium tracking-tight">Belum ada riwayat laporan harian.</p>
+                    <p className="text-gray-500 font-medium tracking-tight">
+                        {logbooks.length === 0 ? 'Belum ada riwayat laporan harian.' : 'Tidak ditemukan laporan yang sesuai dengan filter.'}
+                    </p>
+                    {logbooks.length > 0 && (
+                        <button
+                            onClick={clearFilters}
+                            className="mt-4 px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-600 text-xs font-bold rounded-xl transition-colors"
+                        >
+                            Reset Filter
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="space-y-6">
@@ -470,7 +641,7 @@ export default function LogbookHistory() {
                         <Pagination
                             currentPage={currentPage}
                             pageSize={pageSize}
-                            totalItems={logbooks.length}
+                            totalItems={filteredLogbooks.length}
                             onPageChange={setCurrentPage}
                             onPageSizeChange={(size) => {
                                 setPageSize(size);

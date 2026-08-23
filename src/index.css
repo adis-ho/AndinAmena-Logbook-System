@@ -1,5 +1,9 @@
-@import "./assets/fonts/fonts.css";
 @import "tailwindcss";
+@import "./assets/fonts/fonts.css";
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
 
 /* Set Plus Jakarta Sans sebagai font default */
 body {

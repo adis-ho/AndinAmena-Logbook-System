@@ -1,8 +1,8 @@
-/* Plus Jakarta Sans Variable Font - Best Practices 2025 */
+/* Plus Jakarta Sans Variable Font */
 
 @font-face {
     font-family: 'Plus Jakarta Sans';
-    src: url('../PlusJakartaSans-VariableFont_wght.ttf') format('truetype-variations');
+    src: url('../PlusJakartaSans-VariableFont_wght.ttf') format('truetype');
     font-weight: 200 800;
     font-style: normal;
     font-display: swap;
