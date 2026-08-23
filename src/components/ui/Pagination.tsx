@@ -1,5 +1,6 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import Select from './Select';
 
 interface PaginationProps {
     currentPage: number;
@@ -16,7 +17,7 @@ export default function Pagination({
     pageSize,
     onPageChange,
     onPageSizeChange,
-    pageSizeOptions = [10, 25, 50]
+    pageSizeOptions = [10, 20, 50, 100]
 }: PaginationProps) {
     const totalPages = Math.ceil(totalItems / pageSize) || 1;
     const startItem = Math.min((currentPage - 1) * pageSize + 1, totalItems);
@@ -50,22 +51,16 @@ export default function Pagination({
             </div>
 
             <div className="flex flex-wrap items-center gap-3">
-                <div className="relative">
-                    <select
-                        value={pageSize}
-                        onChange={(e) => onPageSizeChange(Number(e.target.value))}
-                        className="appearance-none bg-white border border-gray-200 text-gray-700 text-xs font-bold rounded-xl pl-3 pr-8 py-2 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all duration-200 cursor-pointer"
-                        aria-label="Pilih jumlah data per halaman"
-                    >
-                        {pageSizeOptions.map(option => (
-                            <option key={option} value={option}>{option} / page</option>
-                        ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-400">
-                        <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </div>
+                <div className="w-32">
+                    <Select
+                        value={String(pageSize)}
+                        onChange={(val) => onPageSizeChange(Number(val))}
+                        position="top"
+                        options={pageSizeOptions.map(option => ({
+                            value: String(option),
+                            label: `${option} / page`
+                        }))}
+                    />
                 </div>
 
                 <div className="flex items-center gap-1">

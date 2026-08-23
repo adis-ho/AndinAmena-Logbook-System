@@ -26,7 +26,12 @@ export default function DeleteConfirmModal({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200">
+        <div
+            className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60] p-4 animate-in fade-in duration-200"
+            onClick={(e) => {
+                if (e.target === e.currentTarget && !loading) onClose();
+            }}
+        >
             <div className="bg-white rounded-xl shadow-xl w-full max-w-md relative overflow-hidden animate-in zoom-in-95 duration-200 border border-gray-100">
                 {/* Header */}
                 <div className="flex justify-between items-center p-4 border-b border-gray-100">

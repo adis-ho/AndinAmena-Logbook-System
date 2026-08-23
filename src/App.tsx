@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import DashboardLayout from './components/layouts/DashboardLayout';
 import ProtectedRoute from './components/ProtectedRoute';
+import { useKeyboardDismiss } from './hooks/useKeyboardDismiss';
 
 const LoginPage = lazy(() => import('./features/auth/LoginPage'));
 const PrivacyPolicyPage = lazy(() => import('./features/legal/PrivacyPolicyPage'));
@@ -24,6 +25,8 @@ const LogbookHistory = lazy(() => import('./features/driver/LogbookHistory'));
 const ProfilePage = lazy(() => import('./features/profile/ProfilePage'));
 
 function App() {
+    useKeyboardDismiss();
+
     return (
         <Suspense fallback={<div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent" /></div>}>
             <Routes>

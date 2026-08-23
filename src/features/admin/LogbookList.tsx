@@ -775,7 +775,12 @@ export default function LogbookList() {
 
             {/* Modals */}
             {deleteLogbook && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setDeleteLogbook(null);
+                    }}
+                >
                     <div className="bg-white p-8 rounded-2xl w-full max-w-md shadow-2xl">
                         <h2 className="text-xl font-black text-gray-900 tracking-tight mb-4">Hapus Laporan?</h2>
                         <p className="text-sm text-gray-600 mb-6 leading-relaxed">
@@ -790,7 +795,12 @@ export default function LogbookList() {
             )}
 
             {selectedLogbook && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                <div
+                    className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setSelectedLogbook(null);
+                    }}
+                >
                     <div className="bg-white p-8 rounded-2xl w-full max-w-lg relative max-h-[90vh] overflow-y-auto shadow-2xl" style={{ overscrollBehavior: 'contain' }}>
                         <button onClick={() => setSelectedLogbook(null)} className="absolute top-6 right-6 p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors duration-200" aria-label="Tutup detail">
                             <X className="h-5 w-5" aria-hidden="true" />

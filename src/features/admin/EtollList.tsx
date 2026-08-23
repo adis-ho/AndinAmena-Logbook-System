@@ -413,6 +413,9 @@ export default function EtollList() {
                 <div
                     className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity"
                     style={{ overscrollBehavior: 'contain' }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) setShowTopUpModal(false);
+                    }}
                 >
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-white/20 transform transition flex flex-col max-h-[calc(100vh-2rem)] relative">
                         {/* Header */}
@@ -522,6 +525,9 @@ export default function EtollList() {
                 <div
                     className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 transition-opacity"
                     style={{ overscrollBehavior: 'contain' }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) resetForm();
+                    }}
                 >
                     <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl overflow-hidden border border-white/20 transform transition flex flex-col max-h-[calc(100vh-2rem)] relative">
                         {/* Header */}

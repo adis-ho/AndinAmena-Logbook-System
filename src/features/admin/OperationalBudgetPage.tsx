@@ -414,6 +414,15 @@ export default function OperationalBudgetPage() {
                 <div
                     className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
                     style={{ overscrollBehavior: 'contain' }}
+                    onClick={(e) => {
+                        if (e.target === e.currentTarget) {
+                            setShowTopUpModal(false);
+                            setShowEditModal(false);
+                            setSelectedDriver(null);
+                            setTopUpAmount(0);
+                            setEditAmount(0);
+                        }
+                    }}
                 >
                     <div className="bg-white rounded-2xl w-full max-w-md relative shadow-2xl border border-white/20 overflow-hidden transform transition flex flex-col max-h-[calc(100vh-2rem)]">
                         <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-6 relative shrink-0">
