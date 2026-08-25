@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { useRealtimeSubscription } from '../../hooks/useRealtimeSubscription';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import type { LogbookEntry } from '../../types';
 import { History, CheckCircle, XCircle, Clock, Pencil, X, Trash2, Search, ArrowUpNarrowWide, ArrowDownNarrowWide } from 'lucide-react';
 import { format } from 'date-fns';
@@ -15,6 +16,7 @@ import { useActiveEtollsQuery, useUnitsQuery } from '../../hooks/useReferenceDat
 
 export default function LogbookHistory() {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const [logbooks, setLogbooks] = useState<LogbookEntry[]>([]);
     const { data: units = [] } = useUnitsQuery(!!user);
     const { data: etolls = [] } = useActiveEtollsQuery(!!user);
@@ -169,7 +171,7 @@ export default function LogbookHistory() {
 
         // Only allow deleting rejected logbooks
         if (deleteLogbook.status !== 'rejected') {
-            alert('Hanya laporan yang ditolak yang dapat dihapus.');
+            showToast('warning', 'Hanya laporan yang ditolak yang dapat dihapus.');
             setDeleteLogbook(null);
             return;
         }
@@ -178,10 +180,10 @@ export default function LogbookHistory() {
             await ApiService.deleteLogbookByDriver(deleteLogbook.id, user.id);
             setLogbooks(logbooks.filter(l => l.id !== deleteLogbook.id));
             setDeleteLogbook(null);
-            alert('Laporan berhasil dihapus');
+            showToast('success', 'Laporan berhasil dihapus');
         } catch (err) {
             console.error('Delete error:', err);
-            alert('Gagal menghapus laporan. Pastikan laporan ini milik Anda dan statusnya ditolak.');
+            showToast('error', 'Gagal menghapus laporan. Pastikan laporan ini milik Anda dan statusnya ditolak.');
         }
     };
 
@@ -194,7 +196,7 @@ export default function LogbookHistory() {
         e.preventDefault();
         if (!editingLogbook || !formData) return;
         if (!formData.unit_id) {
-            alert('Silakan pilih unit kendaraan');
+            showToast('warning', 'Silakan pilih unit kendaraan');
             return;
         }
 
@@ -208,8 +210,9 @@ export default function LogbookHistory() {
 
             handleCloseEdit();
             fetchData();
+            showToast('success', 'Laporan berhasil diperbarui');
         } catch (err) {
-            alert('Gagal menyimpan perubahan');
+            showToast('error', 'Gagal menyimpan perubahan');
             console.error(err);
         } finally {
             setFormLoading(false);

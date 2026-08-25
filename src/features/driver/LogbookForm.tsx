@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
+import { useToast } from '../../context/ToastContext';
 import { Wallet, Activity, CreditCard, ChevronRight } from 'lucide-react';
 import DatePicker from '../../components/ui/DatePicker';
 import Select from '../../components/ui/Select';
@@ -9,6 +10,7 @@ import { useActiveEtollsQuery, useUnitsQuery } from '../../hooks/useReferenceDat
 
 export default function LogbookForm() {
     const { user } = useAuth();
+    const { showToast } = useToast();
     const navigate = useNavigate();
     const { data: units = [] } = useUnitsQuery();
     const { data: etolls = [] } = useActiveEtollsQuery();
@@ -29,7 +31,7 @@ export default function LogbookForm() {
         e.preventDefault();
         if (!user) return;
         if (!formData.unit_id) {
-            alert('Silakan pilih unit kendaraan');
+            showToast('warning', 'Silakan pilih unit kendaraan');
             return;
         }
 
@@ -50,10 +52,10 @@ export default function LogbookForm() {
                 link: '/admin/logbooks'
             });
 
-            alert('Laporan berhasil disimpan');
+            showToast('success', 'Laporan berhasil disimpan');
             navigate('/driver/history');
         } catch (err) {
-            alert('Gagal menyimpan laporan');
+            showToast('error', 'Gagal menyimpan laporan');
             console.error(err);
         } finally {
             setLoading(false);
