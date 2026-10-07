@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
 import type { Unit } from '../../types';
-import { Plus, Pencil, Trash2, Truck, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Truck, X, Search } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
@@ -15,6 +15,7 @@ export default function UnitList() {
     const { showToast } = useToast();
     const queryClient = useQueryClient();
     const [units, setUnits] = useState<Unit[]>([]);
+    const [searchQuery, setSearchQuery] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [formMode, setFormMode] = useState<FormMode>(null);
@@ -46,6 +47,14 @@ export default function UnitList() {
         fetchUnits();
     }, []);
 
+    const filteredUnits = useMemo(() => {
+        if (!searchQuery.trim()) return units;
+        const q = searchQuery.toLowerCase().trim();
+        return units.filter(
+            u => u.name.toLowerCase().includes(q) || u.plate_number.toLowerCase().includes(q)
+        );
+    }, [units, searchQuery]);
+
     const resetForm = () => {
         setFormData({ name: '', plate_number: '', status: 'available' });
         setFormMode(null);
@@ -69,21 +78,64 @@ export default function UnitList() {
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        const cleanedPlate = formData.plate_number.trim().toUpperCase();
+        const cleanedName = formData.name.trim();
+
+        if (!cleanedName || !cleanedPlate) {
+            showToast('warning', 'Nama unit dan plat nomor wajib diisi');
+            return;
+        }
+
+        // Client-side pre-validation: check if plate number already exists (ignoring whitespace and case)
+        const normalizedPlateInput = cleanedPlate.replace(/\s+/g, '');
+        const isDuplicate = units.some(
+            u =>
+                u.plate_number.replace(/\s+/g, '').toUpperCase() === normalizedPlateInput &&
+                (formMode === 'add' || u.id !== editingUnit?.id)
+        );
+
+        if (isDuplicate) {
+            showToast('error', `Gagal: Plat nomor "${cleanedPlate}" sudah terdaftar pada unit lain.`);
+            return;
+        }
+
         setFormLoading(true);
+
+        const payload = {
+            name: cleanedName,
+            plate_number: cleanedPlate,
+            status: formData.status
+        };
 
         try {
             if (formMode === 'add') {
-                await ApiService.createUnit(formData);
+                await ApiService.createUnit(payload);
             } else if (formMode === 'edit' && editingUnit) {
-                await ApiService.updateUnit(editingUnit.id, formData);
+                await ApiService.updateUnit(editingUnit.id, payload);
             }
             showToast('success', formMode === 'add' ? 'Unit berhasil ditambahkan' : 'Unit berhasil diupdate');
             resetForm();
             fetchUnits();
             await queryClient.invalidateQueries({ queryKey: queryKeys.units });
-        } catch (err) {
-            showToast('error', formMode === 'add' ? 'Gagal menambah unit' : 'Gagal mengupdate unit');
-            console.error(err);
+        } catch (err: any) {
+            const isUniqueViolation =
+                err?.code === '23505' ||
+                err?.message?.includes('duplicate key') ||
+                err?.message?.includes('unique constraint') ||
+                err?.message?.includes('units_plate_number_key');
+
+            if (isUniqueViolation) {
+                showToast('error', `Gagal: Plat nomor "${cleanedPlate}" sudah terdaftar pada unit lain.`);
+            } else {
+                showToast(
+                    'error',
+                    `${formMode === 'add' ? 'Gagal menambah unit' : 'Gagal mengupdate unit'}: ${
+                        err?.message || 'Terjadi kesalahan sistem'
+                    }`
+                );
+            }
+            console.error('[UnitList] Submit error:', err);
         } finally {
             setFormLoading(false);
         }
@@ -269,6 +321,36 @@ export default function UnitList() {
                 </div>
             )}
 
+            {/* Search Bar Area */}
+            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <div className="relative flex-1 max-w-md">
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
+                    <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Cari nama unit atau plat nomor..."
+                        className="w-full pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
+                    />
+                    {searchQuery && (
+                        <button
+                            type="button"
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                            aria-label="Hapus pencarian"
+                        >
+                            <X className="h-3.5 w-3.5" />
+                        </button>
+                    )}
+                </div>
+                <div className="text-xs font-semibold text-gray-500 flex items-center gap-1.5 self-end sm:self-center">
+                    <span>Menampilkan:</span>
+                    <span className="font-bold text-gray-900 bg-gray-100 px-2.5 py-1 rounded-lg">
+                        {filteredUnits.length} dari {units.length} unit
+                    </span>
+                </div>
+            </div>
+
             {/* Desktop Table - Hidden on mobile */}
             <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div className="overflow-x-auto">
@@ -281,20 +363,26 @@ export default function UnitList() {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {units.length === 0 ? (
+                            {filteredUnits.length === 0 ? (
                                 <tr>
                                     <td colSpan={3} className="py-12 border-none">
                                         <div className="flex flex-col items-center justify-center text-center">
                                             <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mb-3 shadow-sm">
                                                 <Truck className="h-8 w-8 text-gray-300" aria-hidden="true" />
                                             </div>
-                                            <p className="text-sm font-bold text-gray-900">Belum ada data unit</p>
-                                            <p className="text-xs font-medium text-gray-500 mt-1">Tambahkan unit operasional baru.</p>
+                                            <p className="text-sm font-bold text-gray-900">
+                                                {searchQuery ? 'Unit tidak ditemukan' : 'Belum ada data unit'}
+                                            </p>
+                                            <p className="text-xs font-medium text-gray-500 mt-1">
+                                                {searchQuery
+                                                    ? `Tidak ada armada yang cocok dengan kata kunci "${searchQuery}"`
+                                                    : 'Tambahkan unit operasional baru.'}
+                                            </p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
-                                units.map(unit => (
+                                filteredUnits.map(unit => (
                                     <tr key={unit.id} className="group hover:bg-slate-50/50 transition-colors duration-200">
                                         <td className="py-4 px-6 border-none">
                                             <div className={`flex items-center gap-4 transition-opacity ${unit.status === 'maintenance' ? 'opacity-50' : ''}`}>
@@ -338,15 +426,22 @@ export default function UnitList() {
 
             {/* Mobile Cards - Show on mobile only */}
             <div className="md:hidden space-y-4">
-                {units.length === 0 ? (
+                {filteredUnits.length === 0 ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 py-10 px-6 text-center">
                         <div className="w-16 h-16 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
                             <Truck className="h-8 w-8 text-gray-300" aria-hidden="true" />
                         </div>
-                        <p className="text-sm font-bold text-gray-900">Belum ada unit</p>
+                        <p className="text-sm font-bold text-gray-900">
+                            {searchQuery ? 'Unit tidak ditemukan' : 'Belum ada unit'}
+                        </p>
+                        <p className="text-xs font-medium text-gray-500 mt-1">
+                            {searchQuery
+                                ? `Tidak ada armada yang cocok dengan kata kunci "${searchQuery}"`
+                                : 'Tambahkan unit operasional baru.'}
+                        </p>
                     </div>
                 ) : (
-                    units.map(unit => (
+                    filteredUnits.map(unit => (
                         <div key={unit.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300">
                             {/* Header Area */}
                             <div className="flex justify-between items-start mb-6">
