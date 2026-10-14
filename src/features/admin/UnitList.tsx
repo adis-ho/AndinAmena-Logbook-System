@@ -1,8 +1,8 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
 import type { Unit } from '../../types';
-import { Plus, Pencil, Trash2, Truck, X, Search } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Search } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
 import { SkeletonManagementList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
@@ -31,6 +31,9 @@ export default function UnitList() {
         unitId: ''
     });
 
+    const modalRef = useRef<HTMLDivElement>(null);
+    const nameInputRef = useRef<HTMLInputElement>(null);
+
     const fetchUnits = async () => {
         try {
             const data = await ApiService.getUnits();
@@ -46,6 +49,50 @@ export default function UnitList() {
     useEffect(() => {
         fetchUnits();
     }, []);
+
+    // Focus trapping, Escape key, and body scroll lock for modal
+    useEffect(() => {
+        if (!formMode) return;
+
+        const originalOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+
+        const timer = setTimeout(() => {
+            nameInputRef.current?.focus();
+        }, 50);
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') {
+                resetForm();
+                return;
+            }
+
+            if (e.key === 'Tab' && modalRef.current) {
+                const focusableElements = modalRef.current.querySelectorAll<HTMLElement>(
+                    'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+                );
+                if (focusableElements.length === 0) return;
+
+                const firstElement = focusableElements[0];
+                const lastElement = focusableElements[focusableElements.length - 1];
+
+                if (e.shiftKey && document.activeElement === firstElement) {
+                    lastElement.focus();
+                    e.preventDefault();
+                } else if (!e.shiftKey && document.activeElement === lastElement) {
+                    firstElement.focus();
+                    e.preventDefault();
+                }
+            }
+        };
+
+        window.addEventListener('keydown', handleKeyDown);
+        return () => {
+            clearTimeout(timer);
+            document.body.style.overflow = originalOverflow;
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [formMode]);
 
     const filteredUnits = useMemo(() => {
         if (!searchQuery.trim()) return units;
@@ -87,7 +134,7 @@ export default function UnitList() {
             return;
         }
 
-        // Client-side pre-validation: check if plate number already exists (ignoring whitespace and case)
+        // Client-side pre-validation: check duplicate plate number
         const normalizedPlateInput = cleanedPlate.replace(/\s+/g, '');
         const isDuplicate = units.some(
             u =>
@@ -157,7 +204,6 @@ export default function UnitList() {
             setDeleteModal({ ...deleteModal, isOpen: false });
         } catch (err: any) {
             const message = err.message || 'Gagal menghapus unit';
-            // Check for foreign key violation (Postgres error 23503)
             if (message.includes('foreign key constraint') || message.includes('violates foreign key')) {
                 showToast('error', 'Gagal: Unit ini memiliki riwayat Logbook / digunakan. Hapus logbook terkait terlebih dahulu.');
             } else {
@@ -171,9 +217,9 @@ export default function UnitList() {
 
     const getStatusBadge = (status: Unit['status']) => {
         const styles: Record<Unit['status'], string> = {
-            available: 'bg-emerald-50 text-emerald-600 border-emerald-200/60 shadow-sm shadow-emerald-100/50',
-            'in-use': 'bg-blue-50 text-blue-600 border-blue-200/60 shadow-sm shadow-blue-100/50',
-            maintenance: 'bg-rose-50 text-rose-600 border-rose-200/60 shadow-sm shadow-rose-100/50 opacity-90'
+            available: 'bg-emerald-50 text-emerald-700 border-emerald-200/80',
+            'in-use': 'bg-blue-50 text-blue-700 border-blue-200/80',
+            maintenance: 'bg-rose-50 text-rose-700 border-rose-200/80'
         };
         const labels: Record<Unit['status'], string> = {
             available: 'Tersedia',
@@ -181,7 +227,7 @@ export default function UnitList() {
             maintenance: 'Maintenance'
         };
         return (
-            <span className={`inline-flex px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border ${styles[status]}`}>
+            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold border ${styles[status]}`}>
                 {labels[status]}
             </span>
         );
@@ -194,123 +240,138 @@ export default function UnitList() {
     return (
         <div className="space-y-6 max-w-7xl mx-auto">
             {/* Header Area */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700" />
-                <div className="flex items-center gap-4 relative">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm">
-                        <Truck className="h-6 w-6 text-blue-600" aria-hidden="true" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Manajemen Unit</h1>
-                        <p className="text-sm font-medium text-gray-500 mt-1">Kelola armada kendaraan operasional</p>
-                    </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Manajemen Unit</h1>
+                    <p className="text-sm text-gray-500 mt-1">Kelola armada kendaraan operasional</p>
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="relative flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-5 py-2.5 rounded-xl font-bold tracking-wide hover:shadow-lg hover:shadow-blue-500/25 transition duration-300 hover:-translate-y-0.5"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 min-h-[44px]"
                 >
-                    <Plus className="h-5 w-5" aria-hidden="true" />
+                    <Plus className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                     <span>Tambah Unit</span>
                 </button>
             </div>
 
             {error && (
-                <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-xl flex items-center gap-3">
-                    <div className="p-2 bg-white rounded-full shrink-0 shadow-sm">
-                        <X className="h-4 w-4 text-rose-500" aria-hidden="true" />
+                <div className="bg-rose-50 border border-rose-200 text-rose-800 p-4 rounded-xl flex items-center justify-between gap-3 text-sm font-medium">
+                    <div className="flex items-center gap-2.5">
+                        <span className="w-2 h-2 rounded-full bg-rose-600 shrink-0" aria-hidden="true" />
+                        <p>{error}</p>
                     </div>
-                    <p className="text-sm font-bold">{error}</p>
+                    <button
+                        type="button"
+                        onClick={() => setError('')}
+                        className="p-1 rounded-lg text-rose-600 hover:bg-rose-100 transition-colors"
+                        aria-label="Tutup pesan error"
+                    >
+                        <X className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+                    </button>
                 </div>
             )}
 
             {/* Modal Form */}
             {formMode && (
                 <div
-                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+                    className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-modal-backdrop"
                     style={{ overscrollBehavior: 'contain' }}
                     onClick={(e) => {
                         if (e.target === e.currentTarget) resetForm();
                     }}
+                    role="dialog"
+                    aria-modal="true"
+                    aria-labelledby="modal-title"
                 >
-                    <div className="bg-white rounded-2xl w-full max-w-md relative shadow-2xl border border-white/20 overflow-hidden transform transition flex flex-col max-h-[calc(100vh-2rem)]">
-                        <div className="bg-gradient-to-r from-gray-50 to-white border-b border-gray-100 p-6 relative shrink-0">
+                    <div
+                        ref={modalRef}
+                        className="bg-white rounded-2xl w-full max-w-md shadow-xl border border-gray-100 overflow-hidden flex flex-col max-h-[calc(100vh-2rem)] animate-modal-content"
+                    >
+                        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50/50 shrink-0">
+                            <div>
+                                <h2 id="modal-title" className="text-lg font-bold text-gray-900">
+                                    {formMode === 'add' ? 'Tambah Unit Baru' : 'Edit Unit'}
+                                </h2>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                    {formMode === 'add' ? 'Lengkapi informasi kendaraan operasional' : 'Perbarui data armada kendaraan'}
+                                </p>
+                            </div>
                             <button
                                 type="button"
                                 onClick={resetForm}
-                                className="absolute top-6 right-6 text-gray-400 hover:text-gray-900 transition-colors bg-white rounded-full p-1 border border-gray-100 shadow-sm"
-                                aria-label="Tutup form"
+                                className="p-2 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+                                aria-label="Tutup modal"
                             >
-                                <X className="h-4 w-4" aria-hidden="true" />
+                                <X className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                             </button>
-                            <h2 className="text-xl font-black text-gray-900 tracking-tight">
-                                {formMode === 'add' ? 'Tambah Unit Baru' : 'Edit Unit'}
-                            </h2>
-                            <p className="text-xs font-bold text-gray-400 mt-1.5 uppercase tracking-wider">
-                                {formMode === 'add' ? 'Lengkapi data kendaraan' : 'Perbarui armada'}
-                            </p>
                         </div>
 
-                        <form onSubmit={handleSubmit} className="flex flex-col overflow-hidden">
-                            <div className="p-6 space-y-5 bg-white overflow-y-auto">
+                        <form onSubmit={handleSubmit} className="flex flex-col flex-1 overflow-hidden">
+                            <div className="p-6 space-y-4 overflow-y-auto">
                                 <div>
-                                    <label htmlFor="unit_name" className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Nama Unit *</label>
+                                    <label htmlFor="unit_name" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                                        Nama Unit <span className="text-rose-500">*</span>
+                                    </label>
                                     <input
+                                        ref={nameInputRef}
                                         id="unit_name"
                                         type="text"
                                         required
-                                        className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                                        className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                        placeholder="Contoh: Avanza 1…"
+                                        placeholder="Contoh: Avanza 1"
                                     />
                                 </div>
                                 <div>
-                                    <label htmlFor="plate_number" className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Plat Nomor *</label>
+                                    <label htmlFor="plate_number" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                                        Plat Nomor <span className="text-rose-500">*</span>
+                                    </label>
                                     <input
                                         id="plate_number"
                                         type="text"
                                         required
                                         spellCheck={false}
-                                        className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all font-medium text-gray-900 tabular-nums outline-none placeholder:text-gray-400"
+                                        className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 tabular-nums focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
                                         value={formData.plate_number}
                                         onChange={(e) => setFormData({ ...formData, plate_number: e.target.value })}
-                                        placeholder="Contoh: B 1234 ABC…"
+                                        placeholder="Contoh: B 1234 ABC"
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-[11px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Status *</label>
-                                    <div className="relative">
-                                        <Select
-                                            value={formData.status}
-                                            onChange={(val) => setFormData({ ...formData, status: val as Unit['status'] })}
-                                            options={[
-                                                { value: 'available', label: 'Tersedia' },
-                                                { value: 'in-use', label: 'Digunakan' },
-                                                { value: 'maintenance', label: 'Maintenance' }
-                                            ]}
-                                        />
-                                    </div>
+                                    <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
+                                        Status Operasional <span className="text-rose-500">*</span>
+                                    </label>
+                                    <Select
+                                        value={formData.status}
+                                        onChange={(val) => setFormData({ ...formData, status: val as Unit['status'] })}
+                                        options={[
+                                            { value: 'available', label: 'Tersedia' },
+                                            { value: 'in-use', label: 'Digunakan' },
+                                            { value: 'maintenance', label: 'Maintenance' }
+                                        ]}
+                                    />
                                 </div>
                             </div>
 
-                            <div className="p-6 bg-gray-50/50 border-t border-gray-100 shrink-0">
-                                <div className="flex gap-3">
+                            <div className="p-4 sm:p-6 bg-gray-50/50 border-t border-gray-100 shrink-0">
+                                <div className="flex items-center gap-3">
                                     <button
                                         type="button"
                                         onClick={resetForm}
-                                        className="flex-1 px-4 py-3 border border-gray-200 text-gray-600 bg-white font-bold rounded-xl hover:bg-gray-50 transition-colors shadow-sm"
+                                        className="flex-1 px-4 py-2.5 border border-gray-200 text-gray-700 bg-white font-semibold text-sm rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all shadow-sm min-h-[44px]"
                                     >
                                         Batal
                                     </button>
                                     <button
                                         type="submit"
                                         disabled={formLoading}
-                                        className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white font-bold rounded-xl hover:shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 transition shadow-sm flex items-center justify-center gap-2"
+                                        className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold text-sm rounded-xl disabled:opacity-50 transition-all shadow-sm flex items-center justify-center gap-2 min-h-[44px]"
                                     >
                                         {formLoading ? (
                                             <>
-                                                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin"></div>
-                                                Menyimpan…
+                                                <div className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" aria-hidden="true" />
+                                                <span>Menyimpan...</span>
                                             </>
                                         ) : 'Simpan Data'}
                                     </button>
@@ -324,22 +385,22 @@ export default function UnitList() {
             {/* Search Bar Area */}
             <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
                 <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
+                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" strokeWidth={1.5} aria-hidden="true" />
                     <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
                         placeholder="Cari nama unit atau plat nomor..."
-                        className="w-full pl-10 pr-4 py-2 bg-gray-50/50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
+                        className="w-full pl-10 pr-9 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
                     />
                     {searchQuery && (
                         <button
                             type="button"
                             onClick={() => setSearchQuery('')}
-                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-0.5"
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 p-1 rounded-lg"
                             aria-label="Hapus pencarian"
                         >
-                            <X className="h-3.5 w-3.5" />
+                            <X className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
                         </button>
                     )}
                 </div>
@@ -356,63 +417,69 @@ export default function UnitList() {
                 <div className="overflow-x-auto">
                     <table className="w-full min-w-[600px]">
                         <thead>
-                            <tr className="bg-gray-50/50 border-b border-gray-100">
-                                <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-gray-400 border-none w-1/2">Identitas Unit</th>
-                                <th className="text-center py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-gray-400 border-none">Status</th>
-                                <th className="text-right py-4 px-6 text-[10px] uppercase tracking-widest font-bold text-gray-400 border-none">Aksi</th>
+                            <tr className="bg-gray-50/70 border-b border-gray-100">
+                                <th scope="col" className="text-left py-3.5 px-6 text-xs uppercase tracking-wider font-semibold text-slate-500 w-1/2">Identitas Unit</th>
+                                <th scope="col" className="text-center py-3.5 px-6 text-xs uppercase tracking-wider font-semibold text-slate-500">Status</th>
+                                <th scope="col" className="text-right py-3.5 px-6 text-xs uppercase tracking-wider font-semibold text-slate-500">Aksi</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {filteredUnits.length === 0 ? (
                                 <tr>
-                                    <td colSpan={3} className="py-12 border-none">
+                                    <td colSpan={3} className="py-12">
                                         <div className="flex flex-col items-center justify-center text-center">
-                                            <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mb-3 shadow-sm">
-                                                <Truck className="h-8 w-8 text-gray-300" aria-hidden="true" />
-                                            </div>
-                                            <p className="text-sm font-bold text-gray-900">
+                                            <p className="text-sm font-semibold text-gray-900">
                                                 {searchQuery ? 'Unit tidak ditemukan' : 'Belum ada data unit'}
                                             </p>
-                                            <p className="text-xs font-medium text-gray-500 mt-1">
+                                            <p className="text-xs text-gray-500 mt-1 mb-4">
                                                 {searchQuery
-                                                    ? `Tidak ada armada yang cocok dengan kata kunci "${searchQuery}"`
-                                                    : 'Tambahkan unit operasional baru.'}
+                                                    ? `Tidak ada armada yang cocok dengan "${searchQuery}"`
+                                                    : 'Tambahkan unit operasional baru untuk memulai.'}
                                             </p>
+                                            {!searchQuery && (
+                                                <button
+                                                    onClick={handleAdd}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 active:scale-[0.98] rounded-lg transition-all"
+                                                >
+                                                    <Plus className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+                                                    <span>Tambah Unit</span>
+                                                </button>
+                                            )}
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 filteredUnits.map(unit => (
-                                    <tr key={unit.id} className="group hover:bg-slate-50/50 transition-colors duration-200">
-                                        <td className="py-4 px-6 border-none">
-                                            <div className={`flex items-center gap-4 transition-opacity ${unit.status === 'maintenance' ? 'opacity-50' : ''}`}>
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-white flex items-center justify-center shadow-sm shrink-0 ring-1 ring-slate-900/5">
-                                                    <Truck className="h-4 w-4 text-slate-500" aria-hidden="true" />
+                                    <tr key={unit.id} className="hover:bg-slate-50/60 transition-colors">
+                                        <td className="py-4 px-6">
+                                            <div className={`flex items-center gap-3.5 ${unit.status === 'maintenance' ? 'opacity-60' : ''}`}>
+                                                <div className="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-bold text-xs text-slate-700 uppercase">
+                                                    {unit.name.substring(0, 2)}
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-gray-900 text-sm">{unit.name}</p>
-                                                    <p className="text-[13px] font-medium text-gray-500 tabular-nums tracking-wide">{unit.plate_number}</p>
+                                                    <p className="font-semibold text-gray-900 text-sm">{unit.name}</p>
+                                                    <p className="text-xs text-slate-500 tabular-nums font-medium tracking-wide">{unit.plate_number}</p>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6 text-center border-none">
+                                        <td className="py-4 px-6 text-center">
                                             {getStatusBadge(unit.status)}
                                         </td>
-                                        <td className="py-4 px-6 text-right border-none">
-                                            <div className="flex justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                        <td className="py-4 px-6 text-right">
+                                            <div className="flex justify-end gap-1.5">
                                                 <button
                                                     onClick={() => handleEdit(unit)}
-                                                    className="p-2 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-colors"
+                                                    className="p-2 text-slate-500 hover:text-blue-600 hover:bg-blue-50 active:scale-95 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                                     aria-label={`Edit unit ${unit.name}`}
                                                 >
-                                                    <Pencil className="h-4 w-4" aria-hidden="true" />
+                                                    <Pencil className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeleteClick(unit.id)}
-                                                    className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-xl transition-colors"
+                                                    className="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 active:scale-95 rounded-lg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                                                     aria-label={`Hapus unit ${unit.name}`}
                                                 >
-                                                    <Trash2 className="h-4 w-4" aria-hidden="true" />
+                                                    <Trash2 className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                                                 </button>
                                             </div>
                                         </td>
@@ -425,58 +492,68 @@ export default function UnitList() {
             </div>
 
             {/* Mobile Cards - Show on mobile only */}
-            <div className="md:hidden space-y-4">
+            <div className="md:hidden space-y-3">
                 {filteredUnits.length === 0 ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 py-10 px-6 text-center">
-                        <div className="w-16 h-16 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                            <Truck className="h-8 w-8 text-gray-300" aria-hidden="true" />
-                        </div>
-                        <p className="text-sm font-bold text-gray-900">
+                        <p className="text-sm font-semibold text-gray-900">
                             {searchQuery ? 'Unit tidak ditemukan' : 'Belum ada unit'}
                         </p>
-                        <p className="text-xs font-medium text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 mt-1 mb-4">
                             {searchQuery
-                                ? `Tidak ada armada yang cocok dengan kata kunci "${searchQuery}"`
-                                : 'Tambahkan unit operasional baru.'}
+                                ? `Tidak ada armada yang cocok dengan "${searchQuery}"`
+                                : 'Tambahkan unit operasional baru untuk memulai.'}
                         </p>
+                        {!searchQuery && (
+                            <button
+                                onClick={handleAdd}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 text-xs font-semibold text-blue-600 bg-blue-50 hover:bg-blue-100 active:scale-[0.98] rounded-lg transition-all"
+                            >
+                                <Plus className="h-3.5 w-3.5" strokeWidth={1.5} aria-hidden="true" />
+                                <span>Tambah Unit</span>
+                            </button>
+                        )}
                     </div>
                 ) : (
                     filteredUnits.map(unit => (
-                        <div key={unit.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300">
-                            {/* Header Area */}
-                            <div className="flex justify-between items-start mb-6">
-                                <div className={`flex items-start gap-4 transition-opacity ${unit.status === 'maintenance' ? 'opacity-50' : ''}`}>
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white flex items-center justify-center shadow-sm shrink-0 ring-1 ring-slate-900/5">
-                                        <Truck className="h-5 w-5 text-slate-500" aria-hidden="true" />
+                        <div
+                            key={unit.id}
+                            className="bg-white rounded-xl shadow-sm border border-gray-200/70 p-4 flex flex-col gap-3 transition-shadow"
+                        >
+                            {/* Card Header & Identity */}
+                            <div className="flex items-start justify-between gap-3">
+                                <div className={`flex items-center gap-3 ${unit.status === 'maintenance' ? 'opacity-60' : ''}`}>
+                                    <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-bold text-xs text-slate-700 uppercase">
+                                        {unit.name.substring(0, 2)}
                                     </div>
                                     <div>
-                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">Mobil</span>
-                                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1.5">{unit.name}</h3>
-                                        <span className="block text-[13px] font-bold text-gray-500 tabular-nums">{unit.plate_number}</span>
+                                        <h3 className="text-base font-bold text-gray-900 tracking-tight">{unit.name}</h3>
+                                        <p className="text-xs font-semibold text-slate-500 tabular-nums tracking-wide">{unit.plate_number}</p>
                                     </div>
                                 </div>
-                                <div className="scale-[0.85] origin-top-right shrink-0">
+                                <div className="shrink-0">
                                     {getStatusBadge(unit.status)}
                                 </div>
                             </div>
 
                             {/* Divider */}
-                            <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
+                            <div className="border-t border-gray-100" />
 
-                            {/* Action Area */}
-                            <div className="mt-auto flex justify-end gap-2">
+                            {/* Action Buttons with 44px min touch target */}
+                            <div className="flex items-center justify-end gap-2">
                                 <button
                                     onClick={() => handleEdit(unit)}
-                                    className="px-4 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-gray-50 hover:bg-gray-100 active:scale-[0.98] text-gray-700 rounded-xl font-semibold text-xs tracking-wide transition-all border border-gray-200/60 min-h-[44px]"
+                                    aria-label={`Edit unit ${unit.name}`}
                                 >
-                                    <Pencil className="h-3.5 w-3.5" aria-hidden="true" />
+                                    <Pencil className="h-3.5 w-3.5 text-gray-500" strokeWidth={1.5} aria-hidden="true" />
                                     <span>Edit</span>
                                 </button>
                                 <button
                                     onClick={() => handleDeleteClick(unit.id)}
-                                    className="px-4 py-2 hover:bg-rose-50 text-rose-500 hover:text-rose-600 rounded-xl transition-all duration-200 font-extrabold text-[11px] uppercase tracking-wider flex items-center gap-2"
+                                    className="flex-1 sm:flex-none inline-flex items-center justify-center gap-1.5 px-3.5 py-2.5 bg-rose-50 hover:bg-rose-100 active:scale-[0.98] text-rose-700 rounded-xl font-semibold text-xs tracking-wide transition-all border border-rose-200/60 min-h-[44px]"
+                                    aria-label={`Hapus unit ${unit.name}`}
                                 >
-                                    <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />
+                                    <Trash2 className="h-3.5 w-3.5 text-rose-600" strokeWidth={1.5} aria-hidden="true" />
                                     <span>Hapus</span>
                                 </button>
                             </div>
