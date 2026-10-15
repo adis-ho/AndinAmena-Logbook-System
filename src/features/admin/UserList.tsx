@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
 import type { User, UserRole } from '../../types';
 import { Plus, Pencil, Trash2, X, UserCheck, UserX, AlertCircle } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { SkeletonManagementList } from '../../components/ui/Skeleton';
+import { SkeletonUserList } from '../../components/ui/Skeleton';
 import Select from '../../components/ui/Select';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import { MIN_PASSWORD_LENGTH } from '../../constants';
@@ -208,7 +209,7 @@ export default function UserList() {
     };
 
     if (loading) {
-        return <SkeletonManagementList />;
+        return <SkeletonUserList />;
     }
 
     return (
@@ -221,7 +222,7 @@ export default function UserList() {
                 </div>
                 <button
                     onClick={handleAdd}
-                    className="w-full sm:w-auto flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white px-4 py-2.5 min-h-[44px] rounded-xl font-semibold tracking-wide transition-all shadow-sm"
+                    className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-sm transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 min-h-[44px]"
                 >
                     <Plus className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
                     <span>Tambah Pengguna</span>
@@ -236,7 +237,7 @@ export default function UserList() {
             )}
 
             {/* Modal Form */}
-            {formMode && (
+            {formMode && createPortal(
                 <div
                     ref={modalRef}
                     role="dialog"
@@ -278,7 +279,9 @@ export default function UserList() {
                                                 type="email"
                                                 required
                                                 spellCheck={false}
-                                                className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                                                autoCapitalize="none"
+                                                autoCorrect="off"
+                                                className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-base md:text-sm text-gray-900 outline-none placeholder:text-gray-400"
                                                 value={formData.email}
                                                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                                 placeholder="email@contoh.com"
@@ -293,7 +296,7 @@ export default function UserList() {
                                                 spellCheck={false}
                                                 minLength={MIN_PASSWORD_LENGTH}
                                                 aria-describedby="password-hint"
-                                                className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                                                className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-base md:text-sm text-gray-900 outline-none placeholder:text-gray-400"
                                                 value={formData.password}
                                                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                                                 placeholder={`Minimal ${MIN_PASSWORD_LENGTH} karakter`}
@@ -310,7 +313,7 @@ export default function UserList() {
                                             type="text"
                                             required
                                             spellCheck={false}
-                                            className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                                            className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-base md:text-sm text-gray-900 outline-none placeholder:text-gray-400"
                                             value={formData.full_name}
                                             onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
                                             placeholder="Nama Lengkap"
@@ -323,7 +326,9 @@ export default function UserList() {
                                             type="text"
                                             required
                                             spellCheck={false}
-                                            className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-gray-900 outline-none placeholder:text-gray-400"
+                                            autoCapitalize="none"
+                                            autoCorrect="off"
+                                            className="w-full px-4 py-2.5 bg-gray-50/50 border border-gray-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition font-medium text-base md:text-sm text-gray-900 outline-none placeholder:text-gray-400"
                                             value={formData.username}
                                             onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                                             placeholder="username_unik"
@@ -370,7 +375,8 @@ export default function UserList() {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Desktop Table - Hidden on mobile */}
@@ -503,7 +509,7 @@ export default function UserList() {
                             {/* Header Area */}
                             <div className="flex justify-between items-start mb-4">
                                 <div className="flex items-center gap-3">
-                                    <div className={`w-11 h-11 rounded-full flex items-center justify-center font-semibold text-sm shrink-0 ${user.status === 'inactive' ? 'bg-gray-100 text-gray-400' : 'bg-slate-100 text-slate-700'}`}>
+                                    <div className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-xs shrink-0 ${user.status === 'inactive' ? 'bg-gray-100 text-gray-400' : 'bg-slate-100 text-slate-700'}`}>
                                         <span className="uppercase">
                                             {user.full_name ? user.full_name.substring(0, 2) : user.username.substring(0, 2)}
                                         </span>

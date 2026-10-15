@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { ApiService } from '../../services/api';
 import type { Unit } from '../../types';
 import { Plus, Pencil, Trash2, X, Search } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
-import { SkeletonManagementList } from '../../components/ui/Skeleton';
+import { SkeletonUnitList } from '../../components/ui/Skeleton';
 import DeleteConfirmModal from '../../components/ui/DeleteConfirmModal';
 import Select from '../../components/ui/Select';
 import { queryKeys } from '../../lib/queryKeys';
@@ -234,7 +235,7 @@ export default function UnitList() {
     };
 
     if (loading) {
-        return <SkeletonManagementList />;
+        return <SkeletonUnitList />;
     }
 
     return (
@@ -272,7 +273,7 @@ export default function UnitList() {
             )}
 
             {/* Modal Form */}
-            {formMode && (
+            {formMode && createPortal(
                 <div
                     className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-modal-backdrop"
                     style={{ overscrollBehavior: 'contain' }}
@@ -317,7 +318,7 @@ export default function UnitList() {
                                         id="unit_name"
                                         type="text"
                                         required
-                                        className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
+                                        className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-base md:text-sm font-medium text-gray-900 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                         placeholder="Contoh: Avanza 1"
@@ -325,14 +326,16 @@ export default function UnitList() {
                                 </div>
                                 <div>
                                     <label htmlFor="plate_number" className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-1.5">
-                                        Plat Nomor <span className="text-rose-500">*</span>
+                                         Plat Nomor <span className="text-rose-500">*</span>
                                     </label>
                                     <input
                                         id="plate_number"
                                         type="text"
                                         required
                                         spellCheck={false}
-                                        className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-sm font-medium text-gray-900 tabular-nums focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
+                                        autoCapitalize="characters"
+                                        autoCorrect="off"
+                                        className="w-full px-3.5 py-2.5 bg-white border border-gray-200 rounded-xl text-base md:text-sm font-medium text-gray-900 tabular-nums focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all outline-none placeholder:text-gray-400"
                                         value={formData.plate_number}
                                         onChange={(e) => setFormData({ ...formData, plate_number: e.target.value })}
                                         placeholder="Contoh: B 1234 ABC"
@@ -379,7 +382,8 @@ export default function UnitList() {
                             </div>
                         </form>
                     </div>
-                </div>
+                </div>,
+                document.body
             )}
 
             {/* Search Bar Area */}
@@ -453,7 +457,7 @@ export default function UnitList() {
                                     <tr key={unit.id} className="hover:bg-slate-50/60 transition-colors">
                                         <td className="py-4 px-6">
                                             <div className={`flex items-center gap-3.5 ${unit.status === 'maintenance' ? 'opacity-60' : ''}`}>
-                                                <div className="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-bold text-xs text-slate-700 uppercase">
+                                                <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-semibold text-xs text-slate-700 uppercase">
                                                     {unit.name.substring(0, 2)}
                                                 </div>
                                                 <div>
@@ -522,7 +526,7 @@ export default function UnitList() {
                             {/* Card Header & Identity */}
                             <div className="flex items-start justify-between gap-3">
                                 <div className={`flex items-center gap-3 ${unit.status === 'maintenance' ? 'opacity-60' : ''}`}>
-                                    <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-bold text-xs text-slate-700 uppercase">
+                                    <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-semibold text-xs text-slate-700 uppercase">
                                         {unit.name.substring(0, 2)}
                                     </div>
                                     <div>

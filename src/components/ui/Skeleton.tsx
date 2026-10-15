@@ -232,7 +232,7 @@ export function SkeletonLogbookHistory() {
     );
 }
 
-// Management List Skeleton (User, Unit, Etoll, Budget)
+// Management List Skeleton (User, Unit, Etoll, Budget - Legacy)
 export function SkeletonManagementList() {
     return (
         <div className="space-y-6">
@@ -257,3 +257,285 @@ export function SkeletonManagementList() {
         </div>
     );
 }
+
+// User List Skeleton (Mirrors UserList.tsx)
+export function SkeletonUserList() {
+    return (
+        <div className="space-y-6 max-w-7xl mx-auto" aria-busy="true" aria-label="Memuat data pengguna">
+            {/* Header Area */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="space-y-2">
+                    <Skeleton className="h-7 w-48 rounded-lg" />
+                    <Skeleton className="h-4 w-72 max-w-full rounded" />
+                </div>
+                <Skeleton className="h-11 w-full sm:w-40 rounded-xl" />
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full min-w-[600px]">
+                    <thead>
+                        <tr className="bg-gray-50/50 border-b border-gray-100">
+                            <th className="py-4 px-6 text-left w-1/2"><Skeleton className="h-4 w-32 rounded" /></th>
+                            <th className="py-4 px-6 text-left"><Skeleton className="h-4 w-16 rounded" /></th>
+                            <th className="py-4 px-6 text-center"><Skeleton className="h-4 w-16 rounded mx-auto" /></th>
+                            <th className="py-4 px-6 text-right"><Skeleton className="h-4 w-12 rounded ml-auto" /></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <tr key={i}>
+                                <td className="py-4 px-6">
+                                    <div className="flex items-center gap-3.5">
+                                        <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                                        <div className="space-y-1.5 flex-1">
+                                            <Skeleton className="h-4 w-36 rounded" />
+                                            <Skeleton className="h-3 w-24 rounded" />
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="py-4 px-6">
+                                    <Skeleton className="h-6 w-20 rounded-md" />
+                                </td>
+                                <td className="py-4 px-6 text-center">
+                                    <Skeleton className="h-6 w-16 rounded-full mx-auto" />
+                                </td>
+                                <td className="py-4 px-6 text-right">
+                                    <div className="flex justify-end gap-1">
+                                        <Skeleton className="h-8 w-8 rounded-lg" />
+                                        <Skeleton className="h-8 w-8 rounded-lg" />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
+                        <div className="flex justify-between items-start">
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="w-11 h-11 rounded-full shrink-0" />
+                                <div className="space-y-1.5">
+                                    <Skeleton className="h-4 w-32 rounded" />
+                                    <Skeleton className="h-3 w-20 rounded" />
+                                </div>
+                            </div>
+                            <Skeleton className="h-6 w-16 rounded-full" />
+                        </div>
+                        <div>
+                            <Skeleton className="h-3 w-16 rounded mb-1.5" />
+                            <Skeleton className="h-6 w-20 rounded-md" />
+                        </div>
+                        <div className="border-t border-gray-100 pt-3 flex justify-end gap-2">
+                            <Skeleton className="h-11 w-20 rounded-lg" />
+                            <Skeleton className="h-11 w-24 rounded-lg" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Unit List Skeleton (Mirrors UnitList.tsx)
+export function SkeletonUnitList() {
+    return (
+        <div className="space-y-6 max-w-7xl mx-auto" aria-busy="true" aria-label="Memuat data unit">
+            {/* Header Area */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div className="space-y-2">
+                    <Skeleton className="h-7 w-44 rounded-lg" />
+                    <Skeleton className="h-4 w-60 max-w-full rounded" />
+                </div>
+                <Skeleton className="h-11 w-full sm:w-36 rounded-xl" />
+            </div>
+
+            {/* Search Bar Area */}
+            <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+                <Skeleton className="h-10 w-full max-w-md rounded-xl" />
+                <Skeleton className="h-6 w-32 rounded-lg self-end sm:self-center" />
+            </div>
+
+            {/* Desktop Table */}
+            <div className="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <table className="w-full min-w-[600px]">
+                    <thead>
+                        <tr className="bg-gray-50/70 border-b border-gray-100">
+                            <th className="py-3.5 px-6 text-left w-1/2"><Skeleton className="h-4 w-28 rounded" /></th>
+                            <th className="py-3.5 px-6 text-center"><Skeleton className="h-4 w-16 rounded mx-auto" /></th>
+                            <th className="py-3.5 px-6 text-right"><Skeleton className="h-4 w-12 rounded ml-auto" /></th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                        {Array.from({ length: 5 }).map((_, i) => (
+                            <tr key={i}>
+                                <td className="py-4 px-6">
+                                    <div className="flex items-center gap-3.5">
+                                        <Skeleton className="w-9 h-9 rounded-lg shrink-0" />
+                                        <div className="space-y-1.5 flex-1">
+                                            <Skeleton className="h-4 w-32 rounded" />
+                                            <Skeleton className="h-3 w-24 rounded" />
+                                        </div>
+                                    </div>
+                                </td>
+                                <td className="py-4 px-6 text-center">
+                                    <Skeleton className="h-6 w-20 rounded-full mx-auto" />
+                                </td>
+                                <td className="py-4 px-6 text-right">
+                                    <div className="flex justify-end gap-1.5">
+                                        <Skeleton className="h-8 w-8 rounded-lg" />
+                                        <Skeleton className="h-8 w-8 rounded-lg" />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden space-y-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                    <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-200/70 p-4 flex flex-col gap-3">
+                        <div className="flex items-start justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                                <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+                                <div className="space-y-1.5">
+                                    <Skeleton className="h-4 w-28 rounded" />
+                                    <Skeleton className="h-3 w-20 rounded" />
+                                </div>
+                            </div>
+                            <Skeleton className="h-6 w-20 rounded-full" />
+                        </div>
+                        <div className="border-t border-gray-100" />
+                        <div className="flex items-center justify-end gap-2">
+                            <Skeleton className="h-11 flex-1 sm:flex-none sm:w-20 rounded-xl" />
+                            <Skeleton className="h-11 flex-1 sm:flex-none sm:w-20 rounded-xl" />
+                        </div>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// Transaction Logs Skeleton (Mirrors TransactionLogsPage.tsx)
+export function SkeletonTransactionLogs() {
+    return (
+        <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-4" aria-busy="true" aria-label="Memuat riwayat transaksi">
+            {/* Header Area */}
+            <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm space-y-2">
+                <Skeleton className="h-7 w-48 rounded-lg" />
+                <Skeleton className="h-4 w-80 max-w-full rounded" />
+            </div>
+
+            {/* Segmented Control Tabs & Page Size Selector */}
+            <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
+                <div className="w-full sm:w-auto p-1 bg-slate-100/90 rounded-xl border border-slate-200/60 flex gap-1">
+                    <Skeleton className="h-11 flex-1 sm:w-36 rounded-lg bg-white" />
+                    <Skeleton className="h-11 flex-1 sm:w-36 rounded-lg bg-slate-200/70" />
+                </div>
+                <div className="flex items-center justify-between sm:justify-end gap-2 px-1 sm:px-0">
+                    <Skeleton className="h-4 w-32 rounded" />
+                    <Skeleton className="h-8 w-24 rounded-lg" />
+                </div>
+            </div>
+
+            {/* Logs Panel */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div className="px-5 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                    <Skeleton className="h-4 w-40 rounded" />
+                    <Skeleton className="h-4 w-28 rounded" />
+                </div>
+
+                {/* Desktop Table */}
+                <div className="overflow-x-auto hidden md:block">
+                    <table className="w-full min-w-[960px]">
+                        <thead>
+                            <tr className="bg-gray-50/70 border-b border-gray-100">
+                                <th className="py-3.5 px-6 text-left w-44"><Skeleton className="h-4 w-28 rounded" /></th>
+                                <th className="py-3.5 px-4 text-left"><Skeleton className="h-4 w-24 rounded" /></th>
+                                <th className="py-3.5 px-4 text-left"><Skeleton className="h-4 w-16 rounded" /></th>
+                                <th className="py-3.5 px-4 text-right"><Skeleton className="h-4 w-20 rounded ml-auto" /></th>
+                                <th className="py-3.5 px-4 text-right"><Skeleton className="h-4 w-28 rounded ml-auto" /></th>
+                                <th className="py-3.5 px-4 text-left"><Skeleton className="h-4 w-20 rounded" /></th>
+                                <th className="py-3.5 px-6 text-left w-60"><Skeleton className="h-4 w-24 rounded" /></th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <tr key={i}>
+                                    <td className="py-4 px-6">
+                                        <div className="space-y-1">
+                                            <Skeleton className="h-4 w-24 rounded" />
+                                            <Skeleton className="h-3 w-16 rounded" />
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <div className="flex items-center gap-3">
+                                            <Skeleton className="w-8 h-8 rounded-lg shrink-0" />
+                                            <div className="space-y-1">
+                                                <Skeleton className="h-4 w-24 rounded" />
+                                                <Skeleton className="h-3 w-12 rounded" />
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <Skeleton className="h-6 w-20 rounded-full" />
+                                    </td>
+                                    <td className="py-4 px-4 text-right">
+                                        <Skeleton className="h-4 w-24 rounded ml-auto" />
+                                    </td>
+                                    <td className="py-4 px-4 text-right">
+                                        <Skeleton className="h-4 w-32 rounded ml-auto" />
+                                    </td>
+                                    <td className="py-4 px-4">
+                                        <div className="flex items-center gap-2">
+                                            <Skeleton className="w-6 h-6 rounded-full shrink-0" />
+                                            <Skeleton className="h-3.5 w-16 rounded" />
+                                        </div>
+                                    </td>
+                                    <td className="py-4 px-6">
+                                        <Skeleton className="h-3.5 w-40 rounded" />
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Mobile Card List */}
+                <div className="md:hidden divide-y divide-gray-100">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="p-4 sm:p-5 flex flex-col gap-3">
+                            <div className="flex items-start justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <Skeleton className="w-10 h-10 rounded-lg shrink-0" />
+                                    <div className="space-y-1.5">
+                                        <Skeleton className="h-4 w-28 rounded" />
+                                        <Skeleton className="h-3 w-16 rounded" />
+                                    </div>
+                                </div>
+                                <Skeleton className="h-6 w-20 rounded-full" />
+                            </div>
+                            <Skeleton className="h-14 w-full rounded-xl" />
+                            <div className="flex items-center justify-between px-1">
+                                <Skeleton className="h-3.5 w-24 rounded" />
+                                <Skeleton className="h-3.5 w-24 rounded" />
+                            </div>
+                            <div className="flex items-center gap-2 pt-1">
+                                <Skeleton className="w-5 h-5 rounded-full shrink-0" />
+                                <Skeleton className="h-3.5 w-20 rounded" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
+}
+
