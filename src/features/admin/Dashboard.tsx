@@ -588,9 +588,9 @@ export default function AdminDashboard() {
                                 className={`flex items-center justify-between py-4 group hover:bg-slate-50/50 transition-colors px-2 -mx-2 rounded-lg ${index !== recentLogbooks.length - 1 ? 'border-b border-gray-100/50' : ''
                                     }`}
                             >
-                                <div className="flex items-center gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center border border-white shadow-sm ring-1 ring-slate-900/5 shrink-0">
-                                        <span className="text-xs font-bold text-slate-600 uppercase">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                        <span className="text-xs font-semibold text-slate-700 uppercase">
                                             {log.driver_name.substring(0, 2)}
                                         </span>
                                     </div>
@@ -598,9 +598,9 @@ export default function AdminDashboard() {
                                         <p className="font-semibold text-gray-900 text-sm mb-0.5 group-hover:text-blue-600 transition-colors">
                                             {log.client_name} <span className="text-gray-400 font-normal mx-1">&middot;</span> {log.rute}
                                         </p>
-                                        <div className="flex items-center gap-2 text-[11px] font-medium text-gray-400 tracking-wide">
-                                            <span className="text-gray-500">{log.driver_name}</span>
-                                            <span className="text-gray-300">•</span>
+                                        <div className="flex items-center gap-2 text-xs font-medium text-slate-500">
+                                            <span className="text-slate-700 font-semibold">{log.driver_name}</span>
+                                            <span className="text-slate-300">•</span>
                                             <span>{new Intl.DateTimeFormat('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }).format(new Date(log.date))}</span>
                                         </div>
                                     </div>

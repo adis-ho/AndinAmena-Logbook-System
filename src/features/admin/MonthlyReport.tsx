@@ -1,9 +1,10 @@
 import { useMemo, useState } from 'react';
-import { FileText, Loader2, Filter } from 'lucide-react';
+import { FileText, Loader2, AlertCircle } from 'lucide-react';
 import Select from '../../components/ui/Select';
 import { ApiService } from '../../services/api';
 import { useToast } from '../../context/ToastContext';
 import { useUnitsQuery, useUsersQuery } from '../../hooks/useReferenceDataQueries';
+import { SkeletonMonthlyReport } from '../../components/ui/Skeleton';
 
 // Component constants
 const MONTHS = [
@@ -40,15 +41,15 @@ export default function MonthlyReport() {
     const [selectedDriver, setSelectedDriver] = useState('');
     const [selectedUnit, setSelectedUnit] = useState('');
 
-    const { data: usersData = [] } = useUsersQuery();
-    const { data: unitsData = [] } = useUnitsQuery();
+    const { data: usersData = [], isLoading: usersLoading } = useUsersQuery();
+    const { data: unitsData = [], isLoading: unitsLoading } = useUnitsQuery();
     const drivers = useMemo(() => usersData.map(u => ({ value: u.id, label: u.full_name })), [usersData]);
-    const units = useMemo(() => unitsData.map(u => ({ value: u.id, label: `${u.name} - ${u.plate_number}` })), [unitsData]);
+    const units = useMemo(() => unitsData.map(u => ({ value: u.id, label: `${u.name} (${u.plate_number})` })), [unitsData]);
 
     // State for report data
     const [reportData, setReportData] = useState<any>(null);
     const [isLoading, setIsLoading] = useState(false);
-    const [isGenerating, setIsGenerating] = useState(false); // For initial data fetch
+    const [isGenerating, setIsGenerating] = useState(false); // For data fetch
 
     // Years option (last 5 years)
     const years = Array.from({ length: 5 }, (_, i) => {
@@ -107,37 +108,25 @@ export default function MonthlyReport() {
         }
     };
 
+    if (usersLoading || unitsLoading) {
+        return <SkeletonMonthlyReport />;
+    }
+
     return (
-        <div className="space-y-8 max-w-7xl mx-auto pb-12">
+        <div className="space-y-6 sm:space-y-8 max-w-7xl mx-auto pb-10">
             {/* Header Area */}
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 bg-white p-6 md:p-8 rounded-[2rem] border border-gray-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-indigo-50/50 to-transparent rounded-bl-full -mr-20 -mt-20 pointer-events-none" />
-                <div className="flex items-center gap-5 relative">
-                    <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100/50 flex items-center justify-center shadow-inner relative overflow-hidden group-hover:shadow-md transition-shadow duration-500">
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                        <FileText className="h-7 w-7 text-indigo-600 relative z-10" aria-hidden="true" />
-                    </div>
-                    <div>
-                        <h1 className="text-3xl font-black text-gray-900 tracking-tight">Laporan Bulanan</h1>
-                        <p className="text-sm font-medium text-gray-500 mt-1">Rekapitulasi operasional dan biaya kendaraan</p>
-                    </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Laporan Bulanan</h1>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">Rekapitulasi operasional dan biaya kendaraan</p>
                 </div>
             </div>
 
-            {/* Filters Command Center */}
-            <div className="bg-white/80 backdrop-blur-md rounded-[2rem] shadow-sm border border-gray-100/60 p-6 md:p-8 relative z-20 ring-1 ring-inset ring-indigo-50/50">
-                {/* Refined Decorative Top Glow instead of hard line */}
-                <div className="absolute top-0 inset-x-0 h-32 bg-gradient-to-b from-indigo-100/30 to-transparent pointer-events-none opacity-50 rounded-t-[2rem]" />
-                <div className="absolute top-0 inset-x-4 h-[1px] bg-gradient-to-r from-transparent via-indigo-400/30 to-transparent pointer-events-none" />
-
-                <div className="flex items-center gap-2 mb-6 text-gray-800">
-                    <Filter className="w-4 h-4 text-indigo-600" aria-hidden="true" />
-                    <span className="text-[10px] uppercase font-black tracking-widest text-indigo-900/70">Pusat Kendali Laporan</span>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+            {/* Filters Area */}
+            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-6 space-y-5">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="space-y-1.5">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Periode Bulan</label>
+                        <label className="block text-xs font-medium text-slate-600">Periode Bulan</label>
                         <Select
                             value={selectedMonth}
                             onChange={setSelectedMonth}
@@ -146,7 +135,7 @@ export default function MonthlyReport() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Tahun</label>
+                        <label className="block text-xs font-medium text-slate-600">Tahun</label>
                         <Select
                             value={selectedYear}
                             onChange={setSelectedYear}
@@ -155,7 +144,7 @@ export default function MonthlyReport() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Filter Driver (Opsional)</label>
+                        <label className="block text-xs font-medium text-slate-600">Filter Driver (Opsional)</label>
                         <Select
                             value={selectedDriver}
                             onChange={setSelectedDriver}
@@ -164,7 +153,7 @@ export default function MonthlyReport() {
                         />
                     </div>
                     <div className="space-y-1.5">
-                        <label className="block text-[10px] font-bold text-gray-500 uppercase tracking-wider ml-1">Filter Unit (Opsional)</label>
+                        <label className="block text-xs font-medium text-slate-600">Filter Unit (Opsional)</label>
                         <Select
                             value={selectedUnit}
                             onChange={setSelectedUnit}
@@ -174,11 +163,11 @@ export default function MonthlyReport() {
                     </div>
                 </div>
 
-                <div className="mt-8 flex justify-end">
+                <div className="pt-2 flex justify-end">
                     <button
                         onClick={handleGeneratePreview}
                         disabled={isGenerating}
-                        className="group relative inline-flex items-center gap-2.5 px-6 py-3 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-xl font-bold text-sm shadow-md shadow-indigo-500/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-indigo-500/30 active:translate-y-0 disabled:opacity-80 disabled:hover:-translate-y-0 disabled:cursor-not-allowed transition-all duration-300"
+                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white rounded-xl font-medium text-sm shadow-sm transition-all touch-manipulation select-none disabled:opacity-70 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
                     >
                         {isGenerating ? (
                             <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
@@ -186,171 +175,275 @@ export default function MonthlyReport() {
                             <FileText className="w-4 h-4" aria-hidden="true" />
                         )}
                         <span>{isGenerating ? 'Memproses Data...' : 'Tampilkan Laporan'}</span>
-                        {!isGenerating && <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/20 pointer-events-none" />}
                     </button>
                 </div>
             </div>
 
-            {/* Preview Section */}
-            {reportData && (
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700 ease-out fill-mode-both">
+            {/* In-place Generating Skeleton */}
+            {isGenerating && (
+                <div className="space-y-6 pt-2" aria-busy="true" aria-label="Memproses pratinjau laporan">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm animate-pulse space-y-3">
+                            <div className="h-3.5 w-28 bg-gray-200 rounded" />
+                            <div className="h-10 w-24 bg-gray-200 rounded-lg" />
+                            <div className="h-3 w-48 bg-gray-200 rounded" />
+                        </div>
+                        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm animate-pulse space-y-3">
+                            <div className="h-3.5 w-36 bg-gray-200 rounded" />
+                            <div className="h-10 w-44 bg-gray-200 rounded-lg" />
+                            <div className="h-6 w-32 bg-gray-200 rounded-full" />
+                        </div>
+                    </div>
+                </div>
+            )}
 
+            {/* Preview Section */}
+            {reportData && !isGenerating && (
+                <div className="space-y-6 animate-in fade-in duration-200 ease-out">
                     {/* Action Bar */}
                     <div className="flex justify-end">
                         <button
                             onClick={handleDownloadPDF}
                             disabled={isLoading}
-                            className="inline-flex items-center gap-2 px-5 py-2.5 text-rose-600 bg-rose-50/50 hover:bg-rose-50 rounded-xl ring-1 ring-inset ring-rose-200/60 hover:ring-rose-300 transition-all duration-300 text-xs font-bold uppercase tracking-wider disabled:opacity-50 disabled:cursor-not-allowed group shadow-sm"
+                            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 min-h-[44px] text-rose-700 bg-rose-50 hover:bg-rose-100 active:scale-[0.98] border border-rose-200 rounded-xl font-medium text-xs uppercase tracking-wider transition-all shadow-sm touch-manipulation select-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
                         >
                             {isLoading ? (
                                 <Loader2 className="w-4 h-4 animate-spin" aria-hidden="true" />
                             ) : (
-                                <FileText className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" aria-hidden="true" />
+                                <FileText className="w-4 h-4" aria-hidden="true" />
                             )}
                             Unduh Dokumen PDF
                         </button>
                     </div>
 
                     {/* Summary Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 p-6 opacity-5 group-hover:opacity-10 transition-opacity duration-500 pointer-events-none">
-                                <FileText className="w-32 h-32" aria-hidden="true" />
-                            </div>
-                            <div className="relative z-10">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 mb-4">Total Perjalanan</p>
-                                <div className="flex items-baseline gap-3">
-                                    <span className="text-5xl font-black text-gray-900 tabular-nums tracking-tighter">{reportData.summary.total_trips}</span>
-                                    <span className="text-sm font-bold text-gray-400">trip</span>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Total Perjalanan</p>
+                                <div className="flex items-baseline gap-2">
+                                    <span className="text-3xl sm:text-4xl font-bold text-gray-900 tabular-nums tracking-tight">{reportData.summary.total_trips}</span>
+                                    <span className="text-sm font-medium text-slate-500">trip tercatat</span>
                                 </div>
-                                <p className="text-xs font-medium text-gray-400 mt-4 leading-relaxed max-w-[200px]">Akumulasi perjalanan dalam kriteria periode dan filter terpilih.</p>
                             </div>
+                            <p className="text-xs text-slate-500 mt-4 leading-relaxed">Akumulasi perjalanan dalam kriteria periode dan filter terpilih.</p>
                         </div>
 
-                        <div className="bg-white p-8 rounded-[2rem] shadow-sm border border-gray-100 flex flex-col justify-between relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-48 h-full bg-gradient-to-l from-blue-50/50 to-transparent pointer-events-none transition-opacity duration-500 opacity-0 group-hover:opacity-100" />
-                            <div className="relative z-10">
-                                <p className="text-[10px] font-black uppercase tracking-widest text-blue-600/70 mb-4">Total Biaya Operasional</p>
-                                <div className="flex items-baseline gap-2">
-                                    <span className="text-2xl font-bold text-gray-400">Rp</span>
-                                    <span className="text-5xl font-black text-blue-600 tabular-nums tracking-tighter">
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col justify-between">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2">Total Biaya Operasional</p>
+                                <div className="flex items-baseline gap-1.5">
+                                    <span className="text-lg font-semibold text-slate-400">Rp</span>
+                                    <span className="text-3xl sm:text-4xl font-bold text-gray-900 tabular-nums tracking-tight">
                                         {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(reportData.summary.total_cost)}
                                     </span>
                                 </div>
-                                <div className="mt-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 text-amber-700 text-[9px] font-bold uppercase tracking-widest border border-amber-200/60 w-fit">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                                    Tidak Termasuk BBM
-                                </div>
+                            </div>
+                            <div className="mt-4 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-50 text-slate-600 text-xs font-medium border border-slate-200/80 w-fit">
+                                <AlertCircle className="w-3.5 h-3.5 text-slate-500 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+                                <span>Tidak termasuk biaya BBM</span>
                             </div>
                         </div>
                     </div>
 
-                    {/* Tables Preview */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                    {/* Dual Stats: Driver & Unit */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Driver Stats */}
-                        <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="px-8 py-6 border-b border-gray-50/80 bg-gradient-to-r from-gray-50/30 to-white flex justify-between items-center">
-                                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Kinerja Per Driver</h3>
-                                <div className="px-3 py-1 bg-gray-50 rounded-lg border border-gray-100">
-                                    <span className="text-[10px] font-bold text-gray-500 tabular-nums">10 Teratas</span>
-                                </div>
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                            <div className="px-5 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                                <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Kinerja Per Driver</h3>
+                                <span className="inline-flex px-2.5 py-0.5 bg-white rounded-md border border-gray-200 text-xs font-medium text-slate-600 tabular-nums">
+                                    10 Teratas
+                                </span>
                             </div>
-                            <div className="overflow-x-auto flex-1 p-2">
+
+                            {/* Desktop Table */}
+                            <div className="hidden md:block overflow-x-auto flex-1">
                                 <table className="w-full">
                                     <thead>
-                                        <tr>
-                                            <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Nama Driver</th>
-                                            <th className="text-center py-4 px-4 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none w-20">Trip</th>
-                                            <th className="text-right py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none w-32">Biaya (Rp)</th>
+                                        <tr className="bg-gray-50/50 border-b border-gray-100">
+                                            <th scope="col" className="text-left py-4 px-6 text-xs uppercase tracking-wider font-bold text-gray-600 border-none">Nama Driver</th>
+                                            <th scope="col" className="text-center py-4 px-4 text-xs uppercase tracking-wider font-bold text-gray-600 border-none w-24">Trip</th>
+                                            <th scope="col" className="text-right py-4 px-6 text-xs uppercase tracking-wider font-bold text-gray-600 border-none w-36">Biaya</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-50">
+                                    <tbody className="divide-y divide-gray-100">
                                         {reportData.driver_stats.slice(0, 10).map((d: any) => (
-                                            <tr key={d.driver_id} className="group hover:bg-slate-50/50 transition-colors duration-200">
-                                                <td className="py-4 px-6 border-none">
-                                                    <span className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors">{d.name}</span>
-                                                </td>
-                                                <td className="py-4 px-4 text-center border-none">
-                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 group-hover:bg-white border border-gray-100 text-xs font-black tabular-nums text-gray-700 shadow-sm transition-colors">
-                                                        {d.trips}
+                                            <tr key={d.driver_id} className="hover:bg-slate-50/70 transition-colors">
+                                                <td className="py-3.5 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                                            <span className="text-xs font-semibold text-slate-700 uppercase">
+                                                                {d.name.substring(0, 2)}
+                                                            </span>
+                                                        </div>
+                                                        <span className="text-sm font-semibold text-gray-900">{d.name}</span>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-6 text-right border-none text-[13px] font-bold text-gray-600 tabular-nums tracking-tight">
+                                                <td className="py-3.5 px-4 text-center">
+                                                    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-md bg-slate-100 text-xs font-semibold tabular-nums text-slate-700">
+                                                        {d.trips}
+                                                    </span>
+                                                </td>
+                                                <td className="py-3.5 px-6 text-right text-sm font-semibold text-slate-700 tabular-nums">
                                                     {new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 }).format(d.total_cost)}
                                                 </td>
                                             </tr>
                                         ))}
                                         {reportData.driver_stats.length > 10 && (
                                             <tr>
-                                                <td colSpan={3} className="py-5 text-center border-none">
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-50 text-gray-500 rounded-full text-[10px] font-bold uppercase tracking-wider border border-gray-100">
-                                                        +{reportData.driver_stats.length - 10} Driver di PDF
+                                                <td colSpan={3} className="py-4 text-center">
+                                                    <span className="text-xs font-medium text-slate-500">
+                                                        +{reportData.driver_stats.length - 10} Driver lainnya tersedia di dokumen PDF
                                                     </span>
                                                 </td>
                                             </tr>
                                         )}
                                         {reportData.driver_stats.length === 0 && (
                                             <tr>
-                                                <td colSpan={3} className="py-16 text-center border-none">
-                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nihil Data</p>
+                                                <td colSpan={3} className="py-12 text-center">
+                                                    <p className="text-xs font-medium text-slate-400">Tidak ada data driver untuk kriteria ini</p>
                                                 </td>
                                             </tr>
                                         )}
                                     </tbody>
                                 </table>
                             </div>
+
+                            {/* Mobile Card Stack */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {reportData.driver_stats.length === 0 ? (
+                                    <div className="p-8 text-center">
+                                        <p className="text-xs font-medium text-slate-400">Tidak ada data driver untuk kriteria ini</p>
+                                    </div>
+                                ) : (
+                                    reportData.driver_stats.slice(0, 10).map((d: any, idx: number) => (
+                                        <div key={d.driver_id} className="p-4 flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                                    <span className="text-xs font-semibold text-slate-700 uppercase">
+                                                        {d.name.substring(0, 2)}
+                                                    </span>
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-xs font-semibold text-slate-400">#{idx + 1}</span>
+                                                        <p className="text-sm font-semibold text-gray-900">{d.name}</p>
+                                                    </div>
+                                                    <p className="text-xs font-medium text-slate-500">
+                                                        Biaya: <span className="font-semibold text-slate-700 tabular-nums">Rp {new Intl.NumberFormat('id-ID').format(d.total_cost)}</span>
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <span className="inline-flex items-center justify-center min-w-[36px] h-8 px-2 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold tabular-nums">
+                                                {d.trips} trip
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                                {reportData.driver_stats.length > 10 && (
+                                    <div className="p-3 text-center bg-gray-50/50">
+                                        <span className="text-xs font-medium text-slate-500">
+                                            +{reportData.driver_stats.length - 10} Driver di PDF
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         {/* Unit Stats */}
-                        <div className="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden flex flex-col">
-                            <div className="px-8 py-6 border-b border-gray-50/80 bg-gradient-to-r from-gray-50/30 to-white flex justify-between items-center">
-                                <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Utilisasi Armada</h3>
-                                <div className="px-3 py-1 bg-gray-50 rounded-lg border border-gray-100">
-                                    <span className="text-[10px] font-bold text-gray-500 tabular-nums">10 Teratas</span>
-                                </div>
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
+                            <div className="px-5 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex justify-between items-center">
+                                <h3 className="text-xs font-semibold text-slate-700 uppercase tracking-wider">Utilisasi Armada</h3>
+                                <span className="inline-flex px-2.5 py-0.5 bg-white rounded-md border border-gray-200 text-xs font-medium text-slate-600 tabular-nums">
+                                    10 Teratas
+                                </span>
                             </div>
-                            <div className="overflow-x-auto flex-1 p-2">
+
+                            {/* Desktop Table */}
+                            <div className="hidden md:block overflow-x-auto flex-1">
                                 <table className="w-full">
                                     <thead>
-                                        <tr>
-                                            <th className="text-left py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none">Identitas Kendaraan</th>
-                                            <th className="text-center py-4 px-6 text-[10px] uppercase tracking-widest font-black text-gray-400 border-none w-24">Trip</th>
+                                        <tr className="bg-gray-50/50 border-b border-gray-100">
+                                            <th scope="col" className="text-left py-4 px-6 text-xs uppercase tracking-wider font-bold text-gray-600 border-none">Identitas Kendaraan</th>
+                                            <th scope="col" className="text-center py-4 px-6 text-xs uppercase tracking-wider font-bold text-gray-600 border-none w-28">Trip</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-50">
+                                    <tbody className="divide-y divide-gray-100">
                                         {reportData.unit_stats.slice(0, 10).map((u: any) => (
-                                            <tr key={u.unit_id} className="group hover:bg-slate-50/50 transition-colors duration-200">
-                                                <td className="py-4 px-6 border-none">
-                                                    <div className="flex flex-col">
-                                                        <span className="text-sm font-bold text-gray-900 group-hover:text-indigo-600 transition-colors uppercase">{u.name}</span>
-                                                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-0.5">{u.plate_number}</span>
+                                            <tr key={u.unit_id} className="hover:bg-slate-50/70 transition-colors">
+                                                <td className="py-3.5 px-6">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-8 h-8 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-semibold text-xs text-slate-700 uppercase">
+                                                            {u.name.substring(0, 2)}
+                                                        </div>
+                                                        <div className="flex flex-col">
+                                                            <span className="text-sm font-semibold text-gray-900 uppercase">{u.name}</span>
+                                                            <span className="text-xs font-normal text-slate-500 uppercase tracking-wider mt-0.5">{u.plate_number}</span>
+                                                        </div>
                                                     </div>
                                                 </td>
-                                                <td className="py-4 px-6 text-center border-none">
-                                                    <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-gray-50 group-hover:bg-white border border-gray-100 text-xs font-black tabular-nums text-gray-700 shadow-sm transition-colors">
+                                                <td className="py-3.5 px-6 text-center">
+                                                    <span className="inline-flex items-center justify-center min-w-[28px] h-7 px-2 rounded-md bg-slate-100 text-xs font-semibold tabular-nums text-slate-700">
                                                         {u.trips}
-                                                    </div>
+                                                    </span>
                                                 </td>
                                             </tr>
                                         ))}
                                         {reportData.unit_stats.length > 10 && (
                                             <tr>
-                                                <td colSpan={2} className="py-5 text-center border-none">
-                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-gray-50 text-gray-500 rounded-full text-[10px] font-bold uppercase tracking-wider border border-gray-100">
-                                                        +{reportData.unit_stats.length - 10} Unit di PDF
+                                                <td colSpan={2} className="py-4 text-center">
+                                                    <span className="text-xs font-medium text-slate-500">
+                                                        +{reportData.unit_stats.length - 10} Unit lainnya tersedia di dokumen PDF
                                                     </span>
                                                 </td>
                                             </tr>
                                         )}
                                         {reportData.unit_stats.length === 0 && (
                                             <tr>
-                                                <td colSpan={2} className="py-16 text-center border-none">
-                                                    <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Nihil Data</p>
+                                                <td colSpan={2} className="py-12 text-center">
+                                                    <p className="text-xs font-medium text-slate-400">Tidak ada data unit untuk kriteria ini</p>
                                                 </td>
                                             </tr>
                                         )}
                                     </tbody>
                                 </table>
+                            </div>
+
+                            {/* Mobile Card Stack */}
+                            <div className="md:hidden divide-y divide-gray-100">
+                                {reportData.unit_stats.length === 0 ? (
+                                    <div className="p-8 text-center">
+                                        <p className="text-xs font-medium text-slate-400">Tidak ada data unit untuk kriteria ini</p>
+                                    </div>
+                                ) : (
+                                    reportData.unit_stats.slice(0, 10).map((u: any, idx: number) => (
+                                        <div key={u.unit_id} className="p-4 flex items-center justify-between gap-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0 font-semibold text-xs text-slate-700 uppercase">
+                                                    {u.name.substring(0, 2)}
+                                                </div>
+                                                <div className="space-y-0.5">
+                                                    <div className="flex items-center gap-1.5">
+                                                        <span className="text-xs font-semibold text-slate-400">#{idx + 1}</span>
+                                                        <p className="text-sm font-semibold text-gray-900 uppercase">{u.name}</p>
+                                                    </div>
+                                                    <p className="text-xs font-normal text-slate-500 uppercase tracking-wider">{u.plate_number}</p>
+                                                </div>
+                                            </div>
+                                            <span className="inline-flex items-center justify-center min-w-[36px] h-8 px-2 rounded-lg bg-blue-50 text-blue-700 text-xs font-semibold tabular-nums">
+                                                {u.trips} trip
+                                            </span>
+                                        </div>
+                                    ))
+                                )}
+                                {reportData.unit_stats.length > 10 && (
+                                    <div className="p-3 text-center bg-gray-50/50">
+                                        <span className="text-xs font-medium text-slate-500">
+                                            +{reportData.unit_stats.length - 10} Unit di PDF
+                                        </span>
+                                    </div>
+                                )}
                             </div>
                         </div>
                     </div>

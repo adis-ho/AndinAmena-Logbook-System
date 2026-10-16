@@ -22,25 +22,25 @@ export default function DateRangePicker({
     };
 
     return (
-        <div className={`flex flex-col sm:flex-row sm:items-center gap-2 ${className || ''}`}>
-            <div className="relative flex-1">
+        <div className={`flex items-center gap-2 w-full ${className || ''}`}>
+            <div className="relative flex-1 min-w-0">
                 <DatePicker
                     value={startDate}
                     onChange={handleStartChange}
-                    placeholder="Dari tanggal"
-                    maxDate={endDate} // Start date cannot be after end date
+                    placeholder="Mulai"
+                    maxDate={endDate}
                     className="w-full"
                 />
             </div>
 
-            <span className="text-gray-500 font-medium">s/d</span>
+            <span className="text-xs font-semibold text-slate-400 shrink-0 select-none">s/d</span>
 
-            <div className="relative flex-1">
+            <div className="relative flex-1 min-w-0">
                 <DatePicker
                     value={endDate}
                     onChange={handleEndChange}
-                    placeholder="Sampai tanggal"
-                    minDate={startDate} // End date cannot be before start date
+                    placeholder="Selesai"
+                    minDate={startDate}
                     className="w-full"
                     align="right"
                 />

@@ -269,15 +269,15 @@ export default function OperationalBudgetPage() {
                                 drivers.map(driver => (
                                     <tr key={driver.id} className="group hover:bg-slate-50/50 transition-colors duration-200">
                                         <td className="py-4 px-6 border-none">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border border-white flex items-center justify-center shadow-sm shrink-0 ring-1 ring-slate-900/5">
-                                                    <span className="text-xs font-bold text-slate-600 uppercase">
+                                            <div className="flex items-center gap-3.5">
+                                                <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                                    <span className="text-xs font-semibold text-slate-700 uppercase">
                                                         {driver.full_name.substring(0, 2)}
                                                     </span>
                                                 </div>
                                                 <div>
-                                                    <p className="font-bold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">{driver.full_name}</p>
-                                                    <p className="text-[11px] font-medium text-gray-400 mt-0.5">@{driver.username}</p>
+                                                    <p className="font-semibold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">{driver.full_name}</p>
+                                                    <p className="text-xs text-slate-500 mt-0.5">@{driver.username}</p>
                                                 </div>
                                             </div>
                                         </td>
@@ -344,15 +344,15 @@ export default function OperationalBudgetPage() {
                         <div key={driver.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300 group">
                             {/* Header Area */}
                             <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white ring-1 ring-slate-900/5 flex items-center justify-center shrink-0 shadow-sm">
-                                        <span className="text-sm font-black text-slate-600 uppercase">
+                                <div className="flex items-start gap-3.5">
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                        <span className="text-xs font-semibold text-slate-700 uppercase">
                                             {driver.full_name.substring(0, 2)}
                                         </span>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-1">{driver.full_name}</h3>
-                                        <span className="block text-[13px] font-bold text-gray-500">@{driver.username}</span>
+                                        <h3 className="text-base font-bold text-gray-900 tracking-tight leading-snug mb-0.5 group-hover:text-blue-600 transition-colors line-clamp-1">{driver.full_name}</h3>
+                                        <span className="block text-xs font-medium text-slate-500">@{driver.username}</span>
                                     </div>
                                 </div>
                                 <div className="scale-[0.85] origin-top-right shrink-0">

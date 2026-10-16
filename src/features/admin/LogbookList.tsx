@@ -578,7 +578,16 @@ export default function LogbookList() {
                                             <span className="text-sm font-bold text-gray-900 group-hover:text-blue-600 transition-colors uppercase">{getUnitName(log.unit_id)}</span>
                                             <span className="text-[10px] font-bold text-gray-400 block uppercase tracking-widest mt-0.5">{getUnitPlate(log.unit_id)}</span>
                                         </td>
-                                        <td className="py-4 px-6 border-none whitespace-nowrap text-sm font-medium text-gray-600">{getDriverName(log.driver_id)}</td>
+                                        <td className="py-4 px-6 border-none whitespace-nowrap">
+                                            <div className="flex items-center gap-2.5">
+                                                <div className="w-7 h-7 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                                    <span className="text-[11px] font-semibold text-slate-700 uppercase">
+                                                        {getDriverName(log.driver_id).substring(0, 2)}
+                                                    </span>
+                                                </div>
+                                                <span className="text-sm font-semibold text-gray-900">{getDriverName(log.driver_id)}</span>
+                                            </div>
+                                        </td>
                                         <td className="py-4 px-6 border-none text-sm text-gray-900">{log.client_name}</td>
                                         <td className="py-4 px-6 border-none text-sm text-gray-600 max-w-[200px] truncate" title={log.rute}>{log.rute}</td>
                                         <td className="py-4 px-6 border-none text-right">
@@ -691,16 +700,23 @@ export default function LogbookList() {
                             <div key={log.id} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300">
                                 {/* Header Area */}
                                 <div className="flex justify-between items-start mb-6">
-                                    <div>
-                                        <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">
-                                            {format(new Date(log.date), 'EEEE, dd MMM', { locale: id })}
-                                        </span>
-                                        <h3 className="text-[20px] font-black text-gray-900 tracking-tight leading-none mb-2">
-                                            {getDriverName(log.driver_id)}
-                                        </h3>
-                                        <span className="block text-[13px] font-bold text-gray-500">
-                                            {getUnitName(log.unit_id)} · {getUnitPlate(log.unit_id)}
-                                        </span>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                            <span className="text-xs font-semibold text-slate-700 uppercase">
+                                                {getDriverName(log.driver_id).substring(0, 2)}
+                                            </span>
+                                        </div>
+                                        <div>
+                                            <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1">
+                                                {format(new Date(log.date), 'EEEE, dd MMM', { locale: id })}
+                                            </span>
+                                            <h3 className="text-base font-bold text-gray-900 tracking-tight leading-snug mb-1">
+                                                {getDriverName(log.driver_id)}
+                                            </h3>
+                                            <span className="block text-xs font-medium text-gray-500">
+                                                {getUnitName(log.unit_id)} · {getUnitPlate(log.unit_id)}
+                                            </span>
+                                        </div>
                                     </div>
                                     <div className="scale-[0.85] origin-top-right shrink-0">
                                         {getStatusBadge(log.status)}

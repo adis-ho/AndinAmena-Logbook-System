@@ -2,12 +2,12 @@ import { useEffect, useState, useMemo } from 'react';
 import { ApiService } from '../../services/api';
 import DateRangePicker from '../../components/ui/DateRangePicker';
 import type { LogbookEntry } from '../../types';
-import { BarChart3, TrendingUp, Users, Wallet, BookOpen, ArrowUpNarrowWide, ArrowDownNarrowWide, FileSpreadsheet, FileText, FileSearch } from 'lucide-react';
+import { ArrowUpNarrowWide, ArrowDownNarrowWide, FileSpreadsheet, FileText, FileSearch } from 'lucide-react';
 import { format, startOfMonth, endOfMonth } from 'date-fns';
 // import { id } from 'date-fns/locale'; // Unused
 import { useToast } from '../../context/ToastContext';
 import { formatCurrency } from '../../utils/calculations';
-import { SkeletonLogbookList } from '../../components/ui/Skeleton';
+import { SkeletonDriverSummary } from '../../components/ui/Skeleton';
 
 import Select from '../../components/ui/Select';
 import { useUnitsQuery, useUsersQuery } from '../../hooks/useReferenceDataQueries';
@@ -228,50 +228,44 @@ export default function DriverSummary() {
     };
 
     if ((loading && logbooks.length === 0) || usersLoading || unitsLoading) {
-        return <SkeletonLogbookList />;
+        return <SkeletonDriverSummary />;
     }
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-7xl mx-auto pb-6">
             {/* Header Area */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-700" />
-                <div className="flex items-center gap-4 relative">
-                    <div className="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100/50 flex items-center justify-center shadow-sm">
-                        <BarChart3 className="h-6 w-6 text-blue-600" aria-hidden="true" />
-                    </div>
-                    <div>
-                        <h1 className="text-2xl font-black text-gray-900 tracking-tight">Ringkasan Driver</h1>
-                        <p className="text-sm font-medium text-gray-500 mt-1">Statistik performa dan biaya per driver</p>
-                    </div>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm">
+                <div>
+                    <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Ringkasan Driver</h1>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">Statistik performa dan biaya operasional per pengemudi</p>
                 </div>
 
-                <div className="flex items-center gap-3 relative">
+                <div className="flex items-center gap-2.5 w-full sm:w-auto">
                     <button
                         onClick={exportToPDF}
-                        className="flex items-center gap-2 group/btn px-4 py-2 bg-gradient-to-br from-rose-50 to-rose-100/50 border border-rose-200/50 hover:border-rose-300 text-rose-700 rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                        aria-label="Cetak ke format PDF"
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] bg-rose-50 hover:bg-rose-100 active:scale-[0.98] border border-rose-200 text-rose-700 rounded-xl font-medium text-xs uppercase tracking-wider transition-all shadow-sm touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-500"
+                        aria-label="Cetak ringkasan ke format PDF"
                     >
-                        <FileText className="h-4 w-4 text-rose-500 group-hover/btn:scale-110 transition-transform" aria-hidden="true" />
-                        Export PDF
+                        <FileText className="h-4 w-4 text-rose-600 shrink-0" aria-hidden="true" />
+                        <span>Export PDF</span>
                     </button>
                     <button
                         onClick={exportToExcel}
-                        className="flex items-center gap-2 group/btn px-4 py-2 bg-gradient-to-br from-emerald-50 to-emerald-100/50 border border-emerald-200/50 hover:border-emerald-300 text-emerald-700 rounded-xl font-bold text-[11px] uppercase tracking-wider transition-all duration-300 shadow-sm hover:shadow-md hover:-translate-y-0.5"
-                        aria-label="Cetak ke format Excel"
+                        className="flex-1 sm:flex-none inline-flex items-center justify-center gap-2 px-4 py-2.5 min-h-[44px] bg-emerald-50 hover:bg-emerald-100 active:scale-[0.98] border border-emerald-200 text-emerald-800 rounded-xl font-medium text-xs uppercase tracking-wider transition-all shadow-sm touch-manipulation select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500"
+                        aria-label="Cetak ringkasan ke format Excel"
                     >
-                        <FileSpreadsheet className="h-4 w-4 text-emerald-500 group-hover/btn:scale-110 transition-transform" aria-hidden="true" />
-                        Export Excel
+                        <FileSpreadsheet className="h-4 w-4 text-emerald-600 shrink-0" aria-hidden="true" />
+                        <span>Export Excel</span>
                     </button>
                 </div>
             </div>
 
             {/* Filters Area */}
-            <div className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex flex-col xl:flex-row gap-5 items-start xl:items-center justify-between transition-all">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 w-full xl:w-auto">
+            <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 items-end">
                     {/* Driver Filter */}
-                    <div className="w-full sm:w-[240px] z-20 space-y-1.5">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Filter Driver</label>
+                    <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-slate-600">Filter Driver</label>
                         <Select
                             value={filterDriver}
                             onChange={setFilterDriver}
@@ -284,8 +278,8 @@ export default function DriverSummary() {
                     </div>
 
                     {/* Unit Filter */}
-                    <div className="w-full sm:w-[280px] z-10 space-y-1.5">
-                        <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Filter Kendaraan</label>
+                    <div className="space-y-1.5">
+                        <label className="block text-xs font-medium text-slate-600">Filter Kendaraan</label>
                         <Select
                             value={filterUnit}
                             onChange={setFilterUnit}
@@ -296,125 +290,98 @@ export default function DriverSummary() {
                             placeholder="Pilih Unit"
                         />
                     </div>
-                </div>
 
-                <div className="w-full xl:w-auto space-y-1.5">
-                    <label className="text-[10px] uppercase tracking-widest font-bold text-gray-400">Rentang Waktu</label>
-                    <DateRangePicker
-                        startDate={dateStart}
-                        endDate={dateEnd}
-                        onChange={(start, end) => {
-                            setDateStart(start);
-                            setDateEnd(end);
-                        }}
-                    />
+                    {/* Date Range Filter */}
+                    <div className="space-y-1.5 md:col-span-2 lg:col-span-1">
+                        <label className="block text-xs font-medium text-slate-600">Rentang Waktu</label>
+                        <DateRangePicker
+                            startDate={dateStart}
+                            endDate={dateEnd}
+                            onChange={(start, end) => {
+                                setDateStart(start);
+                                setDateEnd(end);
+                            }}
+                        />
+                    </div>
                 </div>
             </div>
 
             {/* KPI Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 relative overflow-hidden group hover:border-blue-200 transition-colors shadow-sm">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-blue-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-500" />
-                    <div className="flex items-center gap-3 mb-4 relative">
-                        <div className="bg-blue-50 p-2.5 rounded-xl border border-blue-100/50 shadow-sm text-blue-600">
-                            <Users className="h-5 w-5" aria-hidden="true" />
-                        </div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 leading-tight">Total<br />Driver</p>
-                    </div>
-                    <p className="text-3xl font-black text-gray-900 tabular-nums relative">{overallStats.drivers}</p>
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Total Driver</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 tabular-nums tracking-tight">{overallStats.drivers}</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 relative overflow-hidden group hover:border-violet-200 transition-colors shadow-sm">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-violet-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-500" />
-                    <div className="flex items-center gap-3 mb-4 relative">
-                        <div className="bg-violet-50 p-2.5 rounded-xl border border-violet-100/50 shadow-sm text-violet-600">
-                            <BookOpen className="h-5 w-5" aria-hidden="true" />
-                        </div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 leading-tight">Total<br />Trip Selesai</p>
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Trip Selesai</p>
+                    <div className="flex items-baseline gap-1.5">
+                        <span className="text-2xl sm:text-3xl font-bold text-gray-900 tabular-nums tracking-tight">{overallStats.trips}</span>
+                        <span className="text-xs font-medium text-slate-500">trip</span>
                     </div>
-                    <p className="text-3xl font-black text-gray-900 tabular-nums relative">{overallStats.trips}</p>
                 </div>
 
-                <div className="bg-gradient-to-br from-emerald-50/50 to-white p-5 rounded-2xl border border-emerald-100/60 relative overflow-hidden group hover:border-emerald-300 transition-colors shadow-sm">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-emerald-100/50 to-transparent rounded-bl-full -mr-10 -mt-10 transition-transform group-hover:scale-110 duration-500" />
-                    <div className="flex items-center gap-3 mb-4 relative">
-                        <div className="bg-emerald-100/80 p-2.5 rounded-xl border border-emerald-200/50 shadow-sm text-emerald-600">
-                            <Wallet className="h-5 w-5" aria-hidden="true" />
-                        </div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-emerald-600/80 leading-tight">Total Biaya<br />Operasional</p>
-                    </div>
-                    <p className="text-2xl sm:text-3xl font-black text-emerald-950 tabular-nums relative truncate">{formatCurrency(overallStats.cost)}</p>
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Total Pengeluaran</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 tabular-nums tracking-tight truncate">{formatCurrency(overallStats.cost)}</p>
                 </div>
 
-                <div className="bg-white p-5 rounded-2xl border border-gray-100 relative overflow-hidden group hover:border-amber-200 transition-colors shadow-sm">
-                    <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-amber-50 to-transparent rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110 duration-500" />
-                    <div className="flex items-center gap-3 mb-4 relative">
-                        <div className="bg-amber-50 p-2.5 rounded-xl border border-amber-100/50 shadow-sm text-amber-600">
-                            <TrendingUp className="h-5 w-5" aria-hidden="true" />
-                        </div>
-                        <p className="text-[10px] font-bold uppercase tracking-wider text-gray-400 leading-tight">Rata-rata<br />Per Driver</p>
-                    </div>
-                    <p className="text-2xl font-black text-gray-900 tabular-nums relative truncate">{formatCurrency(Math.round(overallStats.cost / (overallStats.drivers || 1)))}</p>
+                <div className="bg-white p-5 sm:p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col justify-between">
+                    <p className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Rata-rata / Driver</p>
+                    <p className="text-2xl sm:text-3xl font-bold text-gray-900 tabular-nums tracking-tight truncate">{formatCurrency(Math.round(overallStats.cost / (overallStats.drivers || 1)))}</p>
                 </div>
             </div>
 
             {/* Mobile Card View */}
-            <div className="grid grid-cols-1 gap-4 md:hidden">
+            <div className="grid grid-cols-1 gap-3 md:hidden">
                 {driverStats.length === 0 ? (
                     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 py-12 px-6 text-center">
-                        <div className="w-16 h-16 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                            <FileSearch className="h-8 w-8 text-gray-300" aria-hidden="true" />
+                        <div className="w-14 h-14 bg-gray-50 border border-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                            <FileSearch className="h-7 w-7 text-gray-300" aria-hidden="true" />
                         </div>
-                        <p className="text-sm font-bold text-gray-900">Belum ada statistik driver</p>
-                        <p className="text-xs font-medium text-gray-500 mt-1">Coba sesuaikan filter atau rentang waktu.</p>
+                        <p className="text-sm font-semibold text-gray-900">Belum ada statistik driver</p>
+                        <p className="text-xs font-normal text-slate-500 mt-1">Coba sesuaikan filter atau rentang waktu.</p>
                     </div>
                 ) : (
                     driverStats.map((stat, index) => (
-                        <div key={stat.driverId} className="bg-white rounded-[20px] shadow-[0_1px_3px_rgba(0,0,0,0.04)] hover:shadow-[0_4px_12px_rgba(0,0,0,0.08)] border border-gray-100/50 p-6 flex flex-col transition-all duration-300 group">
+                        <div key={stat.driverId} className="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col gap-4">
                             {/* Header Area */}
-                            <div className="flex justify-between items-start mb-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-200 border border-white ring-1 ring-slate-900/5 flex items-center justify-center shrink-0 shadow-sm relative">
-                                        <span className="text-sm font-black text-slate-600 uppercase">
+                            <div className="flex justify-between items-start gap-3">
+                                <div className="flex items-center gap-3.5">
+                                    <div className="w-10 h-10 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                        <span className="text-xs font-semibold text-slate-700 uppercase">
                                             {stat.driverName.substring(0, 2)}
                                         </span>
-                                        <div className="absolute -bottom-1 -right-1 bg-slate-800 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-md border border-white">
-                                            #{index + 1}
-                                        </div>
                                     </div>
                                     <div>
-                                        <h3 className="text-xl font-black text-gray-900 tracking-tight leading-none mb-1.5 group-hover:text-blue-600 transition-colors line-clamp-1">{stat.driverName}</h3>
-                                        <span className="block text-[13px] font-bold text-gray-500 uppercase tracking-[0.05em] mt-0.5">ID: {stat.driverId.substring(0, 8)}</span>
+                                        <div className="flex items-center gap-1.5">
+                                            <span className="text-xs font-semibold text-slate-400">#{index + 1}</span>
+                                            <h3 className="text-base font-bold text-gray-900 line-clamp-1">{stat.driverName}</h3>
+                                        </div>
+                                        <span className="block text-xs font-medium text-slate-500 mt-0.5">ID: {stat.driverId.substring(0, 8)}</span>
                                     </div>
                                 </div>
-                                <div className="text-right shrink-0">
-                                    <span className="block text-[10px] font-extrabold uppercase tracking-[0.1em] text-gray-400 mb-1.5">Total Trip</span>
-                                    <span className="inline-flex bg-violet-50 text-violet-700 text-xs font-black px-2.5 py-1 rounded-lg border border-violet-100/50 tabular-nums">
-                                        {stat.totalTrips}x
-                                    </span>
+                                <span className="inline-flex bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-full tabular-nums">
+                                    {stat.totalTrips} trip
+                                </span>
+                            </div>
+
+                            {/* Flat Clean Breakdown */}
+                            <div className="grid grid-cols-2 gap-3 pt-3 border-t border-gray-100 text-xs">
+                                <div>
+                                    <span className="block font-medium text-slate-500">Tol & Parkir</span>
+                                    <span className="block font-semibold text-gray-900 tabular-nums mt-0.5">{formatCurrency(stat.totalToll)}</span>
+                                </div>
+                                <div>
+                                    <span className="block font-medium text-slate-500">Biaya Lain</span>
+                                    <span className="block font-semibold text-gray-900 tabular-nums mt-0.5">{formatCurrency(stat.totalOperational)}</span>
                                 </div>
                             </div>
 
-                            {/* Grid Metadata */}
-                            <div className="grid grid-cols-2 gap-3 mb-6">
-                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-gray-100/50 transition-colors group-hover:bg-slate-50 flex flex-col justify-center">
-                                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Tol / Parkir</p>
-                                    <p className="font-black text-gray-900 tabular-nums text-[15px] truncate">{formatCurrency(stat.totalToll)}</p>
-                                </div>
-                                <div className="bg-slate-50/50 p-4 rounded-2xl border border-gray-100/50 transition-colors group-hover:bg-slate-50 flex flex-col justify-center">
-                                    <p className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest mb-1.5">Biaya Lain</p>
-                                    <p className="font-black text-gray-900 tabular-nums text-[15px] truncate">{formatCurrency(stat.totalOperational)}</p>
-                                </div>
-                            </div>
-                            
-                            {/* Divider */}
-                            <div className="h-px w-full bg-gradient-to-r from-gray-100 via-gray-100 to-transparent mb-5" />
-
-                            {/* Total Cost Area */}
-                            <div className="flex justify-between items-center mt-auto pb-1 relative">
-                                <div className="absolute top-0 -left-6 bottom-0 w-1 bg-emerald-500 rounded-r-md hidden sm:block" />
-                                <p className="text-[11px] font-extrabold text-gray-400 uppercase tracking-[0.15em]">Total Pengeluaran</p>
-                                <p className="font-black text-xl text-emerald-600 tabular-nums tracking-tight">{formatCurrency(stat.totalCost)}</p>
+                            {/* Total Cost Row */}
+                            <div className="flex justify-between items-center pt-3 border-t border-gray-100">
+                                <span className="text-xs font-bold uppercase tracking-wider text-slate-500">Total Biaya</span>
+                                <span className="font-bold text-base text-gray-900 tabular-nums">{formatCurrency(stat.totalCost)}</span>
                             </div>
                         </div>
                     ))
@@ -427,62 +394,62 @@ export default function DriverSummary() {
                     <table className="w-full min-w-[800px]">
                         <thead>
                             <tr className="bg-gray-50/50 border-b border-gray-100">
-                                <th className="py-4 px-6 text-center w-16 text-[10px] uppercase tracking-widest font-bold text-gray-400">Rnk</th>
-                                <th className="py-4 px-6 text-left">
+                                <th scope="col" className="py-4 px-4 text-center w-14 text-xs uppercase tracking-wider font-bold text-gray-600 border-none">No</th>
+                                <th scope="col" className="py-4 px-6 text-left border-none" aria-sort={sortConfig?.key === 'driverName' ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
                                     <button
                                         onClick={() => handleSort('driverName')}
-                                        className="flex items-center gap-1.5 text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1 -mx-1"
+                                        className="flex items-center gap-1.5 text-xs uppercase tracking-wider font-bold text-gray-600 hover:text-blue-600 active:scale-[0.98] transition-all rounded px-1 -mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                         aria-label={`Urutkan berdasarkan nama driver ${sortConfig?.key === 'driverName' && sortConfig.direction === 'asc' ? '(naik)' : '(turun)'}`}
                                     >
-                                        IDENTITAS DRIVER
+                                        <span>Identitas Driver</span>
                                         {sortConfig?.key === 'driverName' && (
                                             sortConfig.direction === 'asc' ? <ArrowUpNarrowWide className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowDownNarrowWide className="h-3.5 w-3.5" aria-hidden="true" />
                                         )}
                                     </button>
                                 </th>
-                                <th className="py-4 px-6 text-center">
+                                <th scope="col" className="py-4 px-6 text-center w-32 border-none" aria-sort={sortConfig?.key === 'totalTrips' ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
                                     <button
                                         onClick={() => handleSort('totalTrips')}
-                                        className="flex items-center justify-center gap-1.5 w-full text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1 -mx-1"
+                                        className="flex items-center justify-center gap-1.5 w-full text-xs uppercase tracking-wider font-bold text-gray-600 hover:text-blue-600 active:scale-[0.98] transition-all rounded px-1 -mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                         aria-label={`Urutkan berdasarkan jumlah trip ${sortConfig?.key === 'totalTrips' && sortConfig.direction === 'asc' ? '(naik)' : '(turun)'}`}
                                     >
-                                        TRIP SELESAI
+                                        <span>Trip Selesai</span>
                                         {sortConfig?.key === 'totalTrips' && (
                                             sortConfig.direction === 'asc' ? <ArrowUpNarrowWide className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowDownNarrowWide className="h-3.5 w-3.5" aria-hidden="true" />
                                         )}
                                     </button>
                                 </th>
-                                <th className="py-4 px-6 text-right">
+                                <th scope="col" className="py-4 px-6 text-right w-40 border-none" aria-sort={sortConfig?.key === 'totalToll' ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
                                     <button
                                         onClick={() => handleSort('totalToll')}
-                                        className="flex items-center justify-end gap-1.5 w-full text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1 -mx-1"
+                                        className="flex items-center justify-end gap-1.5 w-full text-xs uppercase tracking-wider font-bold text-gray-600 hover:text-blue-600 active:scale-[0.98] transition-all rounded px-1 -mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                         aria-label={`Urutkan berdasarkan biaya tol ${sortConfig?.key === 'totalToll' && sortConfig.direction === 'asc' ? '(naik)' : '(turun)'}`}
                                     >
-                                        TOL & RETRIBUSI
+                                        <span>Tol & Parkir</span>
                                         {sortConfig?.key === 'totalToll' && (
                                             sortConfig.direction === 'asc' ? <ArrowUpNarrowWide className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowDownNarrowWide className="h-3.5 w-3.5" aria-hidden="true" />
                                         )}
                                     </button>
                                 </th>
-                                <th className="py-4 px-6 text-right">
+                                <th scope="col" className="py-4 px-6 text-right w-36 border-none" aria-sort={sortConfig?.key === 'totalOperational' ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
                                     <button
                                         onClick={() => handleSort('totalOperational')}
-                                        className="flex items-center justify-end gap-1.5 w-full text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-blue-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 rounded px-1 -mx-1"
+                                        className="flex items-center justify-end gap-1.5 w-full text-xs uppercase tracking-wider font-bold text-gray-600 hover:text-blue-600 active:scale-[0.98] transition-all rounded px-1 -mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                         aria-label={`Urutkan berdasarkan biaya lain ${sortConfig?.key === 'totalOperational' && sortConfig.direction === 'asc' ? '(naik)' : '(turun)'}`}
                                     >
-                                        BIAYA LAIN
+                                        <span>Biaya Lain</span>
                                         {sortConfig?.key === 'totalOperational' && (
                                             sortConfig.direction === 'asc' ? <ArrowUpNarrowWide className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowDownNarrowWide className="h-3.5 w-3.5" aria-hidden="true" />
                                         )}
                                     </button>
                                 </th>
-                                <th className="py-4 px-6 text-right">
+                                <th scope="col" className="py-4 px-6 text-right w-44 border-none" aria-sort={sortConfig?.key === 'totalCost' ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending') : 'none'}>
                                     <button
                                         onClick={() => handleSort('totalCost')}
-                                        className="flex items-center justify-end gap-1.5 w-full text-[10px] uppercase tracking-widest font-bold text-gray-400 hover:text-emerald-600 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded px-1 -mx-1"
+                                        className="flex items-center justify-end gap-1.5 w-full text-xs uppercase tracking-wider font-bold text-gray-600 hover:text-gray-900 active:scale-[0.98] transition-all rounded px-1 -mx-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
                                         aria-label={`Urutkan berdasarkan total biaya ${sortConfig?.key === 'totalCost' && sortConfig.direction === 'asc' ? '(naik)' : '(turun)'}`}
                                     >
-                                        TOTAL PENGELUARAN
+                                        <span>Total Biaya</span>
                                         {sortConfig?.key === 'totalCost' && (
                                             sortConfig.direction === 'asc' ? <ArrowUpNarrowWide className="h-3.5 w-3.5" aria-hidden="true" /> : <ArrowDownNarrowWide className="h-3.5 w-3.5" aria-hidden="true" />
                                         )}
@@ -493,47 +460,47 @@ export default function DriverSummary() {
                         <tbody className="divide-y divide-gray-100">
                             {driverStats.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="py-16">
+                                    <td colSpan={6} className="py-14">
                                         <div className="flex flex-col items-center justify-center text-center">
-                                            <div className="w-16 h-16 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mb-4 shadow-sm">
-                                                <FileSearch className="h-8 w-8 text-gray-300" aria-hidden="true" />
+                                            <div className="w-14 h-14 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mb-3">
+                                                <FileSearch className="h-7 w-7 text-gray-300" aria-hidden="true" />
                                             </div>
-                                            <p className="text-sm font-bold text-gray-900">Belum ada statistik untuk periode ini</p>
-                                            <p className="text-xs font-medium text-gray-500 mt-1">Coba sesuaikan filter driver atau rentang waktu yang dipilih.</p>
+                                            <p className="text-sm font-semibold text-gray-900">Belum ada statistik untuk periode ini</p>
+                                            <p className="text-xs font-normal text-slate-500 mt-1">Coba sesuaikan filter driver atau rentang waktu yang dipilih.</p>
                                         </div>
                                     </td>
                                 </tr>
                             ) : (
                                 driverStats.map((stat, index) => (
-                                    <tr key={stat.driverId} className="group hover:bg-slate-50/50 transition-colors duration-200">
-                                        <td className="py-4 px-6 text-center">
-                                            <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-[10px] font-black text-slate-500 group-hover:bg-white group-hover:text-blue-600 group-hover:shadow-sm transition-all">
+                                    <tr key={stat.driverId} className="hover:bg-slate-50/70 transition-colors">
+                                        <td className="py-3.5 px-4 text-center">
+                                            <span className="inline-flex items-center justify-center w-6 h-6 rounded bg-slate-100 text-xs font-semibold text-slate-600">
                                                 {index + 1}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-6">
+                                        <td className="py-3.5 px-6">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100/50 flex items-center justify-center shrink-0">
-                                                    <span className="text-[10px] font-bold text-blue-600 uppercase">
+                                                <div className="w-8 h-8 rounded-full bg-slate-100 border border-slate-200/80 flex items-center justify-center shrink-0">
+                                                    <span className="text-xs font-semibold text-slate-700 uppercase">
                                                         {stat.driverName.substring(0, 2)}
                                                     </span>
                                                 </div>
-                                                <p className="font-bold text-gray-900 text-sm group-hover:text-blue-600 transition-colors">{stat.driverName}</p>
+                                                <p className="font-semibold text-gray-900 text-sm">{stat.driverName}</p>
                                             </div>
                                         </td>
-                                        <td className="py-4 px-6 text-center">
-                                            <span className="inline-flex bg-white px-3 py-1 rounded-lg border border-gray-100 shadow-sm text-xs font-bold text-gray-700 tabular-nums">
+                                        <td className="py-3.5 px-6 text-center">
+                                            <span className="inline-flex items-center justify-center px-2.5 py-0.5 rounded-md bg-slate-100 text-xs font-semibold text-slate-700 tabular-nums">
                                                 {stat.totalTrips}
                                             </span>
                                         </td>
-                                        <td className="py-4 px-6 text-right">
-                                            <span className="text-[13px] font-semibold text-gray-600 tabular-nums">{formatCurrency(stat.totalToll)}</span>
+                                        <td className="py-3.5 px-6 text-right">
+                                            <span className="text-sm font-medium text-slate-600 tabular-nums">{formatCurrency(stat.totalToll)}</span>
                                         </td>
-                                        <td className="py-4 px-6 text-right">
-                                            <span className="text-[13px] font-semibold text-gray-600 tabular-nums">{formatCurrency(stat.totalOperational)}</span>
+                                        <td className="py-3.5 px-6 text-right">
+                                            <span className="text-sm font-medium text-slate-600 tabular-nums">{formatCurrency(stat.totalOperational)}</span>
                                         </td>
-                                        <td className="py-4 px-6 text-right">
-                                            <span className="text-[13px] font-black text-emerald-600 tabular-nums group-hover:text-emerald-700 transition-colors">{formatCurrency(stat.totalCost)}</span>
+                                        <td className="py-3.5 px-6 text-right">
+                                            <span className="text-sm font-bold text-emerald-700 tabular-nums">{formatCurrency(stat.totalCost)}</span>
                                         </td>
                                     </tr>
                                 ))
